@@ -6,6 +6,11 @@ import Base from "../layouts/Base.astro";
 import Case from "../components/Case.astro";
 import { site, mentionTaxes, contenuFormule, LIBELLE_STATUT } from "../lib/site.js";
 import { TEXTES_CONSENTEMENT as T } from "../../serveur/validation.js";
+import AC from "../components/ACompleter.astro";
+import conditions from "../data/conditions.json";
+const e = site.entreprise;
+const o = conditions.ouvertureSansRenonciation;
+const duree = conditions.dureeAcces.valeur ? conditions.dureeAcces.options[conditions.dureeAcces.valeur] : null;
 ---
 <Base titre="Commande" noindex description="Commander une formule AUREVIA SAAS.">
   <section class="entete-page">
@@ -48,7 +53,17 @@ import { TEXTES_CONSENTEMENT as T } from "../../serveur/validation.js";
         </fieldset>
 
         <div class="carte formulaire commande-accords">
-          <h2 class="titre-carte">Vos accords</h2>
+          <div class="pleine avant-paiement">
+            <h2 class="titre-carte">Avant de payer</h2>
+            <ul>
+              <li><strong>Paiement unique</strong>, sans abonnement ni prélèvement.</li>
+              <li><strong>Ouverture de l’accès :</strong> si vous cochez la case d’accès immédiat, dès la confirmation du paiement. Sinon, {o.valeur === "immediate" ? "dès la confirmation du paiement également, et vous gardez votre droit de rétractation de 14 jours" : `${o.delaiJours} jours après le paiement, à la fin du délai de rétractation`}.</li>
+              <li><strong>Durée d’accès :</strong> {duree ?? <AC label="durée d’accès à décider" />}.</li>
+              <li><strong>Vendeur :</strong> {e.denomination ?? <AC label="nom de l’entreprise" />} ({e.formeJuridique ?? <AC label="forme juridique" />}), SIREN {e.siren ?? <AC label="SIREN" />}. Médiateur : {site.mediateur.nom ?? <AC label="médiateur de la consommation" />}.</li>
+            </ul>
+            <p class="note">Une confirmation reprenant vos choix et la version des conditions ({conditions.versionConditions}) vous est adressée par e-mail lorsque l’envoi d’e-mails est en service.</p>
+          </div>
+          <h2 class="titre-carte pleine">Vos accords</h2>
           <Case nom="cgv" requis>J’ai lu et j’accepte les <a href="/cgv/">conditions générales de vente</a>.</Case>
           <Case nom="accesImmediat">{T.accesImmediat} (Facultatif : sans cette case, vous gardez votre droit de rétractation et l’accès s’ouvre à la fin du délai de 14 jours.)</Case>
           <div id="bloc-service" class="pleine" hidden><Case nom="executionService">{T.executionService} (Facultatif.)</Case></div>

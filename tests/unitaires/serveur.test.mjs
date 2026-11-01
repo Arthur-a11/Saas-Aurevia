@@ -45,12 +45,12 @@ test("inscription : enregistrée, e-mail NON annoncé comme envoyé si Brevo n'e
   assert.ok(!JSON.stringify(enr).includes("203.0.113.5"), "l'IP ne doit pas être stockée en clair");
 });
 
-test("inscription : e-mail « envoye » seulement si l'API d'envoi répond OK", async () => {
+test("inscription : e-mail « accepte » (accepté par Brevo, pas « reçu ») seulement si l'API d'envoi répond OK", async () => {
   const appels = [];
   const fauxFetch = async (url, o) => { appels.push([url, JSON.parse(o.body)]); return new Response("{}", { status: 201 }); };
   const ctx = ctxBase({ env: { BREVO_API_KEY: "x", EMAIL_EXPEDITEUR: "contact@exemple.fr" }, fetchFn: fauxFetch });
   const d = await (await traiterInscription(req("/api/inscription", INSCRIPTION), ctx)).json();
-  assert.equal(d.emailConfirmation, "envoye");
+  assert.equal(d.emailConfirmation, "accepte");
   assert.equal(appels[0][1].to[0].email, "marie@exemple.fr");
 
   const ctxEchec = ctxBase({ env: { BREVO_API_KEY: "x", EMAIL_EXPEDITEUR: "c@e.fr" }, fetchFn: async () => new Response("", { status: 500 }) });

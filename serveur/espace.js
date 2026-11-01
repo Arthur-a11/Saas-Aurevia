@@ -9,12 +9,19 @@ import { envoyerEmail, emailConfigure } from "./email.js";
 import { validerCreationCompte, validerConnexion, validerAchat, TEXTES_CONSENTEMENT } from "./validation.js";
 import { cleEmail, hacherMotDePasse, verifierMotDePasse, ouvrirSession, fermerSession, compteConnecte } from "./comptes.js";
 import { modePaiement, verifierSignature, creerSessionPaiement, lireSessionPaiement } from "./stripe.js";
-import { catalogueParDefaut, formuleVendable, pointsBloquants, droitsEffectifs, vueFormation, contenuLecon, trouverLecon, JOUR_MS } from "./formation.js";
+import { catalogueParDefaut, formuleVendable, pointsBloquants, droitsEffectifs, vueFormation, contenuLecon, trouverLecon, estLisible } from "./formation.js";
+import { raisonsBlocageReel, dateOuverture, finAcces, conditionsParDefaut } from "./ouverture.js";
+import { emailCommande, emailReinitialisation, emailBienvenue } from "./emails.js";
+import { modeleEnTexte, contenuElement } from "./contenus/index.js";
+import { createHash, randomBytes } from "node:crypto";
 
 const HEURE = 3_600_000;
 const entier = (v, defaut) => (Number.isFinite(Number(v)) && Number(v) > 0 ? Math.floor(Number(v)) : defaut);
 const maintenantDe = (ctx) => ctx.maintenant?.() ?? Date.now();
 const catalogueDe = (ctx) => ctx.catalogue ?? catalogueParDefaut;
+const conditionsDe = (ctx) => ctx.conditions ?? conditionsParDefaut;
+const baseDe = (ctx, requete) => (ctx.env.SITE_URL || new URL(requete.url).origin).replace(/\/$/, "");
+const REINIT_MINUTES = 30;
 const avecCookie = (reponse, cookie) => { reponse.headers.append("Set-Cookie", cookie); return reponse; };
 const MOT_DE_PASSE_FACTICE = { algo: "scrypt", N: 16384, r: 8, p: 1, sel: "AAAAAAAAAAAAAAAAAAAAAA==", hash: "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=" };
 
@@ -60,7 +67,9 @@ async function creerCompte(requete, ctx) {
   };
   await ctx.stockage.enregistrer("comptes", cle, compte);
   const cookie = await ouvrirSession(ctx.stockage, compte, requete, maintenant);
-  return avecCookie(json(201, { ok: true, prenom: compte.prenom }), cookie);
+  const e = emailBienvenue(compte.prenom, baseDe(ctx, requete));
+  const emailBienvenueStatut = await envoyerEmail(ctx.env, { a: compte.email, ...e }, ctx.fetchFn);
+  return avecCookie(json(201, { ok: true, prenom: compte.prenom, email: emailBienvenueStatut }), cookie);
 }
 
 async function connecter(requete, ctx) {
@@ -91,29 +100,94 @@ async function moi(requete, ctx) {
   if (requete.method !== "GET") return methodeNonAutorisee();
   if (!ctx.stockage) return json(200, { ok: true, connecte: false, stockage: false });
   const compte = await compteConnecte(ctx.stockage, requete, maintenantDe(ctx));
-  return json(200, compte ? { ok: true, connecte: true, prenom: compte.prenom, email: compte.email } : { ok: true, connecte: false });
+  const emails = emailConfigure(ctx.env);
+  return json(200, compte ? { ok: true, connecte: true, prenom: compte.prenom, email: compte.email, emails } : { ok: true, connecte: false, emails });
+}
+
+// ================================================================ Mot de passe oublié
+const empreinteJeton = (jeton) => createHash("sha256").update(jeton).digest("hex");
+const REPONSE_NEUTRE = { ok: true, code: "demande_prise_en_compte" };
+
+/**
+ * Demande de réinitialisation. La réponse est IDENTIQUE que l'adresse ait un compte ou non
+ * (aucune information sur les adresses inscrites). Jeton aléatoire de 256 bits, stocké seulement
+ * sous forme d'empreinte, valable 30 minutes, utilisable une seule fois.
+ */
+async function demanderReinitialisation(requete, ctx) {
+  const c = await controlerEnvoi(requete, ctx);
+  if (c.reponse) return c.reponse;
+  // Sans e-mail, le parcours ne peut pas fonctionner : on le dit, pour toutes les adresses.
+  if (!emailConfigure(ctx.env)) return json(503, { ok: false, code: "emails_non_configures" });
+  const email = typeof c.donnees.email === "string" ? c.donnees.email.trim().toLowerCase() : "";
+  if (!email || email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) {
+    return json(400, { ok: false, code: "champs_invalides", erreurs: { email: "E-mail : adresse invalide (exemple : prenom.nom@exemple.fr)." } });
+  }
+  const cle = cleEmail(email);
+  if (await limite(ctx, `reinit-${empreinteIp(ctx.ip, ctx.env)}`, 10) || await limite(ctx, `reinit-${cle}`, 3)) {
+    return json(429, { ok: false, code: "trop_de_demandes" });
+  }
+  const jeton = randomBytes(32).toString("base64url");
+  const compte = await ctx.stockage.lire("comptes", cle);
+  if (!compte) return json(200, REPONSE_NEUTRE);
+  const maintenant = maintenantDe(ctx);
+  await ctx.stockage.enregistrer("reinitialisations", empreinteJeton(jeton), {
+    compte: compte.id, cleEmail: cle, creeLe: iso(maintenant), expire: maintenant + REINIT_MINUTES * 60_000, utilise: false,
+  });
+  const e = emailReinitialisation(`${baseDe(ctx, requete)}/compte/nouveau-mot-de-passe/#jeton=${jeton}`, REINIT_MINUTES);
+  const statut = await envoyerEmail(ctx.env, { a: compte.email, ...e }, ctx.fetchFn);
+  if (statut !== "accepte") console.error("Réinitialisation : e-mail non accepté par Brevo");
+  return json(200, REPONSE_NEUTRE);
+}
+
+async function reinitialiser(requete, ctx) {
+  const c = await controlerEnvoi(requete, ctx);
+  if (c.reponse) return c.reponse;
+  const jeton = typeof c.donnees.jeton === "string" ? c.donnees.jeton : "";
+  const mdp = typeof c.donnees.motDePasse === "string" ? c.donnees.motDePasse : "";
+  const verif = validerCreationCompte({ prenom: "x", email: "x@exemple.fr", motDePasse: mdp, confidentialite: true });
+  if (verif.erreurs.motDePasse) return json(400, { ok: false, code: "champs_invalides", erreurs: { motDePasse: verif.erreurs.motDePasse } });
+  if (await limite(ctx, `reinit-usage-${empreinteIp(ctx.ip, ctx.env)}`, 20)) return json(429, { ok: false, code: "trop_de_demandes" });
+  const invalide = () => json(400, { ok: false, code: "lien_invalide" });
+  if (jeton.length < 20 || jeton.length > 100) return invalide();
+  const cle = empreinteJeton(jeton);
+  const r = await ctx.stockage.lire("reinitialisations", cle);
+  const maintenant = maintenantDe(ctx);
+  if (!r || r.utilise || !(r.expire > maintenant)) return invalide();
+  const compte = await ctx.stockage.lire("comptes", r.cleEmail);
+  if (!compte || compte.id !== r.compte) return invalide();
+  // Usage unique : le jeton est marqué utilisé AVANT le changement de mot de passe.
+  await ctx.stockage.enregistrer("reinitialisations", cle, { ...r, utilise: true, utiliseLe: iso(maintenant) });
+  compte.motDePasse = await hacherMotDePasse(mdp);
+  compte.sessionsValidesDepuis = iso(maintenant);   // déconnecte toutes les sessions ouvertes avant
+  await ctx.stockage.enregistrer("comptes", r.cleEmail, compte);
+  return json(200, { ok: true });
 }
 
 // ================================================================ Paiement
-/** Une formule peut-elle être achetée maintenant ? En mode réel, seulement si tout est prêt. */
-function etatVente(id, env, catalogue) {
-  const mode = modePaiement(env);
-  const bloquants = pointsBloquants(id, catalogue);
-  const raisons = [];
-  if (!mode) raisons.push("paiement_non_configure");
-  if (mode === "reel") {
-    if (!site.paiement.actif) raisons.push("ventes_fermees");
-    if (bloquants.length) raisons.push("contenus_en_preparation");
-    if (!emailConfigure(env)) raisons.push("confirmation_email_impossible");
-  }
-  return { ouverte: raisons.length === 0, raisons, bloquants };
+/** Une formule peut-elle être achetée maintenant ? En mode réel, seulement si TOUTES les conditions d'ouverture sont remplies. */
+function etatVente(id, ctx) {
+  const mode = modePaiement(ctx.env);
+  const bloquants = pointsBloquants(id, catalogueDe(ctx));
+  if (!mode) return { ouverte: false, raisons: ["paiement_non_configure"], details: [], bloquants };
+  if (mode === "test") return { ouverte: true, raisons: [], details: [], bloquants };
+  const r = raisonsBlocageReel(id, ctx.env, { cfg: conditionsDe(ctx), catalogue: catalogueDe(ctx), config: ctx.config ?? site });
+  return { ouverte: r.length === 0, raisons: [...new Set(r.map((x) => x.code))], details: r.map((x) => x.libelle), bloquants };
 }
 
 async function etatPaiement(requete, ctx) {
   if (requete.method !== "GET") return methodeNonAutorisee();
-  const cat = catalogueDe(ctx);
-  const ventes = Object.fromEntries(site.formules.map((f) => [f.id, etatVente(f.id, ctx.env, cat)]));
-  return json(200, { ok: true, mode: ctx.stockage ? modePaiement(ctx.env) : null, ventes });
+  const ventes = Object.fromEntries(site.formules.map((f) => [f.id, etatVente(f.id, ctx)]));
+  const cfg = conditionsDe(ctx);
+  return json(200, {
+    ok: true, mode: ctx.stockage ? modePaiement(ctx.env) : null, ventes,
+    conditions: {
+      version: cfg.versionConditions,
+      dureeAcces: cfg.dureeAcces.valeur ? cfg.dureeAcces.options[cfg.dureeAcces.valeur] : null,
+      ouvertureSansRenonciation: cfg.ouvertureSansRenonciation.valeur,
+      delaiJours: cfg.ouvertureSansRenonciation.delaiJours,
+      emails: emailConfigure(ctx.env),
+    },
+  });
 }
 
 async function creerPaiement(requete, ctx) {
@@ -127,7 +201,7 @@ async function creerPaiement(requete, ctx) {
   const { ok, erreurs, valeurs } = validerAchat(c.donnees);
   if (!ok) return json(400, { ok: false, code: "champs_invalides", erreurs });
   const formule = formuleVendable(valeurs.formule);
-  const vente = etatVente(valeurs.formule, ctx.env, catalogueDe(ctx));
+  const vente = etatVente(valeurs.formule, ctx);
   if (!formule || !vente.ouverte) return json(403, { ok: false, code: "vente_fermee", raisons: vente.raisons });
   if (await limite(ctx, `achat-${compte.id}`, 20)) return json(429, { ok: false, code: "trop_de_demandes" });
 
@@ -140,6 +214,7 @@ async function creerPaiement(requete, ctx) {
   const commande = {
     reference: ref, compte: compte.id, email: compte.email, formule: formule.id, montantCentimes: formule.montantCentimes, devise: formule.devise,
     frequence: "paiement-unique", mode, statut: "en-attente", creeLe: new Date(maintenant).toISOString(),
+    conditions: { version: conditionsDe(ctx).versionConditions, dureeAcces: conditionsDe(ctx).dureeAcces.valeur, ouvertureSansRenonciation: conditionsDe(ctx).ouvertureSansRenonciation.valeur },
     accords: {
       version: TEXTES_CONSENTEMENT.version,
       cgv: { accepte: true, texte: TEXTES_CONSENTEMENT.cgv },
@@ -152,7 +227,7 @@ async function creerPaiement(requete, ctx) {
   dossier.commandes = [...(dossier.commandes || []), ref].slice(-50);
   await ctx.stockage.enregistrer("droits", compte.id, dossier);
 
-  const base = (ctx.env.SITE_URL || new URL(requete.url).origin).replace(/\/$/, "");
+  const base = baseDe(ctx, requete);
   try {
     const session = await creerSessionPaiement(ctx.env, ctx.fetchFn, {
       commande: ref, formule, email: compte.email, compte: compte.id,
@@ -191,8 +266,10 @@ async function confirmerPaiement(ctx, commande, session, source) {
   }
   const dossier = (await ctx.stockage.lire("droits", commande.compte)) || { compte: commande.compte, achats: {}, commandes: [commande.reference], historique: [] };
   if (dossier.achats[commande.reference]) return "deja-traitee";
-  const accesLe = commande.accords.accesImmediat.accepte ? maintenant : maintenant + catalogueDe(ctx).delaiSansAccordJours * JOUR_MS;
-  dossier.achats[commande.reference] = { formule: commande.formule, actif: true, depuis: iso(maintenant), accesLe: iso(accesLe) };
+  const cfg = conditionsDe(ctx);
+  const accesLe = dateOuverture(maintenant, commande.accords.accesImmediat.accepte, cfg);
+  const finLe = finAcces(accesLe, cfg);
+  dossier.achats[commande.reference] = { formule: commande.formule, actif: true, depuis: iso(maintenant), accesLe: iso(accesLe), finLe };
   dossier.historique.push({ le: iso(maintenant), action: "ouverture", formule: commande.formule, commande: commande.reference, source });
   // Les droits d'abord : si la suite échoue, Stripe renverra la notification et rien ne sera perdu.
   await ctx.stockage.enregistrer("droits", commande.compte, dossier);
@@ -201,14 +278,12 @@ async function confirmerPaiement(ctx, commande, session, source) {
   commande.payeeLe = iso(maintenant);
   commande.paiementStripe = session.payment_intent ?? null;
   commande.accesLe = iso(accesLe);
+  commande.finLe = finLe;
   commande.historique.push({ le: iso(maintenant), statut: "payee", source });
   await ctx.stockage.enregistrer("commandes", commande.reference, commande);
-  const f = site.formules.find((x) => x.id === commande.formule);
-  commande.emailConfirmation = await envoyerEmail(ctx.env, {
-    a: commande.email,
-    sujet: `Votre achat AUREVIA SAAS ${commande.reference}`,
-    texte: `Bonjour,\n\nVotre paiement de ${f?.prixAffiche} pour la formule ${f?.nom} est confirmé (référence ${commande.reference}).\n${accesLe <= maintenant ? "Votre accès est ouvert" : `Votre accès s’ouvrira le ${new Date(accesLe).toLocaleDateString("fr-FR")}`} dans votre espace « Ma formation » : ${(ctx.env.SITE_URL || "").replace(/\/$/, "")}/formation/\n\nAUREVIA SAAS – ${site.contactEmail}`,
-  }, ctx.fetchFn);
+  const e = emailCommande(commande, { accesLe: iso(accesLe), finLe, baseUrl: ctx.env.SITE_URL, cfg });
+  commande.emailConfirmation = await envoyerEmail(ctx.env, { a: commande.email, ...e }, ctx.fetchFn);
+  commande.historique.push({ le: iso(maintenantDe(ctx)), email: commande.emailConfirmation });
   await ctx.stockage.enregistrer("commandes", commande.reference, commande);
   return "payee";
 }
@@ -314,7 +389,7 @@ async function statutPaiement(requete, ctx) {
     } catch { /* Stripe injoignable : on garde l'état connu, le navigateur réessaiera */ }
   }
   const finale = await ctx.stockage.lire("commandes", ref);
-  return json(200, { ok: true, reference: ref, statut: finale.statut, formule: finale.formule, accesLe: finale.accesLe ?? null });
+  return json(200, { ok: true, reference: ref, statut: finale.statut, formule: finale.formule, accesLe: finale.accesLe ?? null, finLe: finale.finLe ?? null, emailConfirmation: finale.emailConfirmation ?? null });
 }
 
 // ================================================================ Espace « Ma formation »
@@ -332,7 +407,12 @@ async function formationAccueil(requete, ctx) {
   if (requete.method !== "GET") return methodeNonAutorisee();
   const f = await contexteFormation(requete, ctx);
   if (f.reponse) return f.reponse;
-  return json(200, { ok: true, prenom: f.compte.prenom, formules: f.formules, ...vueFormation(f.droits, f.progression, catalogueDe(ctx)) });
+  const cfg = conditionsDe(ctx);
+  return json(200, {
+    ok: true, prenom: f.compte.prenom, formules: f.formules,
+    dureeAcces: cfg.dureeAcces.valeur ? cfg.dureeAcces.options[cfg.dureeAcces.valeur] : null,
+    ...vueFormation(f.droits, f.progression, catalogueDe(ctx)),
+  });
 }
 
 const REFUS_LECON = { inconnue: 404, en_preparation: 404, non_incluse: 403 };
@@ -372,7 +452,23 @@ async function formationFichier(requete, ctx) {
   const element = trouverLecon(id, cat)?.lecon ?? cat.ressources.find((r) => r.id === id);
   if (!element) return json(404, { ok: false, code: "inconnue" });
   if (!f.droits.has(element.droit)) return json(403, { ok: false, code: "non_incluse" });
-  if (element.statut !== "disponible" || !element.fichier) return json(404, { ok: false, code: "en_preparation" });
+  if (!estLisible(element.statut)) return json(404, { ok: false, code: "en_preparation" });
+  // Modèles rédigés : générés à partir du texte (format Markdown), jamais publiés à une adresse publique.
+  if (element.type === "modele") {
+    const t = trouverLecon(id, cat);
+    const modele = contenuElement(t.module.id, element);
+    if (!modele) return json(404, { ok: false, code: "en_preparation" });
+    return new Response(modeleEnTexte(modele), {
+      status: 200,
+      headers: {
+        "Content-Type": "text/markdown; charset=utf-8",
+        "Content-Disposition": `attachment; filename="aurevia-${id}.md"`,
+        "Cache-Control": "private, no-store",
+        "X-Content-Type-Options": "nosniff",
+      },
+    });
+  }
+  if (!element.fichier) return json(404, { ok: false, code: "en_preparation" });
   const donnees = await ctx.stockage.lireFichier("fichiers-formation", element.fichier);
   if (!donnees) return json(404, { ok: false, code: "fichier_absent" });
   return new Response(donnees, {
@@ -392,6 +488,8 @@ export const ROUTES_ESPACE = {
   "/api/compte/connexion": connecter,
   "/api/compte/deconnexion": deconnecter,
   "/api/compte/moi": moi,
+  "/api/compte/mot-de-passe-oublie": demanderReinitialisation,
+  "/api/compte/reinitialiser": reinitialiser,
   "/api/paiement/etat": etatPaiement,
   "/api/paiement/session": creerPaiement,
   "/api/paiement/webhook": recevoirNotification,

@@ -62,7 +62,7 @@ const options = site.formules.map((f) => ({ valeur: f.id, label: `${f.nom} – $
         return;
       }
       const lignes = [`Référence : ${rep.reference}.`];
-      if (rep.emailConfirmation === "envoye") lignes.push("Un e-mail de confirmation vient de vous être envoyé.");
+      if (rep.emailConfirmation === "accepte") lignes.push("Un e-mail de confirmation a été remis à notre service d’envoi. S’il n’arrive pas d’ici quelques minutes, regardez dans vos courriers indésirables.");
       else lignes.push("Aucun e-mail de confirmation automatique ne vous a été envoyé (envoi d’e-mails pas encore activé). Je vous réponds personnellement par e-mail.");
       message(zone, "ok", "Votre inscription est enregistrée.", lignes);
       form.querySelectorAll("input:not([type=checkbox]), textarea").forEach((el) => ((el as HTMLInputElement).value = ""));

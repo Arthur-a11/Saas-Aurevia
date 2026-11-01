@@ -2,10 +2,12 @@
 // Aucun paiement réel : le site de test (port 4397) parle au simulateur (port 4398), jamais à Stripe.
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
-import { PORT_PAIEMENT, PORT_STRIPE } from "../../playwright.config.mjs";
+import { PORT_PAIEMENT, PORT_STRIPE, PORT_BREVO } from "../../playwright.config.mjs";
 
 const SITE = `http://localhost:${PORT_PAIEMENT}`;
 const STRIPE = `http://localhost:${PORT_STRIPE}`;
+const BREVO = `http://localhost:${PORT_BREVO}`;
+const OUVERTES = { essentiel: 37, complet: 43, accompagne: 43 };
 const MDP = "phrase-de-test-solide";
 const NOMS = { essentiel: "Essentiel", complet: "Complet", accompagne: "Accompagné" };
 const PRIX = { essentiel: "14,90 €", complet: "24,90 €", accompagne: "54,90 €" };
@@ -61,20 +63,24 @@ for (const formule of ["essentiel", "complet", "accompagne"]) {
     await expect(page.getByText("Paiement confirmé")).toBeVisible();
     await expect(page.getByText(`Formule ${NOMS[formule]}`)).toBeVisible();
 
-    // Exactement les contenus de la formule : 6 leçons ouvertes ; vidéos et fiches signalées en préparation.
+    // Exactement les contenus de la formule, dans les 6 modules ; vidéos signalées en préparation.
+    await expect(page.getByText(/L’e-mail de confirmation a été remis à notre service d’envoi/)).toBeVisible();
     await expect(page.locator(".module-espace")).toHaveCount(6);
-    await expect(page.locator(".lecon.ouverte")).toHaveCount(6);
-    await expect(page.locator(".lecon.fermee").first()).toContainText("En préparation");
-    const modeles = page.locator(".ressources-espace li", { hasText: "Modèles à copier" });
+    await expect(page.locator(".lecon.ouverte")).toHaveCount(OUVERTES[formule]);
+    await expect(page.locator(".lecon.fermee", { hasText: "Vidéo du module 1" })).toContainText("En préparation");
+    await expect(page.locator(".lecon", { hasText: "Modèle : grille d’entretien" })).toContainText(formule === "essentiel" ? "Non inclus dans votre formule" : "Commencer");
+    const communaute = page.locator(".ressources-espace li", { hasText: "Communauté" });
     const avis = page.locator(".ressources-espace li", { hasText: "Avis personnel" });
-    await expect(modeles).toContainText(formule === "essentiel" ? "Non inclus dans votre formule" : "En préparation");
+    await expect(communaute).toContainText(formule === "essentiel" ? "Non inclus dans votre formule" : "En préparation");
     await expect(avis).toContainText(formule === "accompagne" ? "Modalités à définir" : "Non inclus dans votre formule");
+    await expect(page.getByText("Durée d’accès : à définir (pas encore décidée).")).toBeVisible();
 
     await page.getByRole("link", { name: "Commencer ma formation" }).click();
-    await expect(page.locator("h1")).toHaveText("Leçon écrite : trouver une bonne idée");
-    await expect(page.locator(".etapes-lecon li").first()).toBeVisible();
+    await expect(page.locator("h1")).toHaveText("Partir d’un problème, pas d’une idée de logiciel");
+    await expect(page.getByText("Brouillon :")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "À retenir" })).toBeVisible();
     await page.getByRole("button", { name: "Marquer comme terminée" }).click();
-    await expect(page.getByText("Progression enregistrée : 1 leçon(s) sur 6.")).toBeVisible();
+    await expect(page.getByText(`Progression enregistrée : 1 leçon(s) sur ${OUVERTES[formule]}.`)).toBeVisible();
 
     // Déconnexion puis reconnexion : l'accès et la progression sont retrouvés.
     await page.goto(`${SITE}/formation/`);
@@ -88,8 +94,8 @@ for (const formule of ["essentiel", "complet", "accompagne"]) {
     await cx.getByLabel("Mot de passe").fill(MDP);
     await cx.getByRole("button", { name: "Me connecter" }).click();
     await page.waitForURL(`${SITE}/formation/`);
-    await expect(page.getByText("Progression : 1 leçon(s) terminée(s) sur 6")).toBeVisible();
-    await expect(page.getByRole("link", { name: "Reprendre ma formation" })).toHaveAttribute("href", "/formation/lecon/?id=m2-texte");
+    await expect(page.getByText(`Progression : 1 leçon(s) terminée(s) sur ${OUVERTES[formule]}`)).toBeVisible();
+    await expect(page.getByRole("link", { name: "Reprendre ma formation" })).toHaveAttribute("href", "/formation/lecon/?id=m1-l2");
     expect(erreurs).toEqual([]);
   });
 }
@@ -100,10 +106,10 @@ test("sans paiement : adresse de retour falsifiée et leçon directe ne débloqu
   await expect(page.getByText("Commande introuvable")).toBeVisible();
   await expect(page.getByText("Vous n’avez pas encore de formule")).toBeVisible();
   await expect(page.locator(".lecon.ouverte")).toHaveCount(0);
-  await page.goto(`${SITE}/formation/lecon/?id=m1-texte`);
+  await page.goto(`${SITE}/formation/lecon/?id=m1-l1`);
   await expect(page.getByText("Leçon non incluse")).toBeVisible();
   await expect(page.locator(".etapes-lecon")).toHaveCount(0);
-  const r = await page.request.get(`${SITE}/api/formation/lecon?id=m1-texte`);
+  const r = await page.request.get(`${SITE}/api/formation/lecon?id=m1-l1`);
   expect(r.status()).toBe(403);
 });
 
@@ -137,7 +143,7 @@ test("notification retardée : « Vérification du paiement en cours », puis ac
   await page.getByRole("button", { name: "Payer, notification retardée" }).click();
   await expect(page.getByText("Vérification du paiement en cours…")).toBeVisible();
   await expect(page.getByText("Paiement confirmé")).toBeVisible();
-  await expect(page.locator(".lecon.ouverte")).toHaveCount(6);
+  await expect(page.locator(".lecon.ouverte")).toHaveCount(OUVERTES.complet);
 });
 
 test("notification reçue deux fois : un seul achat, puis remboursement → accès retiré", async ({ page }) => {
@@ -181,8 +187,82 @@ test("accessibilité (axe) : commande ouverte et espace de formation rempli", as
   expect(resume(await new AxeBuilder({ page }).withTags(tags).analyze())).toEqual([]);
   await allerAuPaiement(page, "complet");
   await page.getByRole("button", { name: "Payer (succès)" }).click();
-  await expect(page.locator(".lecon.ouverte")).toHaveCount(6);
+  await expect(page.locator(".lecon.ouverte")).toHaveCount(OUVERTES.complet);
   expect(resume(await new AxeBuilder({ page }).withTags(tags).analyze())).toEqual([]);
   const debord = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
   expect(debord).toBeLessThanOrEqual(0);
+});
+
+test("exercice, fiche, modèle et checklist : affichés selon leur type ; modèle téléchargeable seulement avec le droit", async ({ page }) => {
+  await creerCompte(page);
+  await allerAuPaiement(page, "complet");
+  await page.getByRole("button", { name: "Payer (succès)" }).click();
+  await expect(page.getByText("Paiement confirmé")).toBeVisible();
+  await page.goto(`${SITE}/formation/lecon/?id=m2-exercice`);
+  await expect(page.getByRole("heading", { name: "Critères de réussite" })).toBeVisible();
+  await page.getByText("Exemple de fiche MVP (fictif)").click();
+  await expect(page.getByText(/Promesse : les cabinets de 2 à 10 personnes/)).toBeVisible();
+  await page.goto(`${SITE}/formation/lecon/?id=m4-checklist`);
+  const cases = page.getByRole("checkbox");
+  expect(await cases.count()).toBeGreaterThanOrEqual(5);
+  await cases.first().check();
+  await page.goto(`${SITE}/formation/lecon/?id=m1-modele`);
+  const telechargement = page.waitForEvent("download");
+  await page.getByRole("link", { name: "Télécharger le modèle (fichier texte)" }).click();
+  const fichier = await telechargement;
+  expect(fichier.suggestedFilename()).toBe("aurevia-m1-modele.md");
+  // Sans compte : le fichier n'est pas servi.
+  const anonyme = await page.context().browser().newContext();
+  const r = await anonyme.request.get(`${SITE}/api/formation/fichier?id=m1-modele`);
+  expect(r.status()).toBe(401);
+  await anonyme.close();
+});
+
+test("mot de passe oublié : e-mail (Brevo simulé), nouveau mot de passe, lien à usage unique", async ({ page }) => {
+  const email = await creerCompte(page);
+  await page.getByRole("button", { name: "Me déconnecter" }).click();
+  await page.waitForURL(`${SITE}/compte/`);
+  await page.getByRole("link", { name: "Mot de passe oublié ?" }).click();
+  await page.getByLabel("E-mail du compte").fill(email);
+  await page.getByRole("button", { name: "Recevoir un lien" }).click();
+  await expect(page.getByText("Demande prise en compte")).toBeVisible();
+  await expect(page.getByText(/Si un compte existe pour cette adresse/)).toBeVisible();
+  const messages = await (await page.request.get(`${BREVO}/test/messages?a=${encodeURIComponent(email)}`)).json();
+  const lien = messages.find((m) => m.sujet.includes("Réinitialisation")).texte.match(/https?:\/\/\S+#jeton=[\w-]+/)[0];
+  await page.goto(lien);
+  await expect(page).toHaveURL(`${SITE}/compte/nouveau-mot-de-passe/`);   // jeton retiré de la barre d'adresse
+  await page.getByLabel("Nouveau mot de passe").fill("une-toute-nouvelle-phrase");
+  await page.getByRole("button", { name: "Enregistrer mon nouveau mot de passe" }).click();
+  await expect(page.getByText("Mot de passe modifié")).toBeVisible();
+  await page.goto("about:blank");   // rouvrir le lien comme depuis l'e-mail (nouveau chargement)
+  await page.goto(lien);
+  await page.getByLabel("Nouveau mot de passe").fill("encore-une-autre-phrase");
+  await page.getByRole("button", { name: "Enregistrer mon nouveau mot de passe" }).click();
+  await expect(page.getByText("Lien expiré ou déjà utilisé")).toBeVisible();
+  await page.goto(`${SITE}/compte/?suite=/formation/`);
+  const cx = page.locator("#form-connexion");
+  await cx.getByLabel("E-mail").fill(email);
+  await cx.getByLabel("Mot de passe").fill("une-toute-nouvelle-phrase");
+  await cx.getByRole("button", { name: "Me connecter" }).click();
+  await page.waitForURL(`${SITE}/formation/`);
+});
+
+test("mot de passe oublié : adresse inconnue → même message, aucun e-mail envoyé", async ({ page }) => {
+  const inconnu = unique();
+  await page.goto(`${SITE}/compte/mot-de-passe-oublie/`);
+  await page.getByLabel("E-mail du compte").fill(inconnu);
+  await page.getByRole("button", { name: "Recevoir un lien" }).click();
+  await expect(page.getByText("Demande prise en compte")).toBeVisible();
+  const messages = await (await page.request.get(`${BREVO}/test/messages?a=${encodeURIComponent(inconnu)}`)).json();
+  expect(messages).toEqual([]);
+});
+
+test("avant de payer : ouverture, durée d’accès, vendeur « à compléter », aucune case précochée", async ({ page }) => {
+  await creerCompte(page, unique(), "/commande/?formule=essentiel");
+  const bloc = page.locator(".avant-paiement");
+  await expect(bloc).toContainText("Paiement unique");
+  await expect(bloc).toContainText("14 jours après le paiement");
+  await expect(bloc).toContainText("durée d’accès à décider — à compléter");
+  await expect(bloc).toContainText("SIREN — à compléter");
+  for (const c of await page.locator("#form-commande input[type=checkbox]").all()) await expect(c).not.toBeChecked();
 });

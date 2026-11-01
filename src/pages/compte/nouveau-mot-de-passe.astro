@@ -1,0 +1,54 @@
+---
+// Choix d'un nouveau mot de passe à partir du lien reçu par e-mail (#jeton=…, jamais envoyé dans l'adresse au serveur web).
+import Base from "../../layouts/Base.astro";
+import Champ from "../../components/Champ.astro";
+import { MDP_MIN } from "../../../serveur/validation.js";
+---
+<Base titre="Nouveau mot de passe" noindex description="Choisir un nouveau mot de passe AUREVIA SAAS.">
+  <section class="entete-page">
+    <div class="wrap">
+      <h1 class="titre-degrade">Nouveau mot de passe</h1>
+    </div>
+  </section>
+  <section class="section-serree">
+    <div class="wrap">
+      <p class="encadre attention" id="lien-absent" hidden>Ce lien est incomplet. Ouvrez le lien reçu par e-mail en entier, ou <a href="/compte/mot-de-passe-oublie/">demandez un nouveau lien</a>.</p>
+      <form class="carte formulaire formulaire-simple bloc-etroit" id="form-nouveau" novalidate>
+        <Champ nom="motDePasse" label="Nouveau mot de passe" type="password" requis pleine autocomplete="new-password" max={200} aide={`${MDP_MIN} caractères au minimum.`} />
+        <div class="pleine"><button class="btn" type="submit">Enregistrer mon nouveau mot de passe</button></div>
+        <div class="pleine message-formulaire" id="msg-nouveau" role="status" hidden></div>
+      </form>
+    </div>
+  </section>
+</Base>
+
+<script>
+  import { afficherErreurs, message } from "../../lib/formulaire";
+  import { api, el } from "../../lib/espace-client";
+  import { MDP_MIN } from "../../../serveur/validation.js";
+
+  const jeton = new URLSearchParams(location.hash.slice(1)).get("jeton") || "";
+  const form = document.getElementById("form-nouveau") as HTMLFormElement;
+  const msg = document.getElementById("msg-nouveau") as HTMLElement;
+  if (!jeton) { form.hidden = true; (document.getElementById("lien-absent") as HTMLElement).hidden = false; }
+  // Le jeton est retiré de la barre d'adresse (historique, captures d'écran).
+  else history.replaceState(null, "", location.pathname);
+
+  form.addEventListener("submit", async (ev) => {
+    ev.preventDefault();
+    const motDePasse = (form.elements.namedItem("motDePasse") as HTMLInputElement).value;
+    if (motDePasse.length < MDP_MIN) { afficherErreurs(form, { motDePasse: `Mot de passe : ${MDP_MIN} caractères au minimum.` }); return; }
+    afficherErreurs(form, {});
+    const r = await api("/api/compte/reinitialiser", { jeton, motDePasse });
+    if (r.data?.ok) {
+      form.querySelector("button")!.remove();
+      message(msg, "ok", "Mot de passe modifié", ["Vos anciennes connexions ont été fermées. Connectez-vous avec votre nouveau mot de passe.", el("a", { class: "btn", href: "/compte/" }, "Me connecter")]);
+    } else if (r.data?.code === "lien_invalide") {
+      message(msg, "ko", "Lien expiré ou déjà utilisé", ["Ce lien n’est plus valable (30 minutes, une seule utilisation).", el("a", { class: "btn", href: "/compte/mot-de-passe-oublie/" }, "Demander un nouveau lien")]);
+    } else if (r.data?.erreurs) {
+      afficherErreurs(form, r.data.erreurs);
+    } else {
+      message(msg, "ko", "Modification impossible", ["Le serveur ne répond pas. Votre mot de passe n’a pas été modifié : réessayez dans quelques minutes."]);
+    }
+  });
+</script>

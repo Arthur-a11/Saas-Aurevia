@@ -20,6 +20,8 @@ const PAGES = [
   ["/compte/", "Accéder à ma formation"],
   ["/formation/", "Ma formation"],
   ["/formation/lecon/", "Leçon"],
+  ["/compte/mot-de-passe-oublie/", "Mot de passe oublié"],
+  ["/compte/nouveau-mot-de-passe/", "Nouveau mot de passe"],
   ...donnees.marches.map((m) => [`/idees/${m.id}/`, m.nom]),
 ];
 
@@ -262,6 +264,16 @@ test.describe("programme", () => {
     }
   });
 
+  test("gratuit et payant clairement séparés ; aucun texte payant dans la page publique", async ({ page }) => {
+    await page.goto("/programme/");
+    const bloc = page.locator(".grille-gratuit-payant");
+    await expect(bloc).toContainText("Gratuit, sur cette page");
+    await expect(bloc).toContainText("19 leçons détaillées");
+    await expect(bloc).toContainText("Rédigé, en relecture");
+    await expect(bloc.getByText(/Les cours en vidéo/)).toContainText("En préparation");
+    await expect(page.getByText("Léa a travaillé dans un cabinet")).toHaveCount(0);
+  });
+
   test("sommaire : un lien mène au bon module, visible sous l’en-tête", async ({ page }) => {
     await page.goto("/programme/");
     await page.getByRole("navigation", { name: "Sommaire du programme" }).getByRole("link", { name: /04 Fixer le prix/ }).click();
@@ -436,6 +448,14 @@ test.describe("formulaires", () => {
     expect(r.status()).toBe(503);
     expect((await r.json()).code).toBe("paiement_non_configure");
   });
+});
+
+test("mot de passe oublié sans service d’e-mail : parcours bloqué et expliqué, aucun faux envoi", async ({ page, request }) => {
+  await page.goto("/compte/mot-de-passe-oublie/");
+  await expect(page.getByText("L’envoi d’e-mails n’est pas encore en service sur ce site")).toBeVisible();
+  await expect(page.locator("#form-oubli")).toBeHidden();
+  const r = await request.post("/api/compte/mot-de-passe-oublie", { data: { email: "a@exemple.fr" } });
+  expect(r.status()).toBe(503);
 });
 
 test.describe("assistant", () => {

@@ -1,0 +1,167 @@
+{
+  "id": "m2",
+  "titre": "Définir le produit minimum (MVP)",
+  "objectifs": [
+    "Transformer le problème vérifié en une promesse claire et mesurable.",
+    "Réduire la liste des fonctions à celles qui produisent le premier résultat utile.",
+    "Dessiner le parcours d’un utilisateur, de l’inscription au premier résultat.",
+    "Tester une maquette avec 3 à 5 personnes du public avant de construire."
+  ],
+  "lecons": [
+    {
+      "id": "m2-l1",
+      "titre": "Du problème à la promesse",
+      "duree": "10 min",
+      "intro": "Votre produit minimum doit tenir une seule promesse, compréhensible en quelques secondes. Cette promesse sert de filtre : toute fonction qui ne la sert pas attend une version suivante.",
+      "sections": [
+        {
+          "titre": "Écrire la promesse",
+          "paragraphes": [
+            "Utilisez la forme : « [Public] obtient [résultat concret] sans [effort ou douleur actuels] ». Le résultat doit être observable par l’utilisateur, pas une caractéristique technique.",
+            "« Une plateforme moderne et intuitive » ne promet rien. « Les cabinets comptables récupèrent les justificatifs de leurs clients sans écrire une seule relance à la main » promet un résultat vérifiable."
+          ]
+        },
+        {
+          "titre": "Le premier résultat utile",
+          "paragraphes": [
+            "Identifiez le moment où l’utilisateur se dit « ça marche ». Pour l’exemple des relances, c’est le premier justificatif reçu sans relance manuelle. Tout votre MVP doit permettre d’atteindre ce moment le plus vite possible."
+          ],
+          "exemple": "Exemple fictif : la promesse de Léa devient « Les cabinets de 2 à 10 personnes reçoivent les pièces manquantes de leurs clients artisans sans relance manuelle ». Premier résultat utile : une pièce reçue grâce à une relance automatique."
+        }
+      ],
+      "aRetenir": [
+        "Une seule promesse, centrée sur un résultat observable.",
+        "Repérez le moment « ça marche » : c’est la cible du MVP.",
+        "Une fonction qui ne sert pas la promesse attend la version suivante."
+      ]
+    },
+    {
+      "id": "m2-l2",
+      "titre": "Réduire au strict nécessaire",
+      "duree": "12 min",
+      "intro": "Le piège classique est de vouloir tout faire avant de lancer. Un MVP n’est pas un produit bâclé : c’est un produit complet sur un périmètre très petit.",
+      "sections": [
+        {
+          "titre": "Trier ses fonctions en trois colonnes",
+          "liste": [
+            "Indispensable : sans elle, le premier résultat utile est impossible.",
+            "Utile plus tard : elle améliore le confort ou élargit le public.",
+            "À éviter pour l’instant : elle demande beaucoup de travail pour un gain incertain (application mobile, intégrations multiples, statistiques avancées)."
+          ]
+        },
+        {
+          "titre": "Faire à la main ce qui peut l’être",
+          "paragraphes": [
+            "Au début, certaines tâches peuvent être faites manuellement par vous, sans que l’utilisateur le voie forcément : importer des données, configurer un compte, envoyer un rapport. Vous apprenez ainsi ce qui mérite vraiment d’être automatisé. Soyez honnête si l’utilisateur pose la question."
+          ]
+        },
+        {
+          "titre": "Le parcours en 5 étapes maximum",
+          "paragraphes": [
+            "Dessinez le parcours : arrivée, inscription, configuration minimale, action principale, premier résultat. Si vous dépassez 5 étapes, cherchez ce qui peut être supprimé ou fait plus tard."
+          ],
+          "exemple": "Exemple fictif : Léa liste 18 fonctions. Elle en garde 4 : créer un client, lister les pièces attendues, programmer une relance par e-mail, voir les pièces reçues. L’application mobile et la connexion au logiciel comptable passent en « plus tard »."
+        }
+      ],
+      "aRetenir": [
+        "Indispensable, utile plus tard, à éviter : triez sans pitié.",
+        "Faire à la main au début permet d’apprendre.",
+        "Cinq étapes maximum jusqu’au premier résultat."
+      ]
+    },
+    {
+      "id": "m2-l3",
+      "titre": "Tester une maquette avant de construire",
+      "duree": "15 min",
+      "intro": "Une maquette coûte quelques heures ; une version construite coûte des semaines. Tester une maquette avec 3 à 5 personnes révèle la plupart des incompréhensions.",
+      "sections": [
+        {
+          "titre": "Faire une maquette simple",
+          "paragraphes": [
+            "Papier, présentation ou outil de maquette (Figma, Canva, Penpot) : peu importe. Il faut un écran par étape du parcours, avec de vrais textes, pas de faux texte latin."
+          ]
+        },
+        {
+          "titre": "Conduire un test",
+          "liste": [
+            "Donnez une tâche réaliste : « Vous voulez relancer M. Martin pour sa facture de carburant. Montrez-moi comment vous feriez. »",
+            "Demandez à la personne de penser à voix haute.",
+            "N’aidez pas, ne vous justifiez pas : notez où elle hésite.",
+            "À la fin, demandez : « Qu’est-ce qui manquerait pour que vous l’utilisiez le mois prochain ? »"
+          ]
+        },
+        {
+          "titre": "Exploiter les résultats",
+          "paragraphes": [
+            "Classez les problèmes observés : bloquant (la tâche échoue), gênant (hésitation), détail. Corrigez les bloquants, puis refaites un test rapide. Gardez la liste des demandes de fonctions sans les ajouter automatiquement : elles passent par le filtre de la promesse."
+          ]
+        }
+      ],
+      "aRetenir": [
+        "Une maquette réaliste suffit, avec de vrais textes.",
+        "Observez sans aider ; notez les hésitations.",
+        "Corrigez les blocages avant de construire."
+      ]
+    }
+  ],
+  "exercice": {
+    "titre": "Exercice : la fiche de votre MVP et un test de maquette",
+    "consigne": "Rédigez la promesse et le périmètre de votre MVP, dessinez une maquette et testez-la avec au moins 3 personnes du public.",
+    "etapes": [
+      "Écrivez votre promesse au format « [Public] obtient [résultat] sans [douleur] ».",
+      "Décrivez le premier résultat utile en une phrase.",
+      "Listez toutes vos idées de fonctions, puis triez-les en trois colonnes.",
+      "Dessinez le parcours en 5 étapes maximum, un écran par étape.",
+      "Testez la maquette avec 3 à 5 personnes et notez les problèmes observés.",
+      "Corrigez les problèmes bloquants."
+    ],
+    "livrable": "Une fiche MVP (promesse, premier résultat, 3 à 5 fonctions indispensables, parcours) et un compte rendu de test.",
+    "criteres": [
+      "La promesse décrit un résultat observable, sans jargon technique.",
+      "3 à 5 fonctions indispensables au maximum.",
+      "Le parcours compte 5 étapes ou moins.",
+      "Au moins 3 tests menés avec des personnes du public.",
+      "Chaque problème observé est classé (bloquant, gênant, détail)."
+    ],
+    "corrige": {
+      "titre": "Exemple de fiche MVP (fictif)",
+      "paragraphes": [
+        "Promesse : les cabinets de 2 à 10 personnes reçoivent les pièces manquantes de leurs clients artisans sans relance manuelle.",
+        "Fonctions indispensables : créer un client ; lister les pièces attendues ; programmer les relances ; voir les pièces reçues.",
+        "Test avec 4 collaboratrices : 3 n’ont pas trouvé où programmer la relance (bloquant, bouton déplacé sur la fiche client) ; 2 voulaient modifier le texte de relance (gênant, ajouté avec un texte par défaut) ; 1 voulait un export Excel (noté pour plus tard)."
+      ]
+    }
+  },
+  "fiche": {
+    "titre": "Fiche récapitulative : le produit minimum",
+    "points": [
+      "Promesse : [public] obtient [résultat] sans [douleur].",
+      "Le premier résultat utile est la cible du MVP.",
+      "Trois colonnes : indispensable, plus tard, à éviter.",
+      "Faire à la main au début, automatiser ce qui le mérite ensuite.",
+      "Parcours de 5 étapes maximum.",
+      "Maquette réaliste testée avec 3 à 5 personnes, sans les aider.",
+      "Corriger les blocages avant de construire ; filtrer les demandes par la promesse."
+    ]
+  },
+  "modele": {
+    "titre": "Modèle : fiche de cadrage du MVP",
+    "intro": "Remplissez cette fiche avant de construire. Relisez-la à chaque nouvelle idée de fonction.",
+    "sections": [
+      { "titre": "Promesse", "champs": ["Public :", "Résultat obtenu :", "Douleur supprimée :", "Phrase complète :"] },
+      { "titre": "Premier résultat utile", "champs": ["Moment où l’utilisateur se dit « ça marche » :", "Temps visé pour y arriver après l’inscription :"] },
+      { "titre": "Fonctions", "champs": ["Indispensables (3 à 5) :", "Plus tard :", "À éviter pour l’instant :", "Tâches faites à la main au début :"] },
+      { "titre": "Parcours", "champs": ["Étape 1 :", "Étape 2 :", "Étape 3 :", "Étape 4 :", "Étape 5 :"] },
+      { "titre": "Tests de maquette", "champs": ["Personnes testées (rôle, date) :", "Problèmes bloquants :", "Problèmes gênants :", "Demandes notées pour plus tard :"] }
+    ]
+  },
+  "checklist": [
+    "Ma promesse tient en une phrase et décrit un résultat observable.",
+    "J’ai identifié le premier résultat utile.",
+    "J’ai gardé 3 à 5 fonctions indispensables au maximum.",
+    "Mon parcours compte 5 étapes ou moins.",
+    "J’ai testé une maquette avec au moins 3 personnes du public.",
+    "J’ai corrigé les problèmes bloquants observés.",
+    "J’ai une liste « plus tard » pour les autres demandes."
+  ]
+}

@@ -2,6 +2,17 @@
 import Base from "../layouts/Base.astro";
 import programme from "../data/programme.json";
 import { site } from "../lib/site.js";
+import formation from "../data/formation.json";
+import { LIBELLE_STATUT_OFFRE, statutDroit } from "../lib/offres.js";
+const compter = (type) => formation.modules.flatMap((m) => m.lecons).filter((l) => l.type === type).length;
+const payant = [
+  [`${compter("lecon")} leçons détaillées, avec des exemples`, "lecons"],
+  [`${compter("exercice")} exercices pratiques avec critères de réussite et exemple de corrigé`, "lecons"],
+  [`${compter("checklist")} checklists de fin de module`, "lecons"],
+  [`${compter("fiche")} fiches récapitulatives`, "fiches"],
+  [`${compter("modele")} modèles à remplir (formules Complet et Accompagné)`, "modeles"],
+  ["Les cours en vidéo", "videos"],
+];
 ---
 <Base titre="Le programme" courant="/programme/"
   description="Le programme AUREVIA SAAS en six modules : trouver une idée, définir le produit minimum, construire, fixer le prix, trouver ses premiers clients, mesurer et grandir.">
@@ -36,6 +47,25 @@ import { site } from "../lib/site.js";
         </li>
       ))}
       </ol>
+    </div>
+  </section>
+
+  <section aria-labelledby="gratuit-payant">
+    <div class="wrap">
+      <h2 id="gratuit-payant">Gratuit ici, détaillé dans la formation</h2>
+      <div class="grille-gratuit-payant">
+        <div class="carte">
+          <h3>Gratuit, sur cette page</h3>
+          <p>Le plan des six modules, ce que vous devez faire et le livrable de chaque étape. Vous pouvez l’utiliser librement.</p>
+        </div>
+        <div class="carte">
+          <h3>Dans la formation payante</h3>
+          <ul class="liste-payant">
+            {payant.map(([texte, droit]) => <li>{texte}{LIBELLE_STATUT_OFFRE[statutDroit(droit)] && <span class="statut"> · {LIBELLE_STATUT_OFFRE[statutDroit(droit)]}</span>}</li>)}
+          </ul>
+          <p class="note">« Rédigé, en relecture » : écrit, pas encore validé. « En préparation » : pas encore disponible.</p>
+        </div>
+      </div>
     </div>
   </section>
 

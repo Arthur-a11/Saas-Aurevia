@@ -36,11 +36,7 @@
       "nom": "Essentiel",
       "prix": 14.90,
       "prixAffiche": "14,90 €",
-      "nature": "contenu-numerique",
-      "inclus": [
-        { "texte": "Les cours en vidéo", "statut": "en-preparation" },
-        { "texte": "Des fiches résumé", "statut": "en-preparation" }
-      ]
+      "nature": "contenu-numerique"
     },
     {
       "id": "complet",
@@ -48,23 +44,14 @@
       "prix": 24.90,
       "prixAffiche": "24,90 €",
       "nature": "contenu-numerique",
-      "recommandee": true,
-      "inclus": [
-        { "texte": "Tout l’Essentiel", "statut": "inclus" },
-        { "texte": "Des modèles à copier", "statut": "en-preparation" },
-        { "texte": "Une communauté pour s’entraider", "statut": "en-preparation" }
-      ]
+      "recommandee": true
     },
     {
       "id": "accompagne",
       "nom": "Accompagné",
       "prix": 54.90,
       "prixAffiche": "54,90 €",
-      "nature": "contenu-numerique-et-service",
-      "inclus": [
-        { "texte": "Tout le Complet", "statut": "inclus" },
-        { "texte": "Mon avis personnel sur votre projet", "statut": "a-definir", "precision": "Forme, durée et délai à définir." }
-      ]
+      "nature": "contenu-numerique-et-service"
     }
   ]
 }

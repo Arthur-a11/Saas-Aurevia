@@ -1,0 +1,225 @@
+{
+  "id": "m1",
+  "titre": "Trouver un vrai problème et vérifier la demande",
+  "objectifs": [
+    "Choisir un public précis que vous pouvez joindre facilement.",
+    "Formuler un problème en une phrase, du point de vue de ce public.",
+    "Mener 8 à 10 entretiens de découverte sans influencer les réponses.",
+    "Distinguer un intérêt poli d’un engagement réel (temps, argent, données).",
+    "Décider, sur des faits, de continuer, d’ajuster ou d’abandonner l’idée."
+  ],
+  "lecons": [
+    {
+      "id": "m1-l1",
+      "titre": "Partir d’un problème, pas d’une idée de logiciel",
+      "duree": "10 min",
+      "intro": "Beaucoup de projets SaaS commencent par « Ce serait bien de faire une application qui… ». Le risque : construire quelque chose que personne n’attend. Cette leçon vous apprend à retourner la question : quel problème précis, vécu souvent, coûte du temps ou de l’argent à des personnes identifiables ?",
+      "sections": [
+        {
+          "titre": "Idée ou problème : la différence",
+          "paragraphes": [
+            "Une idée décrit une solution : « une application de planning pour coiffeurs ». Un problème décrit une situation vécue : « les gérantes de salon perdent du temps chaque semaine à gérer les rendez-vous annulés au dernier moment ».",
+            "Le problème est plus utile, car il peut être vérifié. Vous pouvez demander à des gérantes de salon si cela leur arrive, combien de fois, et ce qu’elles font aujourd’hui. Une idée, elle, ne se vérifie qu’une fois construite, c’est-à-dire trop tard."
+          ]
+        },
+        {
+          "titre": "Les trois signes d’un bon problème",
+          "liste": [
+            "Il est fréquent : il revient chaque semaine ou chaque mois, pas une fois par an.",
+            "Il coûte quelque chose de mesurable : des heures, de l’argent perdu, des erreurs, du stress avoué.",
+            "Les personnes essaient déjà de le régler : tableur, cahier, logiciel mal adapté, salarié dédié. Une solution bricolée est un très bon signe : le besoin existe."
+          ]
+        },
+        {
+          "titre": "Où chercher des problèmes",
+          "paragraphes": [
+            "Commencez par ce que vous connaissez : votre métier actuel ou passé, celui de vos proches, vos loisirs. Vous comprenez déjà le vocabulaire et vous savez à qui parler.",
+            "Les 1 500 idées du site sont des points de départ. Elles ne sont pas validées : utilisez-les pour repérer un métier, puis cherchez le problème réel en parlant à des personnes de ce métier."
+          ],
+          "exemple": "Exemple fictif : Léa a travaillé dans un cabinet d’expertise comptable. Elle se souvient que chaque fin de mois, il fallait relancer les clients par e-mail pour obtenir leurs justificatifs. Le problème à vérifier : « les cabinets comptables passent plusieurs heures par mois à relancer leurs clients pour les pièces manquantes »."
+        }
+      ],
+      "aRetenir": [
+        "Un problème se vérifie avant de construire ; une idée de solution, non.",
+        "Fréquent, coûteux, déjà bricolé : ce sont les trois signes à chercher.",
+        "Partez d’un milieu que vous connaissez ou que vous pouvez joindre facilement."
+      ]
+    },
+    {
+      "id": "m1-l2",
+      "titre": "Choisir un public précis",
+      "duree": "10 min",
+      "intro": "« Les petites entreprises » n’est pas un public : c’est des millions de personnes aux besoins différents. Un public précis vous permet de parler leur langage, de les trouver et de leur proposer exactement ce qu’il faut.",
+      "sections": [
+        {
+          "titre": "Le bon niveau de précision",
+          "paragraphes": [
+            "Un public est assez précis quand vous pouvez répondre à trois questions : où se trouvent ces personnes (associations, groupes, salons, annuaires) ; quel outil elles utilisent aujourd’hui ; qui décide de l’achat.",
+            "« Les restaurants » est trop large. « Les restaurants indépendants de 10 à 30 couverts qui font de la vente à emporter » est exploitable : vous savez qui appeler et quoi leur demander."
+          ]
+        },
+        {
+          "titre": "Quatre critères pour choisir",
+          "liste": [
+            "Joignable : vous pouvez obtenir 10 conversations en deux semaines.",
+            "Solvable : ces personnes ont un budget professionnel et l’habitude d’acheter des outils.",
+            "Assez nombreux : quelques milliers d’entreprises au minimum en France ou en Europe.",
+            "Qui vous motive : vous allez leur parler pendant des mois."
+          ]
+        },
+        {
+          "titre": "Celui qui utilise et celui qui paie",
+          "paragraphes": [
+            "Dans une entreprise, la personne qui utilise l’outil n’est pas toujours celle qui paie. Une secrétaire médicale utilise le planning, le médecin signe le chèque. Notez les deux : vous devrez convaincre les deux."
+          ],
+          "exemple": "Exemple fictif : Léa hésite entre « les cabinets comptables » et « les cabinets comptables de 2 à 10 personnes qui ont surtout des artisans comme clients ». Elle choisit le second : elle connaît deux cabinets de ce type et un groupe régional d’experts-comptables."
+        }
+      ],
+      "aRetenir": [
+        "Un public précis se décrit en une ligne et se trouve facilement.",
+        "Vérifiez : joignable, solvable, assez nombreux, motivant.",
+        "Notez qui utilise et qui paie."
+      ]
+    },
+    {
+      "id": "m1-l3",
+      "titre": "Mener des entretiens de découverte",
+      "duree": "15 min",
+      "intro": "L’entretien de découverte sert à comprendre comment les gens vivent le problème aujourd’hui. Ce n’est pas une présentation de votre idée : si vous parlez de votre solution, les gens seront polis et vous apprendrez peu.",
+      "sections": [
+        {
+          "titre": "La règle d’or : parler du passé, pas du futur",
+          "paragraphes": [
+            "« Est-ce que vous utiliseriez une application qui… ? » appelle une réponse polie, souvent « oui ». Ce oui ne vaut rien. Demandez plutôt ce qui s’est réellement passé : « La dernière fois que ce problème est arrivé, qu’avez-vous fait ? »."
+          ]
+        },
+        {
+          "titre": "Des questions qui fonctionnent",
+          "liste": [
+            "Racontez-moi la dernière fois que [le problème] est arrivé.",
+            "Combien de temps cela vous a-t-il pris ? Combien de fois par mois ?",
+            "Comment faites-vous aujourd’hui ? Avec quel outil ?",
+            "Qu’avez-vous déjà essayé ? Pourquoi avez-vous arrêté ?",
+            "Combien dépensez-vous aujourd’hui pour gérer cela (logiciel, temps d’un salarié, prestataire) ?",
+            "Qui d’autre devrais-je rencontrer ?"
+          ]
+        },
+        {
+          "titre": "Organiser 8 à 10 entretiens",
+          "paragraphes": [
+            "Contactez des personnes de votre public par message court : vous préparez un projet, vous cherchez à comprendre leur métier, 20 minutes suffisent, vous ne vendez rien. Proposez deux créneaux précis.",
+            "Pendant l’entretien, notez les mots exacts utilisés et les chiffres cités. Après chaque entretien, remplissez la grille du modèle de ce module. Au bout de 8 à 10 entretiens, les mêmes réponses reviennent : c’est le signe que vous pouvez conclure."
+          ],
+          "exemple": "Exemple fictif : un cabinet raconte que la collaboratrice passe « une demi-journée par mois » à relancer les clients, avec un tableur et des e-mails copiés-collés. C’est un fait précis, bien plus utile qu’un « oui, ce serait pratique »."
+        }
+      ],
+      "aRetenir": [
+        "Ne présentez pas votre idée pendant l’entretien.",
+        "Demandez des faits passés, des fréquences et des coûts.",
+        "Notez les mots exacts : vous les réutiliserez sur votre page d’accueil."
+      ]
+    },
+    {
+      "id": "m1-l4",
+      "titre": "Vérifier la demande avant de construire",
+      "duree": "12 min",
+      "intro": "Des entretiens positifs ne prouvent pas que des gens paieront. Avant de construire, cherchez un engagement : quelque chose que la personne donne et qui lui coûte un peu.",
+      "sections": [
+        {
+          "titre": "L’échelle des engagements",
+          "liste": [
+            "Faible : « c’est intéressant », un « like », un compliment.",
+            "Moyen : donner son e-mail pour être prévenu, accepter un second rendez-vous, présenter un collègue.",
+            "Fort : accepter de tester une maquette sur ses vraies données, signer une lettre d’intention, payer une précommande remboursable."
+          ]
+        },
+        {
+          "titre": "Un test simple : la page de présentation",
+          "paragraphes": [
+            "Créez une page qui décrit le problème avec les mots entendus en entretien, la promesse et un bouton « Être prévenu du lancement ». Envoyez-la aux personnes interviewées et à leur réseau. Comptez combien laissent leur adresse, et surtout combien répondent quand vous les recontactez.",
+            "Si vous proposez une précommande, soyez transparent : date prévue, ce qui sera livré, remboursement possible. Ne collectez jamais d’argent pour un produit que vous n’êtes pas prêt à livrer."
+          ]
+        },
+        {
+          "titre": "Regarder la concurrence",
+          "paragraphes": [
+            "Des concurrents prouvent souvent que le besoin existe. Lisez leurs avis clients : les reproches répétés (trop cher, trop compliqué, pas adapté à tel métier) sont des ouvertures pour vous. L’absence totale de concurrent doit vous rendre prudent : soit le problème est nouveau, soit personne n’est prêt à payer."
+          ]
+        },
+        {
+          "titre": "Décider",
+          "paragraphes": [
+            "Fixez votre seuil avant de commencer, par exemple : « je continue si au moins 5 personnes sur 10 décrivent le problème sans que je le suggère et si 3 acceptent de tester une maquette ». Sans seuil fixé à l’avance, on finit toujours par se convaincre que c’est bon."
+          ],
+          "exemple": "Exemple fictif : sur 9 cabinets interrogés, 6 décrivent les relances comme une corvée mensuelle, 4 acceptent de tester une maquette. Léa continue. Si seuls 2 cabinets avaient parlé du problème, elle aurait ajusté son public ou changé de problème."
+        }
+      ],
+      "aRetenir": [
+        "Un compliment n’est pas une preuve ; un engagement l’est davantage.",
+        "Fixez votre seuil de décision avant les résultats.",
+        "Une précommande se fait avec transparence et remboursement possible."
+      ]
+    }
+  ],
+  "exercice": {
+    "titre": "Exercice : vos 10 entretiens et votre décision",
+    "consigne": "Choisissez un public et un problème, menez au moins 8 entretiens de découverte, puis décidez de continuer, d’ajuster ou d’abandonner.",
+    "etapes": [
+      "Écrivez votre public en une ligne et le problème supposé en une phrase.",
+      "Fixez votre seuil de décision (exemple : 5 personnes sur 10 décrivent le problème spontanément).",
+      "Contactez 20 personnes pour obtenir 8 à 10 entretiens.",
+      "Après chaque entretien, remplissez la grille du modèle.",
+      "Faites le bilan : combien ont décrit le problème, à quelle fréquence, avec quel coût, avec quel outil actuel.",
+      "Proposez un engagement (test de maquette ou inscription) et comptez les réponses."
+    ],
+    "livrable": "Un tableau de 8 à 10 entretiens et une décision écrite, justifiée par les chiffres de votre tableau.",
+    "criteres": [
+      "Au moins 8 entretiens réalisés avec des personnes du public choisi (pas des amis hors cible).",
+      "Aucune question du type « utiliseriez-vous… ? » dans vos notes.",
+      "Pour chaque entretien : fréquence du problème, outil actuel, coût estimé.",
+      "Le seuil de décision était écrit avant les entretiens.",
+      "La décision cite des faits relevés, pas une impression."
+    ],
+    "corrige": {
+      "titre": "Exemple de bilan (fictif, pour illustrer la forme attendue)",
+      "paragraphes": [
+        "Public : cabinets comptables de 2 à 10 personnes, clientèle d’artisans. Problème supposé : relances mensuelles pour les justificatifs. Seuil : 5 sur 10 décrivent le problème spontanément et 3 acceptent un test.",
+        "Résultats : 9 entretiens. 6 décrivent le problème sans suggestion ; fréquence mensuelle pour les 6 ; outil actuel : tableur et e-mails (5), logiciel de production comptable sans relance automatique (1) ; temps cité de 2 à 6 heures par mois. 4 acceptent de tester une maquette.",
+        "Décision : continuer, car les deux seuils sont atteints. Point d’attention : 2 cabinets disent que leur logiciel comptable pourrait ajouter cette fonction ; à surveiller au module 2."
+      ]
+    }
+  },
+  "fiche": {
+    "titre": "Fiche récapitulative : trouver un problème et vérifier la demande",
+    "points": [
+      "Un problème vérifiable vaut mieux qu’une idée de solution.",
+      "Bon problème : fréquent, coûteux, déjà bricolé.",
+      "Public précis : joignable, solvable, assez nombreux, motivant ; notez qui utilise et qui paie.",
+      "Entretiens : parler du passé, des faits, des fréquences et des coûts ; ne pas présenter son idée.",
+      "8 à 10 entretiens suffisent quand les réponses se répètent.",
+      "Engagement > compliment : e-mail, test sur données réelles, lettre d’intention, précommande transparente.",
+      "Seuil de décision fixé avant les résultats.",
+      "Livrable : « Mon logiciel aide [public] à [résultat] », appuyé par un tableau d’entretiens."
+    ]
+  },
+  "modele": {
+    "titre": "Modèle : grille d’entretien de découverte",
+    "intro": "Copiez cette grille pour chaque entretien. Remplissez-la juste après, tant que vos souvenirs sont précis.",
+    "sections": [
+      { "titre": "La personne", "champs": ["Métier et taille de la structure :", "Rôle (utilise / décide / les deux) :", "Date de l’entretien :"] },
+      { "titre": "Le problème", "champs": ["Dernière fois que le problème est arrivé (faits) :", "Fréquence (par semaine / par mois) :", "Temps ou argent perdu, avec les mots de la personne :", "Mots exacts utilisés pour décrire le problème :"] },
+      { "titre": "La solution actuelle", "champs": ["Outil ou méthode utilisés aujourd’hui :", "Ce qui a déjà été essayé et abandonné, et pourquoi :", "Budget actuel consacré au problème :"] },
+      { "titre": "Bilan", "champs": ["Problème décrit spontanément ? (oui / non) :", "Engagement obtenu (aucun / e-mail / test / lettre / précommande) :", "Personne recommandée pour un autre entretien :"] }
+    ]
+  },
+  "checklist": [
+    "J’ai écrit mon public en une ligne précise.",
+    "J’ai écrit le problème en une phrase, du point de vue de ce public.",
+    "J’ai fixé mon seuil de décision avant les entretiens.",
+    "J’ai mené au moins 8 entretiens sans présenter mon idée.",
+    "J’ai noté fréquences, coûts et outils actuels pour chaque entretien.",
+    "J’ai demandé un engagement concret et compté les réponses.",
+    "J’ai lu les avis clients d’au moins deux concurrents ou solutions actuelles.",
+    "J’ai écrit ma décision et ma phrase « Mon logiciel aide… »."
+  ]
+}

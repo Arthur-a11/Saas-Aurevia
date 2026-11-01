@@ -13,7 +13,8 @@
     "test:e2e": "playwright test",
     "test": "npm run donnees:verifier && npm run test:unitaires && npm run build && npm run test:e2e",
     "apercu": "npm run build && node scripts/preparer-apercu.mjs",
-    "sauvegarde": "bash scripts/creer-sauvegarde.sh"
+    "sauvegarde": "bash scripts/creer-sauvegarde.sh",
+    "formation:exporter": "node scripts/exporter-formation.mjs"
   },
   "author": "Arthur Leloup",
   "license": "UNLICENSED",

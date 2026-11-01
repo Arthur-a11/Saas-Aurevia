@@ -4,6 +4,7 @@ import site from "../src/data/site.json" with { type: "json" };
 import programme from "../src/data/programme.json" with { type: "json" };
 import faq from "../src/data/faq.json" with { type: "json" };
 import marchesData from "../src/data/marches.json" with { type: "json" };
+import { contenuOffre } from "../src/lib/offres.js";
 
 let cache = null;
 
@@ -12,7 +13,7 @@ export function contexteAssistant() {
   const taxes = site.regimeTva === "franchise" ? "TVA non applicable, art. 293 B du CGI"
     : site.regimeTva === "ttc" ? "prix TTC" : "mention de TVA (TTC ou non applicable) pas encore confirmée : ne dis pas si les prix sont TTC ou HT";
   const formules = site.formules.map((f) =>
-    `- ${f.nom} : ${f.prixAffiche}. Contenu : ${f.inclus.map((x) => x.texte + (x.statut === "en-preparation" ? " (en préparation, pas encore disponible)" : x.statut === "a-definir" ? " (modalités à définir)" : "")).join(" ; ")}.`).join("\n");
+    `- ${f.nom} : ${f.prixAffiche}. Contenu : ${contenuOffre(f.id).map((x) => x.texte + (x.statut === "en-preparation" ? " (en préparation, pas encore disponible)" : x.statut === "a-definir" ? " (modalités à définir)" : x.statut === "brouillon" ? " (rédigé, en cours de relecture, pas encore validé)" : "")).join(" ; ")}.`).join("\n");
   const modules = programme.modules.map((m, i) => `Module ${i + 1} – ${m.titre} : ${m.resume} ${m.points.join(" ")} ${m.resultat}`).join("\n");
   const questions = faq.map((q) => `Q : ${q.question}\nR : ${q.reponse}`).join("\n");
   const marches = marchesData.marches.map((m) => `- ${m.nom} (page /idees/${m.id}/) : ${m.niches.map((n) => n.nom).join(", ")}.`).join("\n");

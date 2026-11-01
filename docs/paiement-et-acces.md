@@ -22,26 +22,11 @@ Si la notification tarde, le serveur interroge lui-même Stripe avec la clé sec
 
 ## 2. Ce que donne chaque formule
 
-C'est une correspondance **proposée**, tirée des textes actuels des formules. Elle est à confirmer par Arthur et se règle dans `src/data/formation.json`, rubrique `acces`.
+La correspondance formules, contenus et droits est **centralisée** dans `src/data/formation.json`. Les tarifs, la commande, le serveur et l'espace client la lisent tous. Le contenu de la formation (brouillons) est dans `serveur/contenus/`, et sa version de relecture dans `docs/formation/relecture.md`.
 
-| Contenu | Essentiel 14,90 € | Complet 24,90 € | Accompagné 54,90 € | État réel |
-|---|---|---|---|---|
-| 6 leçons écrites (une par module) | oui | oui | oui | Disponibles. Ce sont les textes de la page Programme, **déjà publics**. |
-| Vidéos des 6 modules | oui | oui | oui | **En préparation** (aucune vidéo fournie). |
-| Fiches résumé des 6 modules | oui | oui | oui | **En préparation**. |
-| Modèles à copier | non | oui | oui | **En préparation**. |
-| Communauté d'entraide | non | oui | oui | **En préparation**. |
-| Avis personnel sur le projet | non | non | oui | **Modalités à définir** (forme, durée, délai, part du prix). |
+Les règles d'ouverture (immédiate ou différée), la durée d'accès, l'accompagnement et l'état juridique sont dans `src/data/conditions.json`.
 
-Tous les prix se paient **en une fois**. Il n'y a ni abonnement ni prélèvement récurrent : Stripe est appelé en mode `payment`.
-
-### Points signalés avant d'ouvrir les ventes
-
-- **Le contenu payant n'existe pas encore.** Aujourd'hui, une personne paierait pour des textes déjà gratuits sur la page Programme. Elle recevrait aussi des vidéos, des fiches et des modèles encore « En préparation ». C'est pourquoi, en mode réel, le serveur **refuse la vente** d'une formule tant qu'un de ses contenus est en préparation.
-- **Les trois formules donnent les mêmes 6 modules.** Les textes « Tout l'Essentiel » et « Tout le Complet » le disent ainsi. Si vous voulez réserver des modules à certaines formules, il faut le décider.
-- **Durée d'accès** : rien n'est écrit (à vie ? un an ?). Ce point est à fixer dans les CGV.
-- **Sans accord d'accès immédiat**, le client garde son droit de rétractation et l'accès s'ouvre 14 jours après le paiement. C'est la règle des CGV (article 8), encore marquée « à décider ». Elle se règle avec `delaiSansAccordJours`.
-- **Le délai d'accès des CGV** (`delaiAcces`, toujours `null`) peut devenir « dès la confirmation du paiement ». C'est à confirmer.
+L'état complet et les décisions à prendre sont dans **`docs/etat-et-decisions.md`**. L'audit du délai de 14 jours est dans **`docs/juridique-acces.md`**.
 
 ## 3. Sécurité
 

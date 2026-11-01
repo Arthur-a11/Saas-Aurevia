@@ -1,0 +1,63 @@
+---
+// Demande de réinitialisation du mot de passe. La réponse est la même que l'adresse ait un compte ou non.
+import Base from "../../layouts/Base.astro";
+import Champ from "../../components/Champ.astro";
+import PiegeRobots from "../../components/PiegeRobots.astro";
+---
+<Base titre="Mot de passe oublié" noindex description="Recevoir un lien pour choisir un nouveau mot de passe AUREVIA SAAS.">
+  <section class="entete-page">
+    <div class="wrap">
+      <p class="retour"><a href="/compte/">← Retour à la connexion</a></p>
+      <h1 class="titre-degrade">Mot de passe oublié</h1>
+      <p class="chapeau">Indiquez l’adresse de votre compte : vous recevrez un lien pour choisir un nouveau mot de passe, valable 30 minutes.</p>
+    </div>
+  </section>
+  <section class="section-serree">
+    <div class="wrap">
+      <p class="encadre attention" id="emails-indisponibles" hidden>L’envoi d’e-mails n’est pas encore en service sur ce site : la réinitialisation par e-mail est impossible pour le moment. Écrivez-nous depuis la page <a href="/contact/">Contact</a>.</p>
+      <form class="carte formulaire formulaire-simple bloc-etroit" id="form-oubli" novalidate>
+        <Champ nom="email" label="E-mail du compte" type="email" requis pleine autocomplete="email" max={254} />
+        <PiegeRobots />
+        <div class="pleine"><button class="btn" type="submit">Recevoir un lien</button></div>
+        <div class="pleine message-formulaire" id="msg-oubli" role="status" hidden></div>
+      </form>
+    </div>
+  </section>
+</Base>
+
+<script>
+  import { afficherErreurs, message } from "../../lib/formulaire";
+  import { api } from "../../lib/espace-client";
+
+  const form = document.getElementById("form-oubli") as HTMLFormElement;
+  const msg = document.getElementById("msg-oubli") as HTMLElement;
+  const avis = document.getElementById("emails-indisponibles") as HTMLElement;
+  const bloquer = () => { avis.hidden = false; form.hidden = true; };
+
+  api("/api/compte/moi", undefined, 8_000).then((r) => { if (r.data?.emails === false || r.statut === 0) bloquer(); });
+
+  form.addEventListener("submit", async (ev) => {
+    ev.preventDefault();
+    const email = (form.elements.namedItem("email") as HTMLInputElement).value.trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) { afficherErreurs(form, { email: "E-mail : adresse invalide (exemple : prenom.nom@exemple.fr)." }); return; }
+    afficherErreurs(form, {});
+    const bouton = form.querySelector("button[type=submit]") as HTMLButtonElement;
+    bouton.disabled = true;
+    const r = await api("/api/compte/mot-de-passe-oublie", { email, site_web: (form.elements.namedItem("site_web") as HTMLInputElement).value });
+    bouton.disabled = false;
+    if (r.data?.ok) {
+      message(msg, "ok", "Demande prise en compte", [
+        "Si un compte existe pour cette adresse, un e-mail avec un lien valable 30 minutes vient d’être confié à notre service d’envoi.",
+        "Il peut mettre quelques minutes à arriver. Pensez à regarder dans vos courriers indésirables.",
+      ]);
+    } else if (r.data?.code === "emails_non_configures") {
+      bloquer();
+    } else if (r.statut === 429) {
+      message(msg, "ko", "Trop de demandes", ["Patientez une heure avant de redemander un lien."]);
+    } else if (r.data?.erreurs) {
+      afficherErreurs(form, r.data.erreurs);
+    } else {
+      message(msg, "ko", "Demande impossible", ["Le serveur ne répond pas. Aucun e-mail n’a été demandé : réessayez dans quelques minutes."]);
+    }
+  });
+</script>

@@ -3,18 +3,12 @@ import Base from "../layouts/Base.astro";
 import CarteTarif from "../components/CarteTarif.astro";
 import { site, mentionTaxes } from "../lib/site.js";
 const ouvert = site.paiement.actif;
-const [ess, comp, acc] = site.formules;
-const prep = (x) => x?.statut === "en-preparation";
-const ligne = (texte) => site.formules.map((f) => f.inclus.find((x) => x.texte === texte));
-// Lignes du comparatif, construites à partir des formules (aucun contenu ajouté).
-const lignes = [
-  { nom: "Les 6 modules dans l’espace « Ma formation », avec suivi de progression", cellules: [ess, comp, acc].map(() => ({ oui: true })) },
-  { nom: "Les cours en vidéo", cellules: [ess, comp, acc].map(() => ({ oui: true, prep: prep(ligne("Les cours en vidéo")[0]) })) },
-  { nom: "Des fiches résumé", cellules: [ess, comp, acc].map(() => ({ oui: true, prep: prep(ligne("Des fiches résumé")[0]) })) },
-  { nom: "Des modèles à copier", cellules: [{ oui: false }, { oui: true, prep: true }, { oui: true, prep: true }] },
-  { nom: "Une communauté pour s’entraider", cellules: [{ oui: false }, { oui: true, prep: true }, { oui: true, prep: true }] },
-  { nom: "Mon avis personnel sur votre projet", cellules: [{ oui: false }, { oui: false }, { oui: true, adefinir: true }] },
-];
+import { comparatif, LIBELLE_STATUT_OFFRE } from "../lib/offres.js";
+import conditions from "../data/conditions.json";
+import ACompleter from "../components/ACompleter.astro";
+// Lignes du comparatif : calculées depuis src/data/formation.json (source unique), statuts réels.
+const lignes = comparatif();
+const duree = conditions.dureeAcces.valeur ? conditions.dureeAcces.options[conditions.dureeAcces.valeur] : null;
 ---
 <Base titre="Tarifs" courant="/tarifs/"
   description="Les trois formules AUREVIA SAAS : Essentiel 14,90 €, Complet 24,90 €, Accompagné 54,90 €. Un seul paiement, sans abonnement.">
@@ -45,12 +39,11 @@ const lignes = [
           <tbody>
             {lignes.map((l) => (
               <tr>
-                <th scope="row">{l.nom}</th>
-                {l.cellules.map((c) => (
+                <th scope="row">{l.texte}</th>
+                {l.formules.map((oui) => (
                   <td>
-                    {c.oui ? <span class="oui">Inclus</span> : <span class="non">Non inclus</span>}
-                    {c.prep && <span class="prep">En préparation</span>}
-                    {c.adefinir && <span class="prep">Modalités à définir</span>}
+                    {oui ? <span class="oui">Inclus</span> : <span class="non">Non inclus</span>}
+                    {oui && LIBELLE_STATUT_OFFRE[l.statut] && <span class="prep">{LIBELLE_STATUT_OFFRE[l.statut]}</span>}
                   </td>
                 ))}
               </tr>
@@ -58,7 +51,8 @@ const lignes = [
           </tbody>
         </table>
       </div>
-      <p class="note" style="margin-top:0.75rem">Prix : {mentionTaxes()}. Paiement unique pour chaque formule.</p>
+      <p class="note" style="margin-top:0.75rem">Prix : {mentionTaxes()}. Paiement unique pour chaque formule. Durée d’accès : {duree ?? <ACompleter label="durée d’accès à décider (à vie ou 12 mois)" />}.</p>
+      <p class="note">« Rédigé, en relecture » : le contenu est écrit mais pas encore validé. « En préparation » : le contenu n’existe pas encore.</p>
 
       <ul class="engagements">
         <li><strong>Un seul paiement</strong><span>Pas d’abonnement, pas de prélèvement caché.</span></li>

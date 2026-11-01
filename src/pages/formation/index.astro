@@ -32,7 +32,12 @@ import Base from "../../layouts/Base.astro";
   const commande = new URLSearchParams(location.search).get("commande");
   const lienCompte = () => el("a", { class: "btn", href: `/compte/?suite=${encodeURIComponent(location.pathname + location.search)}` }, "Me connecter");
   const LIBELLES: Record<string, string> = { "en-preparation": "En préparation", "a-definir": "Modalités à définir", "non-inclus": "Non inclus dans votre formule" };
-  const TYPES: Record<string, string> = { texte: "Leçon écrite", video: "Vidéo", fiche: "Fiche résumé" };
+  const TYPES: Record<string, string> = { lecon: "Leçon", exercice: "Exercice", fiche: "Fiche", modele: "Modèle", checklist: "Checklist", video: "Vidéo" };
+  const EMAILS: Record<string, string> = {
+    accepte: "L’e-mail de confirmation a été remis à notre service d’envoi (sa réception n’est pas garantie : pensez aux courriers indésirables).",
+    "non-configure": "Aucun e-mail de confirmation n’a été envoyé : l’envoi d’e-mails n’est pas encore en service. Gardez la référence de votre commande.",
+    echec: "L’e-mail de confirmation n’a pas pu être envoyé. Votre accès n’est pas concerné. Gardez la référence de votre commande.",
+  };
 
   /** Attend la confirmation du paiement vérifiée par le serveur (notification Stripe ou vérification directe). */
   async function verifierPaiement(ref: string) {
@@ -44,7 +49,11 @@ import Base from "../../layouts/Base.astro";
       const s = r.data?.statut;
       if (s === "payee") {
         const ouvert = !r.data.accesLe || Date.parse(r.data.accesLe) <= Date.now();
-        message(etat, "ok", "Paiement confirmé", [ouvert ? "Votre formation est ouverte. Bonne découverte !" : `Comme vous avez gardé votre droit de rétractation, votre accès s’ouvrira le ${dateFr(r.data.accesLe)}.`]);
+        message(etat, "ok", "Paiement confirmé", [
+          ouvert ? "Votre formation est ouverte. Bonne découverte !" : `Comme vous avez gardé votre droit de rétractation, votre accès s’ouvrira le ${dateFr(r.data.accesLe)}.`,
+          `Référence : ${ref}.`,
+          EMAILS[r.data.emailConfirmation] ?? "",
+        ].filter(Boolean));
         return true;
       }
       if (["refuse", "annule"].includes(s)) {
@@ -76,7 +85,9 @@ import Base from "../../layouts/Base.astro";
     if (d.formules.length) {
       tableau.append(el("ul", { class: "formules-detenues" }, ...d.formules.map((f: any) => el("li", {},
         el("strong", {}, `Formule ${f.nom}`), ` · achetée le ${dateFr(f.depuis)}`,
-        f.ouvert ? "" : el("span", { class: "etiquette attente" }, `Accès le ${dateFr(f.accesLe)}`)))));
+        f.termine ? el("span", { class: "etiquette verrou" }, `Accès terminé le ${dateFr(f.finLe)}`)
+          : f.ouvert ? "" : el("span", { class: "etiquette attente" }, `Accès le ${dateFr(f.accesLe)}`)))));
+      tableau.append(el("p", { class: "note" }, `Durée d’accès : ${d.dureeAcces ?? "à définir (pas encore décidée)"}.`));
     } else {
       tableau.append(el("p", {}, "Vous n’avez pas encore de formule. Choisissez-en une pour ouvrir vos modules."), el("p", {}, el("a", { class: "btn", href: "/tarifs/" }, "Voir les formules")));
     }
@@ -97,12 +108,13 @@ import Base from "../../layouts/Base.astro";
         const ouverte = l.acces === "ouvert";
         lecons.append(el("li", { class: `lecon ${ouverte ? "ouverte" : "fermee"}` },
           el("span", { class: "lecon-type" }, TYPES[l.type] ?? l.type),
-          el("span", { class: "lecon-titre" }, l.titre, l.fait ? el("span", { class: "fait" }, " · terminée") : ""),
+          el("span", { class: "lecon-titre" }, l.titre, l.fait ? el("span", { class: "fait" }, " · terminée") : "", ouverte && l.statut === "brouillon" ? el("span", { class: "brouillon" }, " · brouillon") : ""),
           ouverte ? el("a", { class: "btn petit" + (l.fait ? " alt" : ""), href: `/formation/lecon/?id=${l.id}`, "aria-label": `${l.fait ? "Revoir" : "Commencer"} : ${l.titre}` }, l.fait ? "Revoir" : "Commencer") : badge(l.acces)));
       }
       liste.append(el("li", { class: "carte module-espace", id: `module-${m.numero}` },
         el("div", { class: "module-tete" }, el("span", { class: "num-module" }, String(m.numero).padStart(2, "0")), el("h3", {}, m.titre)),
         el("p", { class: "module-resume" }, m.resume),
+        m.objectifs.length ? el("details", { class: "objectifs" }, el("summary", {}, "Objectifs du module"), el("ul", {}, ...m.objectifs.map((o: string) => el("li", {}, o)))) : "",
         lecons));
     }
     espace.append(el("h2", { class: "titre-section-espace" }, "Les modules"), liste);
@@ -112,7 +124,7 @@ import Base from "../../layouts/Base.astro";
         el("strong", {}, r.titre), badge(r.acces), r.precision && r.acces !== "non-inclus" ? el("p", { class: "note" }, r.precision) : null))));
 
     if (aDesDroits) {
-      espace.append(el("p", { class: "note" }, "Les éléments « En préparation » ne sont pas encore disponibles : ils apparaîtront ici dès qu’ils seront prêts."));
+      espace.append(el("p", { class: "note" }, "« Brouillon » : contenu rédigé, en cours de relecture, qui peut encore changer. « En préparation » : pas encore disponible, il apparaîtra ici quand il sera prêt."));
     }
     const sortir = el("button", { type: "button", class: "btn alt" }, "Me déconnecter");
     sortir.addEventListener("click", async () => { await api("/api/compte/deconnexion", {}); location.assign("/compte/"); });

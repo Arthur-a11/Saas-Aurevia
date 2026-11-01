@@ -1,10 +1,10 @@
 ---
 // Connexion et création de compte. Les comptes servent à retrouver ses achats et sa progression.
-import Base from "../layouts/Base.astro";
-import Champ from "../components/Champ.astro";
-import Case from "../components/Case.astro";
-import PiegeRobots from "../components/PiegeRobots.astro";
-import { MDP_MIN } from "../../serveur/validation.js";
+import Base from "../../layouts/Base.astro";
+import Champ from "../../components/Champ.astro";
+import Case from "../../components/Case.astro";
+import PiegeRobots from "../../components/PiegeRobots.astro";
+import { MDP_MIN } from "../../../serveur/validation.js";
 ---
 <Base titre="Mon compte" noindex description="Connectez-vous ou créez votre compte AUREVIA SAAS pour accéder à votre formation.">
   <section class="entete-page">
@@ -25,7 +25,7 @@ import { MDP_MIN } from "../../serveur/validation.js";
           <Champ nom="cx-email" label="E-mail" type="email" requis pleine autocomplete="email" max={254} />
           <Champ nom="cx-motDePasse" label="Mot de passe" type="password" requis pleine autocomplete="current-password" max={200} />
           <div class="pleine"><button class="btn" type="submit">Me connecter</button></div>
-          <p class="note pleine">Mot de passe oublié ? La réinitialisation par e-mail n’est pas encore en service : écrivez-moi depuis la page <a href="/contact/">Contact</a>.</p>
+          <p class="note pleine"><a href="/compte/mot-de-passe-oublie/">Mot de passe oublié ?</a></p>
           <div class="pleine message-formulaire" id="msg-connexion" role="status" hidden></div>
         </form>
 
@@ -45,9 +45,9 @@ import { MDP_MIN } from "../../serveur/validation.js";
 </Base>
 
 <script>
-  import { afficherErreurs, message } from "../lib/formulaire";
-  import { api, el, suiteSure } from "../lib/espace-client";
-  import { validerConnexion, validerCreationCompte } from "../../serveur/validation.js";
+  import { afficherErreurs, message } from "../../lib/formulaire";
+  import { api, el, suiteSure } from "../../lib/espace-client";
+  import { validerConnexion, validerCreationCompte } from "../../../serveur/validation.js";
 
   const suite = suiteSure(new URLSearchParams(location.search).get("suite"));
   const zone = document.getElementById("zone-compte") as HTMLElement;

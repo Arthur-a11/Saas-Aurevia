@@ -5,6 +5,7 @@ import { defineConfig, devices } from "@playwright/test";
 const PORT = 4399;
 export const PORT_PAIEMENT = 4397;
 export const PORT_STRIPE = 4398;
+export const PORT_BREVO = 4396;
 export default defineConfig({
   testDir: "tests/e2e",
   fullyParallel: true,
@@ -22,8 +23,15 @@ export default defineConfig({
       command: `node scripts/serveur-local.mjs`,
       url: `http://localhost:${PORT_PAIEMENT}/`,
       reuseExistingServer: false,
-      env: { PORT: String(PORT_PAIEMENT), DOSSIER_DONNEES: "test-results/donnees-paiement", LIMITE_COMPTES_HEURE: "1000", ANTHROPIC_API_KEY: "", BREVO_API_KEY: "",
+      env: { PORT: String(PORT_PAIEMENT), DOSSIER_DONNEES: "test-results/donnees-paiement", LIMITE_COMPTES_HEURE: "1000", ANTHROPIC_API_KEY: "",
+        BREVO_API_KEY: "xkeysib-simule", EMAIL_EXPEDITEUR: "test@exemple.fr", BREVO_API_URL: `http://localhost:${PORT_BREVO}/v3`,
         STRIPE_SECRET_KEY: "sk_test_simule", STRIPE_WEBHOOK_SECRET: "whsec_simule", STRIPE_API_URL: `http://localhost:${PORT_STRIPE}/v1` },
+    },
+    {
+      command: `node scripts/brevo-simule.mjs`,
+      url: `http://localhost:${PORT_BREVO}/`,
+      reuseExistingServer: false,
+      env: { PORT_BREVO: String(PORT_BREVO) },
     },
     {
       command: `node scripts/stripe-simule.mjs`,

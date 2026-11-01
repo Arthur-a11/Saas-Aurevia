@@ -1,6 +1,7 @@
 // Petites fonctions partagées par les pages.
 import site from "../data/site.json";
 import marchesData from "../data/marches.json";
+import { contenuOffre, LIBELLE_STATUT_OFFRE } from "./offres.js";
 
 export { site };
 export const marches = marchesData.marches;
@@ -23,12 +24,9 @@ export function mentionTaxes() {
 
 export const formuleParId = (id) => site.formules.find((f) => f.id === id);
 
-/** Ce que la personne obtient avec une formule : l'espace de formation, puis les éléments de la formule (site.json). */
-export const contenuFormule = (f) => [
-  { texte: "Les 6 modules du programme dans votre espace « Ma formation », avec suivi de progression", statut: "inclus" },
-  ...f.inclus,
-];
-export const LIBELLE_STATUT = { "en-preparation": "En préparation", "a-definir": "Modalités à définir", inclus: "" };
+/** Ce que la personne obtient avec une formule (source unique : src/data/formation.json, via offres.js). */
+export const contenuFormule = (f) => contenuOffre(f.id);
+export const LIBELLE_STATUT = LIBELLE_STATUT_OFFRE;
 
 /** Valeur d'une information d'entreprise, ou null si inconnue. */
 export const info = (chemin) => chemin.split(".").reduce((o, k) => (o == null ? o : o[k]), site);

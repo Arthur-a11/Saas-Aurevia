@@ -45,7 +45,10 @@ export async function compteConnecte(stockage, requete, maintenant = Date.now())
   const s = await stockage.lire("sessions", cleJeton(jeton));
   if (!s || s.revoquee || !(s.expire > maintenant)) return null;
   const c = await stockage.lire("comptes", s.email);
-  return c && c.id === s.compte ? c : null;
+  if (!c || c.id !== s.compte) return null;
+  // Après une réinitialisation du mot de passe, les sessions plus anciennes ne valent plus.
+  if (c.sessionsValidesDepuis && Date.parse(s.creeLe) < Date.parse(c.sessionsValidesDepuis)) return null;
+  return c;
 }
 
 function lireCookie(requete) {
