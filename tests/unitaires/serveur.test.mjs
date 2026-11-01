@@ -2,7 +2,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import Anthropic from "@anthropic-ai/sdk";
-import { traiterInscription, traiterRetractation, traiterCommande, traiterAssistant, parametresAssistant } from "../../serveur/fonctions.js";
+import { traiterInscription, traiterRetractation, traiterCommande, traiterAssistant, traiterEtat, parametresAssistant } from "../../serveur/fonctions.js";
 import { creerStockage } from "../../serveur/stockage.js";
 import { validerInscription, validerRetractation } from "../../serveur/validation.js";
 import site from "../../src/data/site.json" with { type: "json" };
@@ -243,4 +243,29 @@ test("journaux : aucune donnée personnelle en cas d'erreur de stockage", async 
   assert.equal(r.status, 503);
   assert.ok(lignes.length > 0);
   assert.ok(lignes.every((l) => !l.includes("marie@") && !l.includes("Durand")), lignes.join("\n"));
+});
+
+test("état : oui/non uniquement, aucune valeur secrète renvoyée", async () => {
+  const env = { SEL_EMPREINTE: "valeur-tres-secrete-123", ANTHROPIC_API_KEY: "sk-ant-secret", BREVO_API_KEY: "xkeysib-secret", EMAIL_EXPEDITEUR: "a@b.fr" };
+  const r = await traiterEtat(new Request("http://localhost/api/etat"), { env, stockage: creerStockage("memoire"), deploiement: { id: "d1", contexte: "production" } });
+  assert.equal(r.status, 200);
+  const texte = await r.text();
+  for (const secret of ["valeur-tres-secrete-123", "sk-ant-secret", "xkeysib-secret"]) assert.ok(!texte.includes(secret), secret);
+  const d = JSON.parse(texte);
+  assert.equal(d.configuration.selEmpreinte, true);
+  assert.equal(d.configuration.emails, true);
+  assert.equal(d.configuration.assistantIA, false, "la clé seule n'active pas l'IA");
+  assert.equal(d.configuration.paiementActif, false);
+  assert.equal(d.deploiement.id, "d1");
+  assert.equal((await traiterEtat(new Request("http://localhost/api/etat", { method: "POST" }), { env })).status, 405);
+});
+
+test("lecture des variables Netlify : process.env et Netlify.env fusionnés", async () => {
+  const { lireEnv } = await import("../../netlify/env.mjs");
+  const avant = globalThis.Netlify;
+  globalThis.Netlify = { env: { toObject: () => ({ SEL_EMPREINTE: "depuis-netlify-env" }) } };
+  const { env, sources } = lireEnv();
+  globalThis.Netlify = avant;
+  assert.equal(env.SEL_EMPREINTE, "depuis-netlify-env");
+  assert.equal(sources.netlifyEnv, true);
 });

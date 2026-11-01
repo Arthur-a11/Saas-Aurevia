@@ -260,3 +260,23 @@ export async function traiterAssistant(requete, ctx) {
     return json(503, { ok: false, code: "assistant_indisponible" });
   }
 }
+
+// ---------------------------------------------------------------- État de la configuration (diagnostic)
+/** Répond uniquement par oui/non : aucune valeur de variable n'est jamais renvoyée. */
+export async function traiterEtat(requete, ctx) {
+  if (requete.method !== "GET") return methodeNonAutorisee();
+  const env = ctx.env || {};
+  return json(200, {
+    ok: true,
+    deploiement: ctx.deploiement ?? null,
+    configuration: {
+      selEmpreinte: Boolean(env.SEL_EMPREINTE),
+      selEmpreinteSources: ctx.sources ?? null,
+      stockage: ctx.stockage?.mode ?? null,
+      emails: emailConfigure(env),
+      assistantIA: env.ASSISTANT_IA === "active" && Boolean(env.ANTHROPIC_API_KEY),
+      siteUrl: Boolean(env.SITE_URL),
+      paiementActif: Boolean(site.paiement.actif),
+    },
+  });
+}

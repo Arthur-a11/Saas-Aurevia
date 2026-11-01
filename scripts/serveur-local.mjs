@@ -6,7 +6,7 @@ import http from "node:http";
 import { readFile, stat } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { traiterInscription, traiterRetractation, traiterCommande, traiterAssistant } from "../serveur/fonctions.js";
+import { traiterInscription, traiterRetractation, traiterCommande, traiterAssistant, traiterEtat } from "../serveur/fonctions.js";
 import { creerStockage } from "../serveur/stockage.js";
 
 const racine = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "dist");
@@ -18,6 +18,7 @@ const ROUTES = {
   "/api/retractation": traiterRetractation,
   "/api/commande": traiterCommande,
   "/api/assistant": traiterAssistant,
+  "/api/etat": traiterEtat,
 };
 const TYPES = {
   ".html": "text/html; charset=utf-8", ".css": "text/css", ".js": "text/javascript", ".json": "application/json",
