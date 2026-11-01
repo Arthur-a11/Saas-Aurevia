@@ -4,6 +4,13 @@ import CarteTarif from "../components/CarteTarif.astro";
 import programme from "../data/programme.json";
 import faq from "../data/faq.json";
 import { marches, site, totalIdees, donneesIdees, nombre } from "../lib/site.js";
+import { modulesParcours, ressourcesReelles, totaux } from "../lib/parcours.js";
+import formation from "../data/formation.json";
+
+const extrait = programme.modules[0];
+// Aperçu de l'interface : titres réels du module 1 (publics), jamais le contenu des leçons.
+const TYPES = { lecon: "Leçon", exercice: "Exercice", fiche: "Fiche", modele: "Modèle", checklist: "Checklist", video: "Vidéo" };
+const apercu = { titre: programme.modules[0].titre, elements: formation.modules[0].lecons.slice(0, 6).map((l) => ({ type: TYPES[l.type], titre: l.titre })) };
 
 const prixMin = site.formules[0].prixAffiche;
 const nf = nombre;
@@ -20,63 +27,42 @@ const barres = Array.from({ length: 12 }, (_, i) => (i + 1) / 12);
   description="Formation en ligne pour apprendre à créer, lancer et vendre un logiciel par abonnement (SaaS), sans savoir coder. Six modules, de l’idée aux premiers clients, et 1 500 idées de SaaS à explorer."
 >
   <div class="heros">
-    <div class="horizon" aria-hidden="true"></div>
     <div class="wrap hero">
       <div>
         <p class="surtitre">Formation en ligne · sans code</p>
-        <h1 class="titre-degrade">Construisez l’entreprise qui encaisse chaque mois.</h1>
-        <p class="chapeau">Pour les entrepreneurs, indépendants et salariés qui débutent : AUREVIA SAAS vous apprend à créer, lancer et vendre un logiciel par abonnement, étape par étape, sans savoir coder.</p>
+        <h1>Créez votre logiciel par abonnement, <span class="accent-titre">de l’idée aux premiers clients.</span></h1>
+        <p class="chapeau">Pour les entrepreneurs, indépendants et salariés qui débutent. Six modules, dans l’ordre, pour vérifier un vrai problème, construire une première version sans savoir coder, fixer votre prix et trouver vos premiers utilisateurs.</p>
         <div class="cta">
-          <a class="btn grand" href="/inscription/">Rejoindre AUREVIA SAAS</a>
-          <a class="btn alt grand" href="/programme/">Voir le programme</a>
+          <a class="btn grand" href="/programme/">Découvrir le programme</a>
+          <a class="btn alt grand" href="#extrait">Lire un extrait gratuit</a>
         </div>
         <ul class="chiffres-cles">
-          <li><strong>06</strong><span>modules, dans l’ordre</span></li>
+          <li><strong>6</strong><span>modules progressifs</span></li>
+          <li><strong>{totaux.lecons}</strong><span>leçons détaillées</span></li>
           <li><strong>{nf(totalIdees)}</strong><span>idées de SaaS</span></li>
-          <li><strong>{marches.length}</strong><span>marchés explorés</span></li>
           <li><strong>{prixMin}</strong><span>paiement unique, dès</span></li>
         </ul>
       </div>
 
-      <section class="hud neon simulateur" aria-labelledby="sim-titre">
-        <div class="hud-tete">
-          <h2 id="sim-titre">Simulateur de revenu récurrent</h2>
-          <span class="hud-etat">interactif</span>
+      <figure class="apercu-espace" aria-labelledby="apercu-legende">
+        <div class="apercu-barre" aria-hidden="true"><span></span><span></span><span></span><em>Ma formation</em></div>
+        <div class="apercu-corps">
+          <p class="apercu-module"><span class="num-module">01</span> {apercu.titre}</p>
+          <div class="apercu-progression"><span style="width:0%"></span></div>
+          <ul>
+            {apercu.elements.map((l) => <li><span class="apercu-type">{l.type}</span>{l.titre}</li>)}
+          </ul>
         </div>
-        <label for="r-prix">
-          <span class="ligne-label">Prix de votre abonnement <output id="o-prix" for="r-prix">29 €</output></span>
-          <input type="range" id="r-prix" min="5" max="200" step="1" value="29" />
-        </label>
-        <label for="r-clients">
-          <span class="ligne-label">Nombre de clients <output id="o-clients" for="r-clients">50</output></span>
-          <input type="range" id="r-clients" min="1" max="1000" step="1" value="50" />
-        </label>
-        <dl class="kpi">
-          <div><dt>Par mois</dt><dd id="k-mois">1 450 €</dd></div>
-          <div><dt>Par an</dt><dd id="k-an">17 400 €</dd></div>
-        </dl>
-        <div class="graphe">
-          <svg viewBox="0 0 240 70" role="img" aria-labelledby="graphe-desc" preserveAspectRatio="none">
-            <desc id="graphe-desc">Revenu mensuel si les clients arrivent progressivement sur 12 mois, jusqu’au nombre choisi.</desc>
-            <defs>
-              <linearGradient id="degrade-barre" x1="0" y1="1" x2="0" y2="0">
-                <stop offset="0" stop-color="#8b6cff" /><stop offset="1" stop-color="#22d3ee" />
-              </linearGradient>
-            </defs>
-            {barres.map((r, i) => <rect class="barre" x={i * 20 + 3} y={70 - 66 * r} width="14" height={66 * r} rx="3" />)}
-          </svg>
-          <p class="legende"><span>Mois 1</span><span>Mois 12</span></p>
-        </div>
-        <p class="note" style="margin:0">Simulation indicative : clients ajoutés progressivement sur 12 mois, avant charges et impôts. Aucun résultat n’est garanti.</p>
-      </section>
+        <figcaption id="apercu-legende">Aperçu de l’espace « Ma formation » : vrais titres du module 1, sans le contenu des leçons (réservé aux personnes inscrites).</figcaption>
+      </figure>
     </div>
   </div>
 
   <section aria-labelledby="pour-qui">
     <div class="wrap">
       <div class="titre-section">
-        <p class="surtitre">Pour qui</p>
-        <h2 id="pour-qui">Conçue pour les débutants qui veulent bâtir sérieusement</h2>
+        <p class="surtitre">À qui s’adresse AUREVIA SAAS</p>
+        <h2 id="pour-qui">Pour les débutants qui veulent bâtir sérieusement</h2>
         <p>Pas besoin d’être développeur. Il faut surtout un peu de temps chaque semaine et l’envie de parler à de vrais clients.</p>
       </div>
       <div class="profils">
@@ -99,46 +85,80 @@ const barres = Array.from({ length: 12 }, (_, i) => (i + 1) / 12);
     </div>
   </section>
 
-  <section class="bande" aria-labelledby="pourquoi">
+  <section class="bande" aria-labelledby="apprendre">
     <div class="wrap">
       <div class="titre-section">
-        <p class="surtitre">Le modèle</p>
-        <h2 id="pourquoi">Pourquoi le SaaS séduit les entrepreneurs</h2>
+        <p class="surtitre">Ce que vous apprendrez</p>
+        <h2 id="apprendre">Six étapes, chacune avec un résultat concret</h2>
+        <p>À la fin de chaque module, vous avez avancé sur votre propre projet.</p>
       </div>
-      <div class="grille3">
-        <div class="carte"><h3>Un revenu qui se répète</h3><p>Vos clients paient chaque mois. Vous bâtissez un chiffre d’affaires qui s’accumule.</p></div>
-        <div class="carte"><h3>Un produit, beaucoup de clients</h3><p>Vous le construisez une fois, puis vous le vendez à autant de clients que vous en trouvez.</p></div>
-        <div class="carte"><h3>Vous pilotez avec des chiffres</h3><p>Vous suivez vos revenus, vos clients et vos départs, comme un vrai dirigeant.</p></div>
-      </div>
-    </div>
-  </section>
-
-  <section aria-labelledby="livrables">
-    <div class="wrap">
-      <div class="titre-section">
-        <p class="surtitre">Ce que vous aurez entre les mains</p>
-        <h2 id="livrables">Un résultat concret à la fin de chaque module</h2>
-        <p>Chaque module se termine par un livrable précis. Vous avancez sur votre propre projet, pas sur un exercice.</p>
-      </div>
-      <ol class="livrables">
-        {programme.modules.map((m) => (
-          <li class="carte"><h3>{m.titre}</h3><p>{m.resultat.replace(/^À la fin : /, "")}</p></li>
+      <ol class="etapes-accueil">
+        {modulesParcours.map((m) => (
+          <li class="carte">
+            <span class="num-module" aria-hidden="true">{String(m.numero).padStart(2, "0")}</span>
+            <h3><span class="sr-only">Module {m.numero} : </span>{m.titre}</h3>
+            <p>Vous saurez {m.saurezFaire[0]}.</p>
+            <p class="livrable-ligne"><span class="pastille-livrable">Livrable</span> {m.livrable}</p>
+          </li>
         ))}
       </ol>
-      <p style="margin-top:1.5rem"><a class="btn alt" href="/programme/">Voir le programme détaillé</a></p>
+      <p class="cta-section"><a class="btn alt" href="/programme/">Voir le programme détaillé</a></p>
     </div>
   </section>
 
-  <section class="bande" aria-labelledby="parcours">
+  <section aria-labelledby="deroulement">
     <div class="wrap">
       <div class="titre-section">
-        <p class="surtitre">La méthode</p>
-        <h2 id="parcours">Votre parcours de fondateur</h2>
-        <p>Six étapes, dans l’ordre, de l’idée à la croissance.</p>
+        <p class="surtitre">Comment ça se passe</p>
+        <h2 id="deroulement">Un parcours simple, à votre rythme</h2>
       </div>
-      <ol class="parcours">
-        {programme.parcours.map((e) => <li><strong>{e.titre}</strong><span>{e.texte}</span></li>)}
+      <ol class="deroulement">
+        <li><strong>Lisez le plan gratuit</strong><span>Le programme détaillé et les 1 500 idées sont en accès libre.</span></li>
+        <li><strong>Choisissez une formule</strong><span>Paiement unique. Les commandes en ligne ne sont pas encore ouvertes : l’inscription est gratuite et sans engagement.</span></li>
+        <li><strong>Suivez votre espace</strong><span>Leçons, exercices, fiches et checklists dans l’ordre, avec votre progression enregistrée.</span></li>
+        <li><strong>Avancez sur votre projet</strong><span>Chaque module se termine par un livrable : entretiens, fiche MVP, page de tarifs…</span></li>
       </ol>
+    </div>
+  </section>
+
+  <section class="bande" aria-labelledby="ressources">
+    <div class="wrap">
+      <div class="titre-section">
+        <p class="surtitre">Ce qui existe vraiment</p>
+        <h2 id="ressources">Les ressources, avec leur état réel</h2>
+        <p>Rien n’est présenté comme disponible s’il ne l’est pas.</p>
+      </div>
+      <div class="ressources-grille">
+        <div class="carte">
+          <h3>Gratuit, dès maintenant</h3>
+          <ul class="liste-etat">
+            {ressourcesReelles.filter((r) => r.groupe === "gratuit").map((r) => <li><span>{r.texte}</span><span class="etat etat-ok">{r.etat}</span></li>)}
+          </ul>
+        </div>
+        <div class="carte">
+          <h3>Dans la formation payante</h3>
+          <ul class="liste-etat">
+            {ressourcesReelles.filter((r) => r.groupe === "payant").map((r) => <li><span>{r.texte}</span><span class={`etat ${r.etat === "Disponible" ? "etat-ok" : "etat-attente"}`}>{r.etat}</span></li>)}
+          </ul>
+          <p class="note">« Rédigé, en relecture » : écrit, pas encore validé. « En préparation » : n’existe pas encore.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="extrait-titre" id="extrait">
+    <div class="wrap extrait">
+      <div>
+        <p class="surtitre">Extrait gratuit</p>
+        <h2 id="extrait-titre">Module 1 : {extrait.titre}</h2>
+        <p class="chapeau">{extrait.resume}</p>
+        <p class="note">Cet extrait reprend le plan gratuit du module. Les leçons détaillées, l’exercice corrigé, la fiche et le modèle sont réservés à la formation.</p>
+      </div>
+      <div class="carte extrait-carte">
+        <h3>Ce que vous faites dans ce module</h3>
+        <ol class="extrait-points">{extrait.points.map((p) => <li>{p}</li>)}</ol>
+        <p class="livrable-ligne"><span class="pastille-livrable">Livrable</span> {extrait.resultat.replace(/^À la fin : /, "")}</p>
+      </div>
     </div>
   </section>
 
@@ -165,6 +185,47 @@ const barres = Array.from({ length: 12 }, (_, i) => (i + 1) / 12);
         <p><a id="labo-lien" href={`/idees/${mDepart.id}/#${nDepart.id}`}>Voir les idées de cette niche →</a></p>
         <p class="avert">{donneesIdees.avertissement}</p>
       </article>
+    </div>
+  </section>
+
+  <section class="bande" aria-labelledby="sim-section">
+    <div class="wrap simulation">
+      <div class="titre-section">
+        <p class="surtitre">Simulateur</p>
+        <h2 id="sim-section">Comprendre le revenu récurrent</h2>
+        <p>Un calcul simple à partir de vos propres hypothèses. Ce n’est ni une promesse ni une prévision.</p>
+      </div>
+      <section class="hud neon simulateur" aria-labelledby="sim-titre">
+        <div class="hud-tete">
+          <h2 id="sim-titre">Simulateur de revenu récurrent</h2>
+          <span class="hud-etat">interactif</span>
+        </div>
+        <label for="r-prix">
+          <span class="ligne-label">Prix de votre abonnement <output id="o-prix" for="r-prix">29 €</output></span>
+          <input type="range" id="r-prix" min="5" max="200" step="1" value="29" />
+        </label>
+        <label for="r-clients">
+          <span class="ligne-label">Nombre de clients <output id="o-clients" for="r-clients">50</output></span>
+          <input type="range" id="r-clients" min="1" max="1000" step="1" value="50" />
+        </label>
+        <dl class="kpi">
+          <div><dt>Par mois</dt><dd id="k-mois">1 450 €</dd></div>
+          <div><dt>Par an</dt><dd id="k-an">17 400 €</dd></div>
+        </dl>
+        <div class="graphe">
+          <svg viewBox="0 0 240 70" role="img" aria-labelledby="graphe-desc" preserveAspectRatio="none">
+            <desc id="graphe-desc">Revenu mensuel si les clients arrivent progressivement sur 12 mois, jusqu’au nombre choisi.</desc>
+            <defs>
+              <linearGradient id="degrade-barre" x1="0" y1="1" x2="0" y2="0">
+                <stop offset="0" stop-color="#1f8f86" /><stop offset="1" stop-color="#2ec4b6" />
+              </linearGradient>
+            </defs>
+            {barres.map((r, i) => <rect class="barre" x={i * 20 + 3} y={70 - 66 * r} width="14" height={66 * r} rx="3" />)}
+          </svg>
+          <p class="legende"><span>Mois 1</span><span>Mois 12</span></p>
+        </div>
+        <p class="note" style="margin:0">Simulation indicative : clients ajoutés progressivement sur 12 mois, avant charges et impôts. Aucun résultat n’est garanti.</p>
+      </section>
     </div>
   </section>
 
@@ -212,9 +273,9 @@ const barres = Array.from({ length: 12 }, (_, i) => (i + 1) / 12);
   <section class="finale" aria-labelledby="finale">
     <div class="wrap">
       <p class="surtitre" style="justify-content:center">Prochaine étape</p>
-      <h2 id="finale">Votre entreprise commence aujourd’hui.</h2>
-      <p class="sous-titre">Inscrivez-vous en deux minutes. L’inscription n’engage à aucun paiement.</p>
-      <div class="cta"><a class="btn grand" href="/inscription/">Rejoindre AUREVIA SAAS</a></div>
+      <h2 id="finale">Prochaine étape : réservez votre place</h2>
+      <p class="sous-titre">Les commandes en ligne ne sont pas encore ouvertes. Inscrivez-vous en deux minutes, sans paiement : vous serez prévenu(e) par e-mail.</p>
+      <div class="cta"><a class="btn grand" href="/inscription/">Je m’inscris gratuitement</a><a class="btn alt grand" href="/tarifs/">Voir les tarifs</a></div>
     </div>
   </section>
 </Base>

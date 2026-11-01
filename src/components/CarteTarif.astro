@@ -1,22 +1,33 @@
 ---
-// Carte d'une formule (accueil et page Tarifs). Les éléments non disponibles restent « En préparation ».
+// Carte d'une formule (accueil et page Tarifs). Source unique : src/data/formation.json (via offres.js).
+// On affiche le socle commun, puis UNIQUEMENT ce que la formule ajoute à la précédente, avec l'état réel.
 // Le bouton mène à l'inscription sans paiement ; il ne mène à la commande que si le SERVEUR indique
 // que la vente de cette formule est ouverte (paiement configuré).
-import { site, mentionTaxes, LIBELLE_STATUT, contenuFormule } from "../lib/site.js";
+import { site, mentionTaxes, LIBELLE_STATUT } from "../lib/site.js";
+import { contenuOffre } from "../lib/offres.js";
+import conditions from "../data/conditions.json";
 interface Props { f: (typeof site.formules)[number] }
 const { f } = Astro.props;
+const i = site.formules.findIndex((x) => x.id === f.id);
+const precedente = i > 0 ? site.formules[i - 1] : null;
+const droitsPrecedents = new Set(precedente ? contenuOffre(precedente.id).map((x) => x.droit) : []);
+const contenu = contenuOffre(f.id);
+const socle = precedente ? [] : contenu;
+const ajouts = precedente ? contenu.filter((x) => !droitsPrecedents.has(x.droit)) : [];
+const duree = conditions.dureeAcces.valeur ? conditions.dureeAcces.options[conditions.dureeAcces.valeur] : null;
 ---
-<li class={`carte tarif${f.recommandee ? " recommandee neon" : ""}`}>
+<li class={`carte tarif${f.recommandee ? " recommandee" : ""}`}>
   <div class="haut">{f.recommandee && <span class="badge">Notre recommandation</span>}</div>
   <h3>{f.nom}</h3>
   <p class="montant">{f.prixAffiche}<span class="taxes">{mentionTaxes()}</span></p>
   <p class="frequence">Paiement unique · sans abonnement</p>
-  <p class="obtenez">Ce que vous obtenez</p>
+  <p class="obtenez">{precedente ? `Tout ${precedente.nom === "Essentiel" ? "l’Essentiel" : `le ${precedente.nom}`}, plus` : "Ce que vous obtenez"}</p>
   <ul>
-    {contenuFormule(f).map((x) => (
-      <li>{x.texte}{LIBELLE_STATUT[x.statut] && <span class="statut">{LIBELLE_STATUT[x.statut]}{x.precision ? ` : ${x.precision}` : ""}</span>}</li>
+    {(precedente ? ajouts : socle).map((x) => (
+      <li>{x.texte}{LIBELLE_STATUT[x.statut] && <span class="statut">{LIBELLE_STATUT[x.statut]}</span>}</li>
     ))}
   </ul>
+  <p class="acces-tarif">Accès : {duree ?? "durée à définir"}</p>
   <a class={`btn${f.recommandee ? "" : " alt"}`} data-formule={f.id}
      href={`/inscription/?formule=${f.id}`}
      aria-label={`Choisir la formule ${f.nom} (${f.prixAffiche})`}>

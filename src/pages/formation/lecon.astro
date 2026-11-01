@@ -13,7 +13,10 @@ import Base from "../../layouts/Base.astro";
   <section class="section-serree">
     <div class="wrap">
       <div id="etat-lecon" class="message-formulaire info" role="status"><p>Chargement de la leçon…</p></div>
-      <article id="lecon" class="carte lecon-contenu" hidden></article>
+      <div class="lecon-grille">
+        <nav id="nav-module" class="nav-module" aria-label="Éléments du module" hidden></nav>
+        <article id="lecon" class="carte lecon-contenu" hidden></article>
+      </div>
     </div>
   </section>
 </Base>
@@ -65,6 +68,32 @@ import Base from "../../layouts/Base.astro";
     return [el("p", {}, "Contenu indisponible.")];
   }
 
+  const TYPES: Record<string, string> = { lecon: "Leçon", exercice: "Exercice", fiche: "Fiche", modele: "Modèle", checklist: "Checklist", video: "Vidéo" };
+
+  /** Navigation dans le module : éléments, état de chacun, élément actuel. Données du serveur (titres, états). */
+  async function navigationModule(idActuel: string) {
+    const r = await api("/api/formation", undefined, 10_000);
+    const m = r.data?.modules?.find((x: any) => x.lecons.some((l: any) => l.id === idActuel));
+    if (!m) return;
+    const nav = document.getElementById("nav-module") as HTMLElement;
+    const ouvertes = m.lecons.filter((l: any) => l.acces === "ouvert");
+    const faites = ouvertes.filter((l: any) => l.fait).length;
+    const liste = el("ol", {}, ...m.lecons.map((l: any) => {
+      const ouverte = l.acces === "ouvert";
+      const etat = ouverte ? (l.fait ? "Terminé" : "Non commencé") : l.acces === "non-inclus" ? "Non inclus" : "En préparation";
+      const contenu = [el("span", { class: "nav-type" }, TYPES[l.type] ?? l.type), el("span", { class: "nav-nom" }, l.titre), el("span", { class: `etat ${l.fait ? "etat-ok" : ouverte ? "etat-neutre" : "etat-verrou"}` }, etat)];
+      return el("li", {}, ouverte
+        ? el("a", { href: `?id=${l.id}`, "aria-current": l.id === idActuel ? "page" : undefined }, ...contenu)
+        : el("span", { class: "nav-ferme" }, ...contenu));
+    }));
+    const titre = `Module ${m.numero} · ${faites}/${ouvertes.length} terminé(s)`;
+    nav.replaceChildren(
+      el("details", { class: "nav-module-mobile" }, el("summary", {}, `Dans ce module (${faites}/${ouvertes.length})`), liste.cloneNode(true)),
+      el("div", { class: "nav-module-bureau" }, el("p", { class: "sommaire-titre" }, titre), liste),
+    );
+    nav.hidden = false;
+  }
+
   async function demarrer() {
     const moi = await api("/api/compte/moi", undefined, 8_000);
     if (!moi.data?.connecte) {
@@ -105,6 +134,7 @@ import Base from "../../layouts/Base.astro";
         fait.setAttribute("aria-pressed", String(p.data.fait));
         fait.textContent = p.data.fait ? "Leçon terminée ✓" : "Marquer comme terminée";
         retour.textContent = `Progression enregistrée : ${p.data.progression.faites} leçon(s) sur ${p.data.progression.total}.`;
+        navigationModule(l.id);
       } else {
         retour.textContent = "La progression n’a pas pu être enregistrée. Réessayez dans un instant.";
       }
@@ -118,6 +148,7 @@ import Base from "../../layouts/Base.astro";
         l.suivante ? el("a", { class: "btn petit", href: `?id=${l.suivante}` }, "Leçon suivante →") : el("a", { class: "btn petit", href: "/formation/" }, "Retour à ma formation")),
     );
     zone.hidden = false;
+    navigationModule(l.id);
   }
   demarrer();
 </script>

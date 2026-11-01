@@ -13,38 +13,45 @@
 
 :root {
   color-scheme: dark;
+  --ombre: 0 1px 0 rgba(255, 255, 255, 0.03) inset, 0 12px 32px -18px rgba(0, 0, 0, 0.6);
 
-  /* Couleurs de base */
-  --bg: #090b28;
-  --bg-grad: linear-gradient(160deg, #0a0b2e, #16106a 50%, #08365a);
-  --surface: rgba(255, 255, 255, 0.06);
-  --surface-forte: rgba(18, 20, 64, 0.92);   /* cartes sur mobile, sans effet de flou */
-  --ink: #eef2ff;          /* texte principal */
-  --muted: #a9b4dd;        /* texte secondaire : 5,5:1 sur le fond le plus clair */
-  --line: rgba(150, 170, 255, 0.26);
-  --line-forte: rgba(150, 170, 255, 0.55);
+  /* Identité « bleu nuit et turquoise » (novembre 2026). Contrastes calculés (WCAG) :
+     texte --ink sur --surface 13,4:1 ; --muted sur --surface 7,7:1 ; --brand sur --surface 7,2:1 ;
+     texte --on-brand sur bouton --brand 7,8:1 ; blanc sur --accent-texte 6,4:1 ; --on-brand sur --gold 10,3:1. */
+  --bg: #071521;           /* fond principal : bleu nuit profond */
+  --bg-2: #0b1d2e;         /* bandes alternées */
+  --bg-grad: linear-gradient(180deg, #071521 0%, #0a1b2b 55%, #071521 100%);
+  --surface: #0f2638;      /* cartes : un peu plus claires que le fond */
+  --surface-2: #143049;    /* survol, éléments en relief */
+  --surface-forte: #0f2638;
+  --surface-hud: #0c2132;
+  --ink: #f2eee6;          /* texte principal : blanc cassé */
+  --muted: #a9b9c6;        /* texte secondaire */
+  --line: rgba(148, 196, 214, 0.16);
+  --line-forte: rgba(148, 196, 214, 0.34);
+  --grille: rgba(148, 196, 214, 0.045);   /* grille du fond */
 
   /* Marque */
-  --brand: #22d3ee;        /* cyan */
-  --accent: #7c5cff;       /* violet (décor) */
-  --accent-texte: #6646e8; /* violet foncé : fond des badges à texte blanc (5,8:1) */
-  --on-brand: #06122b;     /* texte sombre sur dégradé violet → cyan */
-  --gold: #e8c46a;         /* chiffres */
-  --lien: #8eefff;
-  --grad: linear-gradient(90deg, #8b6cff, #22d3ee);
-  --titre-grad: linear-gradient(100deg, #fff 25%, #8eefff 60%, #b7a2ff);
-  --halo-violet: rgba(124, 92, 255, 0.45);
-  --halo-cyan: rgba(34, 211, 238, 0.4);
-  --surface-hud: rgba(10, 14, 52, 0.82);    /* panneaux « tableau de bord » */
+  --brand: #2ec4b6;        /* turquoise : actions principales, progression */
+  --brand-doux: rgba(46, 196, 182, 0.12);
+  --accent: #2ec4b6;
+  --accent-texte: #0b6b64; /* turquoise foncé : fond des badges à texte blanc */
+  --on-brand: #04211e;     /* texte sur turquoise */
+  --gold: #e6bc72;         /* couleur secondaire, avec modération : statuts « en préparation », livrables */
+  --lien: #7fe3d6;
+  --grad: linear-gradient(180deg, #34cdbf, #2ab7aa);   /* bouton principal : presque uni */
+  --titre-grad: linear-gradient(100deg, #f6f3ec 55%, #9fe6dc);
+  --halo-violet: transparent;
+  --halo-cyan: transparent;
 
-  /* Assistant (vert) */
-  --chat-bg: #0b0d18;
+  /* Assistant */
+  --chat-bg: #08192a;
   --chat-vert: #3ddc84;
   --chat-muted: #8fa3c8;
 
   /* Erreur / succès */
-  --erreur: #ffb4b4;
-  --succes: #9df0c4;
+  --erreur: #ffb4ab;
+  --succes: #8fe3b0;
 
   /* Typographie */
   --police-texte: "Public Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
@@ -52,7 +59,8 @@
   --police-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;  /* étiquettes, chiffres */
 
   /* Mise en page */
-  --largeur: 1240px;      /* sections larges sur ordinateur ; les textes gardent leur propre largeur de lecture */
+  --largeur: 1280px;      /* sections larges sur ordinateur ; les textes gardent leur propre largeur de lecture */
+  --lecture: 68ch;        /* largeur maximale d’un paragraphe de leçon */
   --espace-section: clamp(3rem, 6vw, 5rem);
   --espace-cartes: clamp(1rem, 2.2vw, 1.75rem);
   --pad-carte: clamp(1.25rem, 2.4vw, 2rem);

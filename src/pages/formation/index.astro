@@ -41,7 +41,8 @@ import Base from "../../layouts/Base.astro";
 
   /** Attend la confirmation du paiement vérifiée par le serveur (notification Stripe ou vérification directe). */
   async function verifierPaiement(ref: string) {
-    message(etat, "info", "Vérification du paiement en cours…", ["Nous attendons la confirmation de Stripe. Cela prend en général quelques secondes."]);
+    message(etat, "info", "Vérification du paiement en cours…", [el("span", { class: "indicateur-attente", "aria-hidden": "true" }), "Nous attendons la confirmation de Stripe. Cela prend en général quelques secondes. Votre formation ne s’ouvre qu’après cette confirmation."]);
+    etat.classList.add("ecran-paiement");
     for (let i = 0; i < 20; i++) {
       const r = await api(`/api/paiement/statut?commande=${encodeURIComponent(ref)}`, undefined, 10_000);
       if (r.statut === 401) { message(etat, "ko", "Connectez-vous pour voir votre achat", [lienCompte()]); return false; }
@@ -76,12 +77,36 @@ import Base from "../../layouts/Base.astro";
     return acces === "ouvert" ? null : el("span", { class: `etiquette ${acces === "non-inclus" ? "verrou" : "attente"}` }, LIBELLES[acces] ?? acces);
   }
 
+  /** État d'un module pour la personne : non inclus, non commencé, en cours ou terminé. */
+  function etatModule(m: any) {
+    const ouvertes = m.lecons.filter((l: any) => l.acces === "ouvert");
+    if (!ouvertes.length) return m.lecons.every((l: any) => l.acces === "non-inclus") ? { texte: "Non inclus", classe: "etat-verrou" } : { texte: "En préparation", classe: "etat-attente" };
+    const faites = ouvertes.filter((l: any) => l.fait).length;
+    if (faites === 0) return { texte: "Non commencé", classe: "etat-neutre", faites, total: ouvertes.length };
+    if (faites === ouvertes.length) return { texte: "Terminé", classe: "etat-ok", faites, total: ouvertes.length };
+    return { texte: "En cours", classe: "etat-cours", faites, total: ouvertes.length };
+  }
+
+  function ligneElement(l: any) {
+    const ouverte = l.acces === "ouvert";
+    const etat = ouverte ? el("span", { class: `etat ${l.fait ? "etat-ok" : "etat-neutre"}` }, l.fait ? "Terminé ✓" : "Non commencé") : badge(l.acces);
+    const actions = el("span", { class: "lecon-actions-ligne" });
+    if (ouverte) {
+      actions.append(el("a", { class: "btn petit" + (l.fait ? " alt" : ""), href: `/formation/lecon/?id=${l.id}`, "aria-label": `${l.fait ? "Revoir" : "Commencer"} : ${l.titre}` }, l.fait ? "Revoir" : "Commencer"));
+      if (l.type === "modele") actions.append(el("a", { class: "btn petit alt telecharger", href: `/api/formation/fichier?id=${encodeURIComponent(l.id)}`, "aria-label": `Télécharger : ${l.titre}` }, "⬇ Télécharger"));
+    }
+    return el("li", { class: `lecon ${ouverte ? "ouverte" : "fermee"}`, "data-etat": ouverte ? (l.fait ? "termine" : "non-commence") : l.acces },
+      el("span", { class: `lecon-type type-${l.type}` }, TYPES[l.type] ?? l.type),
+      el("span", { class: "lecon-titre" }, l.titre, ouverte && l.statut === "brouillon" ? el("span", { class: "brouillon" }, " · brouillon") : ""),
+      etat, actions);
+  }
+
   function afficher(d: any) {
     espace.replaceChildren();
     const aDesDroits = d.modules.some((m: any) => m.lecons.some((l: any) => l.acces !== "non-inclus"));
-    const tableau = el("div", { class: "carte tableau-formation" },
-      el("h2", { class: "titre-carte" }, `Bonjour ${d.prenom}`),
-    );
+
+    // ---- Tableau de bord
+    const tableau = el("div", { class: "carte tableau-formation" }, el("h2", { class: "titre-carte" }, `Bonjour ${d.prenom}`));
     if (d.formules.length) {
       tableau.append(el("ul", { class: "formules-detenues" }, ...d.formules.map((f: any) => el("li", {},
         el("strong", {}, `Formule ${f.nom}`), ` · achetée le ${dateFr(f.depuis)}`,
@@ -93,42 +118,55 @@ import Base from "../../layouts/Base.astro";
     }
     if (d.progression.total > 0) {
       const pct = Math.round((d.progression.faites / d.progression.total) * 100);
+      const prochaine = d.modules.flatMap((m: any) => m.lecons.map((l: any) => ({ ...l, module: m }))).find((l: any) => l.id === d.prochaine);
       tableau.append(
-        el("p", { class: "progression-texte", id: "progression-texte" }, `Progression : ${d.progression.faites} leçon(s) terminée(s) sur ${d.progression.total}`),
+        el("div", { class: "tableau-chiffres" },
+          el("p", { class: "progression-texte", id: "progression-texte" }, `Progression : ${d.progression.faites} leçon(s) terminée(s) sur ${d.progression.total}`),
+          el("span", { class: "pourcentage", "aria-hidden": "true" }, `${pct} %`)),
         el("div", { class: "barre-progression", role: "progressbar", "aria-labelledby": "progression-texte", "aria-valuemin": "0", "aria-valuemax": "100", "aria-valuenow": String(pct) }, el("span", { style: `width:${pct}%` })),
-        el("p", { class: "cta" }, el("a", { class: "btn", href: `/formation/lecon/?id=${d.prochaine}` }, d.progression.faites === 0 ? "Commencer ma formation" : "Reprendre ma formation")),
+        el("div", { class: "reprendre" },
+          prochaine ? el("p", { class: "note" }, `Prochaine étape : module ${prochaine.module.numero} · ${prochaine.titre}`) : "",
+          el("a", { class: "btn grand", href: `/formation/lecon/?id=${d.prochaine}` }, d.progression.faites === 0 ? "Commencer ma formation" : "Reprendre ma formation")),
       );
     }
-    espace.append(tableau);
 
+    // ---- Sommaire latéral (ordinateur) / compact (mobile)
+    const sommaire = el("nav", { class: "sommaire-espace", "aria-label": "Modules de la formation" },
+      el("p", { class: "sommaire-titre" }, "Modules"),
+      el("ol", {}, ...d.modules.map((m: any) => {
+        const e = etatModule(m);
+        return el("li", {}, el("a", { href: `#module-${m.numero}` },
+          el("span", { class: "sommaire-num" }, String(m.numero).padStart(2, "0")),
+          el("span", { class: "sommaire-nom" }, m.titre),
+          el("span", { class: `etat ${e.classe}` }, e.total ? `${e.texte} · ${e.faites}/${e.total}` : e.texte)));
+      })));
+    const sommaireMobile = el("details", { class: "sommaire-mobile" }, el("summary", {}, "Sommaire des modules"), sommaire.cloneNode(true));
+
+    // ---- Modules
     const liste = el("ol", { class: "modules-espace" });
     for (const m of d.modules) {
-      const lecons = el("ul", { class: "lecons" });
-      for (const l of m.lecons) {
-        const ouverte = l.acces === "ouvert";
-        lecons.append(el("li", { class: `lecon ${ouverte ? "ouverte" : "fermee"}` },
-          el("span", { class: "lecon-type" }, TYPES[l.type] ?? l.type),
-          el("span", { class: "lecon-titre" }, l.titre, l.fait ? el("span", { class: "fait" }, " · terminée") : "", ouverte && l.statut === "brouillon" ? el("span", { class: "brouillon" }, " · brouillon") : ""),
-          ouverte ? el("a", { class: "btn petit" + (l.fait ? " alt" : ""), href: `/formation/lecon/?id=${l.id}`, "aria-label": `${l.fait ? "Revoir" : "Commencer"} : ${l.titre}` }, l.fait ? "Revoir" : "Commencer") : badge(l.acces)));
-      }
+      const e = etatModule(m);
       liste.append(el("li", { class: "carte module-espace", id: `module-${m.numero}` },
-        el("div", { class: "module-tete" }, el("span", { class: "num-module" }, String(m.numero).padStart(2, "0")), el("h3", {}, m.titre)),
+        el("div", { class: "module-tete" },
+          el("span", { class: "num-module" }, String(m.numero).padStart(2, "0")),
+          el("div", { class: "module-tete-texte" }, el("h3", {}, m.titre), el("span", { class: `etat ${e.classe}` }, e.texte))),
         el("p", { class: "module-resume" }, m.resume),
         m.objectifs.length ? el("details", { class: "objectifs" }, el("summary", {}, "Objectifs du module"), el("ul", {}, ...m.objectifs.map((o: string) => el("li", {}, o)))) : "",
-        lecons));
+        el("ul", { class: "lecons" }, ...m.lecons.map(ligneElement))));
     }
-    espace.append(el("h2", { class: "titre-section-espace" }, "Les modules"), liste);
 
-    espace.append(el("h2", { class: "titre-section-espace" }, "Ressources"),
+    const principal = el("div", { class: "espace-principal" }, tableau, sommaireMobile,
+      el("h2", { class: "titre-section-espace" }, "Les modules"), liste,
+      el("h2", { class: "titre-section-espace" }, "Ressources"),
       el("ul", { class: "ressources-espace" }, ...d.ressources.map((r: any) => el("li", { class: "carte" },
         el("strong", {}, r.titre), badge(r.acces), r.precision && r.acces !== "non-inclus" ? el("p", { class: "note" }, r.precision) : null))));
-
     if (aDesDroits) {
-      espace.append(el("p", { class: "note" }, "« Brouillon » : contenu rédigé, en cours de relecture, qui peut encore changer. « En préparation » : pas encore disponible, il apparaîtra ici quand il sera prêt."));
+      principal.append(el("p", { class: "note" }, "« Brouillon » : contenu rédigé, en cours de relecture, qui peut encore changer. « En préparation » : pas encore disponible, il apparaîtra ici quand il sera prêt."));
     }
     const sortir = el("button", { type: "button", class: "btn alt" }, "Me déconnecter");
     sortir.addEventListener("click", async () => { await api("/api/compte/deconnexion", {}); location.assign("/compte/"); });
-    espace.append(el("p", { class: "cta pied-espace" }, sortir));
+    principal.append(el("p", { class: "cta pied-espace" }, sortir));
+    espace.append(el("div", { class: "espace-grille" }, el("aside", { class: "espace-aside" }, sommaire), principal));
     espace.hidden = false;
   }
 

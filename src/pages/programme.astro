@@ -4,6 +4,7 @@ import programme from "../data/programme.json";
 import { site } from "../lib/site.js";
 import formation from "../data/formation.json";
 import { LIBELLE_STATUT_OFFRE, statutDroit } from "../lib/offres.js";
+import { modulesParcours } from "../lib/parcours.js";
 const compter = (type) => formation.modules.flatMap((m) => m.lecons).filter((l) => l.type === type).length;
 const payant = [
   [`${compter("lecon")} leçons détaillées, avec des exemples`, "lecons"],
@@ -20,30 +21,57 @@ const payant = [
     <div class="wrap">
       <p class="retour"><a href="/">← Retour à l’accueil</a></p>
       <p class="surtitre">Le programme</p>
-      <h1 class="titre-degrade">La formation : tout pour créer un bon SaaS</h1>
+      <h1>La formation : tout pour créer un bon SaaS</h1>
       <p class="chapeau">{programme.intro}</p>
     </div>
   </section>
 
   <section class="bande" aria-labelledby="modules">
     <div class="wrap">
-      <h2 id="modules">Le programme, module par module</h2>
+      <h2 id="modules">Le parcours, étape par étape</h2>
+      <p class="sous-titre">Du problème à vérifier jusqu’aux premiers utilisateurs. Aucune durée n’est imposée : vous avancez à votre rythme.</p>
       <nav aria-label="Sommaire du programme" class="sommaire-programme">
         <ol>
           {programme.modules.map((m, i) => <li><a href={`#module-${i + 1}`}><span class="mono">{String(i + 1).padStart(2, "0")}</span> {m.titre}</a></li>)}
         </ol>
       </nav>
-      <ol class="liste-modules" id="liste-modules">
-      {programme.modules.map((m, i) => (
-        <li class="carte module-bloc" id={`module-${i + 1}`}>
+      <ol class="liste-modules parcours-modules" id="liste-modules">
+      {modulesParcours.map((m) => (
+        <li class="carte module-bloc" id={`module-${m.numero}`}>
           <div class="module-tete">
-            <span class="num-module" aria-hidden="true">{String(i + 1).padStart(2, "0")}</span>
-            <h3 id={`titre-module-${i + 1}`}><span class="sr-only">Module {i + 1} : </span>{m.titre}</h3>
+            <span class="num-module" aria-hidden="true">{String(m.numero).padStart(2, "0")}</span>
+            <div>
+              <p class="module-etape">Étape {m.numero} sur 6</p>
+              <h3 id={`titre-module-${m.numero}`}><span class="sr-only">Module {m.numero} : </span>{m.titre}</h3>
+            </div>
           </div>
-          <p class="module-resume">{m.resume}</p>
-          <p class="module-sous-titre">Au programme</p>
-          <ul class="module-points">{m.points.map((pt) => <li>{pt}</li>)}</ul>
-          <p class="resultat"><span class="pastille-livrable">Livrable</span> {m.resultat.replace(/^À la fin : /, "")}</p>
+          <p class="module-resume"><strong>Objectif :</strong> {m.objectif}</p>
+          <div class="module-colonnes">
+            <div>
+              <p class="module-sous-titre">À la fin, vous saurez</p>
+              <ul class="module-points">{m.saurezFaire.map((x) => <li>{x}</li>)}</ul>
+            </div>
+            <div>
+              <p class="module-sous-titre">Sujets abordés ({m.nbLecons} leçons)</p>
+              <ul class="module-sujets">{m.sujets.map((x) => <li>{x}</li>)}</ul>
+            </div>
+          </div>
+          <div class="module-ressources">
+            <p class="module-sous-titre">Ressources du module</p>
+            <ul class="ressources-puces">
+              <li><span class="etiquette-gratuit">Gratuit</span> Plan du module et livrable</li>
+              <li><span class="etiquette-brouillon">{LIBELLE_STATUT_OFFRE[m.exercice.statut]}</span> Exercice avec corrigé</li>
+              <li><span class="etiquette-brouillon">{LIBELLE_STATUT_OFFRE[m.fiche.statut]}</span> Fiche récapitulative</li>
+              <li><span class="etiquette-brouillon">{LIBELLE_STATUT_OFFRE[m.modele.statut]}</span> Modèle à remplir (Complet, Accompagné)</li>
+              <li><span class="etiquette-brouillon">{LIBELLE_STATUT_OFFRE[m.checklist.statut]}</span> Checklist de fin de module</li>
+              <li><span class="etiquette-prep">{LIBELLE_STATUT_OFFRE[m.video.statut]}</span> Vidéo</li>
+            </ul>
+          </div>
+          <details class="plan-gratuit">
+            <summary>Lire le plan gratuit du module</summary>
+            <ul class="module-points">{programme.modules[m.numero - 1].points.map((pt) => <li>{pt}</li>)}</ul>
+          </details>
+          <p class="resultat"><span class="pastille-livrable">Livrable</span> {m.livrable}</p>
         </li>
       ))}
       </ol>

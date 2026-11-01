@@ -5,7 +5,7 @@ import { readFileSync } from "node:fs";
 
 const donnees = JSON.parse(readFileSync(new URL("../../src/data/marches.json", import.meta.url), "utf8"));
 const PAGES = [
-  ["/", "Construisez l’entreprise qui encaisse chaque mois."],
+  ["/", "Créez votre logiciel par abonnement, de l’idée aux premiers clients."],
   ["/programme/", "La formation : tout pour créer un bon SaaS"],
   ["/idees/", "15 marchés, 300 niches, 1 500 idées de SaaS"],
   ["/tarifs/", "Choisissez votre formule"],
@@ -284,15 +284,54 @@ test.describe("programme", () => {
     expect(haut).toBeGreaterThanOrEqual(entete - 1);
   });
 
-  test("ordinateur : deux modules par rangée, sections plus larges qu’avant (1 080 px)", async ({ page }, info) => {
+  test("ordinateur : un module par rangée, pleine largeur (plus de 1 080 px), deux colonnes à l’intérieur", async ({ page }, info) => {
     test.skip(info.project.name !== "ordinateur", "une colonne sur mobile");
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto("/programme/");
-    const hauts = await page.locator(".module-bloc").evaluateAll((bs) => bs.slice(0, 2).map((b) => Math.round(b.getBoundingClientRect().top)));
-    expect(hauts[0]).toBe(hauts[1]);
     const largeur = await page.locator("#liste-modules").evaluate((e) => e.getBoundingClientRect().width);
     expect(largeur).toBeGreaterThan(1080);
+    expect(largeur).toBeLessThanOrEqual(1280);
+    const colonnes = await page.locator("#module-1 .module-colonnes > div").evaluateAll((d) => d.map((x) => Math.round(x.getBoundingClientRect().top)));
+    expect(colonnes[0]).toBe(colonnes[1]);
+    // Chaque module affiche objectif, nombre de leçons et ressources avec leur état.
+    await expect(page.locator("#module-1 .module-resume")).toContainText("Objectif :");
+    await expect(page.locator("#module-1")).toContainText("Sujets abordés (4 leçons)");
+    await expect(page.locator("#module-1 .ressources-puces")).toContainText("En préparation");
   });
+});
+
+test.describe("refonte : identité et accueil", () => {
+  test("accueil : à qui, quoi, comment, ressources réelles, prochaine action ; aucun texte payant", async ({ page }) => {
+    await page.goto("/");
+    for (const id of ["pour-qui", "apprendre", "deroulement", "ressources", "extrait-titre", "finale"]) await expect(page.locator(`#${id}`)).toBeVisible();
+    await expect(page.locator(".etapes-accueil > li")).toHaveCount(6);
+    await expect(page.locator("#ressources").locator("xpath=ancestor::section")).toContainText("En préparation");
+    await expect(page.locator(".apercu-espace figcaption")).toContainText("sans le contenu des leçons");
+    await expect(page.getByRole("link", { name: "Je m’inscris gratuitement" })).toBeVisible();
+    await expect(page.getByText("Léa a travaillé dans un cabinet")).toHaveCount(0);
+    for (const interdit of [/\d+ (élèves|clients satisfaits)/i, /plus que \d+ places/i, /(revenu|succès|résultat)s? garantie?s?/i]) await expect(page.locator("main")).not.toContainText(interdit);
+  });
+
+  test("palette bleu nuit et turquoise appliquée (fond, bouton principal, texte)", async ({ page }) => {
+    await page.goto("/");
+    const c = await page.evaluate(() => {
+      const b = getComputedStyle(document.body);
+      const btn = getComputedStyle(document.querySelector(".hero .btn:not(.alt)"));
+      return { fond: b.backgroundColor, texte: b.color, bouton: btn.color };
+    });
+    expect(c.fond).toBe("rgb(7, 21, 33)");
+    expect(c.texte).toBe("rgb(242, 238, 230)");
+    expect(c.bouton).toBe("rgb(4, 33, 30)");
+  });
+
+  for (const url of ["/", "/programme/", "/tarifs/"]) {
+    test(`${url} : aucune animation en boucle ni halo animé`, async ({ page }) => {
+      await page.goto(url);
+      await page.waitForTimeout(500);
+      const enBoucle = await page.evaluate(() => document.getAnimations().filter((a) => a.effect?.getTiming().iterations === Infinity).length);
+      expect(enBoucle).toBe(0);
+    });
+  }
 });
 
 test.describe("accueil : éléments de vente", () => {
@@ -479,7 +518,7 @@ test.describe("assistant", () => {
     await page.getByRole("button", { name: /Posez votre question/ }).click();
     await expect(page.locator("#chat-ouvrir")).toBeHidden();
     const fond = await page.locator("#chat-panneau").evaluate((p) => getComputedStyle(p).backgroundColor);
-    expect(fond).toBe("rgb(11, 13, 24)");
+    expect(fond).toBe("rgb(8, 25, 42)");   // --chat-bg, opaque (identité bleu nuit)
   });
 
   test("le badge « Powered by Netlify » du site en ligne ne recouvre pas le bouton de l’assistant", async ({ page }) => {

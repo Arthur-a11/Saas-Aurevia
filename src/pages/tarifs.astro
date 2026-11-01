@@ -8,6 +8,12 @@ import conditions from "../data/conditions.json";
 import ACompleter from "../components/ACompleter.astro";
 // Lignes du comparatif : calculées depuis src/data/formation.json (source unique), statuts réels.
 const lignes = comparatif();
+// Différences RÉELLES entre formules : ce qu'une formule ajoute à la précédente et qui est rédigé.
+import { contenuOffre } from "../lib/offres.js";
+const existe = (x) => x.statut === "valide" || x.statut === "brouillon";
+const ajoutsDe = (id, avant) => { const a = new Set(contenuOffre(avant).map((x) => x.droit)); return contenuOffre(id).filter((x) => !a.has(x.droit)); };
+const diffComplet = ajoutsDe("complet", "essentiel");
+const diffAcc = ajoutsDe("accompagne", "complet");
 const duree = conditions.dureeAcces.valeur ? conditions.dureeAcces.options[conditions.dureeAcces.valeur] : null;
 ---
 <Base titre="Tarifs" courant="/tarifs/"
@@ -15,7 +21,7 @@ const duree = conditions.dureeAcces.valeur ? conditions.dureeAcces.options[condi
   <section class="entete-page">
     <div class="wrap">
       <p class="surtitre">Tarifs</p>
-      <h1 class="titre-degrade">Choisissez votre formule</h1>
+      <h1>Choisissez votre formule</h1>
       <p class="chapeau">Un seul paiement. Pas d’abonnement.</p>
       {!ouvert && (
         <div class="encadre" id="avis-commandes">
@@ -29,6 +35,16 @@ const duree = conditions.dureeAcces.valeur ? conditions.dureeAcces.options[condi
     <div class="wrap">
       <h2 id="formules" class="sr-only">Les formules</h2>
       <ul class="tarifs">{site.formules.map((f) => <CarteTarif f={f} />)}</ul>
+
+      <div class="encadre differences" id="differences">
+        <h2 class="titre-carte">Les différences réelles, aujourd’hui</h2>
+        <ul>
+          <li><strong>Les 6 modules sont communs aux trois formules</strong> (leçons, exercices, checklists, fiches).</li>
+          <li><strong>Complet</strong> ajoute : {diffComplet.map((x) => `${x.texte.toLowerCase()} (${existe(x) ? "rédigé, en relecture" : x.statut === "a-definir" ? "à définir" : "n’existe pas encore"})`).join(" ; ")}.</li>
+          <li><strong>Accompagné</strong> ajoute : {diffAcc.map((x) => `${x.texte.toLowerCase()} (${existe(x) ? "rédigé, en relecture" : x.statut === "a-definir" ? "format, durée, délai et limites encore à définir : rien n’est promis" : "n’existe pas encore"})`).join(" ; ")}.</li>
+        </ul>
+        <p class="note">Elles restent à préciser avant toute ouverture des ventes.</p>
+      </div>
 
       <div class="comparatif-zone" tabindex="0" role="region" aria-label="Tableau comparatif des formules (défilement horizontal sur petit écran)">
         <table class="comparatif">

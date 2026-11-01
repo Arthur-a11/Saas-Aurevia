@@ -10,7 +10,13 @@
         "Vérifier qu’elles paient déjà pour une solution, même imparfaite, ou qu’elles perdent clairement du temps.",
         "Regarder la concurrence : des concurrents sont plutôt bon signe. Cherchez ce que vous pouvez faire de plus simple."
       ],
-      "resultat": "À la fin : une phrase claire, « Mon logiciel aide [un public] à [obtenir un résultat] »."
+      "resultat": "À la fin : une phrase claire, « Mon logiciel aide [un public] à [obtenir un résultat] ».",
+      "objectif": "Vérifier qu’un problème existe vraiment avant de construire quoi que ce soit.",
+      "saurezFaire": [
+        "choisir un public précis que vous pouvez joindre",
+        "mener des entretiens sans influencer les réponses",
+        "décider de continuer ou non à partir de faits"
+      ]
     },
     {
       "titre": "Définir le produit minimum",
@@ -20,7 +26,13 @@
         "Dessiner le parcours : inscription, première action utile, premier résultat. Le client doit obtenir de la valeur le plus vite possible.",
         "Faire une maquette simple (papier, Canva ou Figma) et la montrer à 3 à 5 personnes avant de construire."
       ],
-      "resultat": "À la fin : une maquette et une liste de 3 à 5 fonctions."
+      "resultat": "À la fin : une maquette et une liste de 3 à 5 fonctions.",
+      "objectif": "Réduire votre idée à une première version qui tient une seule promesse.",
+      "saurezFaire": [
+        "écrire une promesse claire et vérifiable",
+        "trier vos fonctions entre indispensable et « plus tard »",
+        "tester une maquette avant de construire"
+      ]
     },
     {
       "titre": "Construire la première version",
@@ -32,7 +44,13 @@
         "Le cadre légal : conditions d’utilisation, politique de confidentialité et respect du RGPD pour les données de vos clients.",
         "Un nom de domaine et un hébergement fiables."
       ],
-      "resultat": "À la fin : une première version utilisable par 5 testeurs."
+      "resultat": "À la fin : une première version utilisable par 5 testeurs.",
+      "objectif": "Construire une première version utilisable par de vrais testeurs.",
+      "saurezFaire": [
+        "choisir vos outils selon votre budget et votre temps",
+        "vérifier les briques indispensables et la sécurité de base",
+        "organiser un test avec 5 utilisateurs"
+      ]
     },
     {
       "titre": "Fixer le prix et le modèle",
@@ -44,7 +62,13 @@
         "Calculer ce que chaque client vous coûte, pour savoir à partir de quel prix vous gagnez de l’argent.",
         "Préparer la facturation et la TVA, à valider avec un comptable."
       ],
-      "resultat": "À la fin : une page de tarifs claire et un prix justifié."
+      "resultat": "À la fin : une page de tarifs claire et un prix justifié.",
+      "objectif": "Fixer un prix justifié et des formules faciles à comprendre.",
+      "saurezFaire": [
+        "estimer la valeur de votre produit pour un client",
+        "calculer votre coût par client et votre seuil",
+        "rédiger une page de tarifs honnête"
+      ]
     },
     {
       "titre": "Trouver ses premiers clients",
@@ -56,7 +80,13 @@
         "Écrire une page d’accueil qui convainc : une promesse claire, une preuve, un prix et un bouton.",
         "Proposer un tarif de lancement aux premiers clients, en échange de leurs retours."
       ],
-      "resultat": "À la fin : vos premiers abonnés payants. Les résultats dépendent de votre travail et ne peuvent pas être garantis."
+      "resultat": "À la fin : vos premiers abonnés payants. Les résultats dépendent de votre travail et ne peuvent pas être garantis.",
+      "objectif": "Aller chercher vos premiers utilisateurs, avec méthode et respect des règles.",
+      "saurezFaire": [
+        "constituer une liste de 50 contacts qualifiés",
+        "écrire un message de contact court et personnel",
+        "mener une démonstration centrée sur le problème du client"
+      ]
     },
     {
       "titre": "Mesurer, améliorer, grandir",
@@ -67,16 +97,40 @@
         "Améliorer d’abord ce qui retient les clients, avant d’ajouter de nouvelles fonctions.",
         "Savoir quand automatiser, et quand se faire aider."
       ],
-      "resultat": "À la fin : un tableau de bord simple et un plan d’amélioration."
+      "resultat": "À la fin : un tableau de bord simple et un plan d’amélioration.",
+      "objectif": "Piloter votre SaaS avec quelques chiffres et l’écoute de vos clients.",
+      "saurezFaire": [
+        "calculer cinq indicateurs simples",
+        "organiser l’écoute des clients",
+        "prioriser vos améliorations"
+      ]
     }
   ],
   "parcours": [
-    { "titre": "L’idée", "texte": "Un problème réel, un public précis." },
-    { "titre": "Le produit", "texte": "Le strict minimum qui crée de la valeur." },
-    { "titre": "La première version", "texte": "Utilisable par de vrais testeurs." },
-    { "titre": "Le prix", "texte": "Une offre claire et rentable." },
-    { "titre": "Les premiers clients", "texte": "Des abonnés qui paient." },
-    { "titre": "La croissance", "texte": "Des chiffres pour décider." }
+    {
+      "titre": "L’idée",
+      "texte": "Un problème réel, un public précis."
+    },
+    {
+      "titre": "Le produit",
+      "texte": "Le strict minimum qui crée de la valeur."
+    },
+    {
+      "titre": "La première version",
+      "texte": "Utilisable par de vrais testeurs."
+    },
+    {
+      "titre": "Le prix",
+      "texte": "Une offre claire et rentable."
+    },
+    {
+      "titre": "Les premiers clients",
+      "texte": "Des abonnés qui paient."
+    },
+    {
+      "titre": "La croissance",
+      "texte": "Des chiffres pour décider."
+    }
   ],
   "checklist": [
     "Un problème clair et fréquent",

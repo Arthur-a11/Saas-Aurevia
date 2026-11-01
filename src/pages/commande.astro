@@ -27,6 +27,13 @@ const duree = conditions.dureeAcces.valeur ? conditions.dureeAcces.options[condi
 
   <section class="section-serree" id="zone-commande" hidden>
     <div class="wrap">
+      <ol class="etapes-commande" id="etapes-commande" aria-label="Étapes de la commande">
+        <li data-etape="formule">Formule</li>
+        <li data-etape="compte">Compte</li>
+        <li data-etape="conditions">Conditions</li>
+        <li data-etape="paiement">Paiement</li>
+        <li data-etape="acces">Accès à la formation</li>
+      </ol>
       <p class="encadre attention" id="bandeau-test" hidden><strong>Mode test :</strong> aucun paiement réel n’est possible. Sur la page de paiement, utilisez une carte de test Stripe (par exemple 4242 4242 4242 4242).</p>
       <div id="message-commande" class="message-formulaire" role="status" hidden></div>
 
@@ -107,6 +114,17 @@ const duree = conditions.dureeAcces.valeur ? conditions.dureeAcces.options[condi
     confirmation_email_impossible: "L’e-mail de confirmation n’est pas encore en service.",
   };
 
+  /** Étapes : faites, actuelle (aria-current="step"), à venir. */
+  function etape(actuelle: string) {
+    const ordre = ["formule", "compte", "conditions", "paiement", "acces"];
+    const i = ordre.indexOf(actuelle);
+    for (const li of Array.from(document.querySelectorAll<HTMLLIElement>("#etapes-commande li"))) {
+      const j = ordre.indexOf(li.dataset.etape!);
+      li.dataset.etat = j < i ? "fait" : j === i ? "actuel" : "a-venir";
+      if (j === i) li.setAttribute("aria-current", "step"); else li.removeAttribute("aria-current");
+    }
+  }
+
   async function demarrer() {
     const [etat, moi] = await Promise.all([api("/api/paiement/etat", undefined, 8_000), api("/api/compte/moi", undefined, 8_000)]);
     const mode = etat.data?.mode;
@@ -126,10 +144,12 @@ const duree = conditions.dureeAcces.valeur ? conditions.dureeAcces.options[condi
       message(zoneMsg, "info", "Paiement annulé", ["Vous avez quitté la page de paiement : aucun accès n’a été ouvert. Vous pouvez recommencer quand vous voulez."]);
     }
     if (!moi.data?.connecte) {
+      etape("compte");
       ($("lien-compte") as HTMLAnchorElement).href = `/compte/?suite=${encodeURIComponent(location.pathname + location.search)}`;
       $("bloc-connexion").hidden = false;
       return;
     }
+    etape("conditions");
     form.hidden = false;
   }
 
@@ -147,6 +167,7 @@ const duree = conditions.dureeAcces.valeur ? conditions.dureeAcces.options[condi
     const bouton = $("bouton-payer") as HTMLButtonElement;
     bouton.disabled = true;
     bouton.textContent = "Préparation du paiement…";
+    etape("paiement");
     const r = await api("/api/paiement/session", donnees);
     if (r.statut === 201 && typeof r.data?.url === "string") { location.assign(r.data.url); return; }
     bouton.disabled = false;

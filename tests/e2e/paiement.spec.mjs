@@ -203,7 +203,8 @@ test("exercice, fiche, modèle et checklist : affichés selon leur type ; modèl
   await page.getByText("Exemple de fiche MVP (fictif)").click();
   await expect(page.getByText(/Promesse : les cabinets de 2 à 10 personnes/)).toBeVisible();
   await page.goto(`${SITE}/formation/lecon/?id=m4-checklist`);
-  const cases = page.getByRole("checkbox");
+  const cases = page.locator(".checklist-module").getByRole("checkbox");
+  await expect(cases.first()).toBeVisible();   // attendre l'affichage avant de compter
   expect(await cases.count()).toBeGreaterThanOrEqual(5);
   await cases.first().check();
   await page.goto(`${SITE}/formation/lecon/?id=m1-modele`);
@@ -265,4 +266,43 @@ test("avant de payer : ouverture, durée d’accès, vendeur « à compléter »
   await expect(bloc).toContainText("durée d’accès à décider — à compléter");
   await expect(bloc).toContainText("SIREN — à compléter");
   for (const c of await page.locator("#form-commande input[type=checkbox]").all()) await expect(c).not.toBeChecked();
+});
+
+test("espace : sommaire des modules (ordinateur) ou compact (mobile), états qui évoluent, navigation dans la leçon", async ({ page }, info) => {
+  await creerCompte(page);
+  await allerAuPaiement(page, "complet");
+  await page.getByRole("button", { name: "Payer (succès)" }).click();
+  await expect(page.locator(".module-espace")).toHaveCount(6);
+  const nav = info.project.name === "mobile" ? page.locator(".sommaire-mobile") : page.locator(".espace-aside");
+  if (info.project.name === "mobile") {
+    await expect(page.locator(".espace-aside")).toBeHidden();
+    await nav.locator("summary").click();
+  }
+  await expect(nav.getByRole("link")).toHaveCount(6);
+  await expect(nav.getByRole("link").first()).toContainText("Non commencé · 0/8");
+  await expect(page.locator("#module-1 .module-tete .etat")).toHaveText("Non commencé");
+  await expect(page.getByRole("link", { name: "Télécharger : Modèle : grille d’entretien de découverte" })).toBeVisible();
+
+  await page.goto(`${SITE}/formation/lecon/?id=m1-l2`);
+  const navLecon = info.project.name === "mobile" ? page.locator(".nav-module-mobile") : page.locator(".nav-module-bureau");
+  if (info.project.name === "mobile") await navLecon.locator("summary").click();
+  await expect(navLecon.locator('a[aria-current="page"]')).toContainText("Choisir un public précis");
+  await expect(page.getByRole("link", { name: "← Leçon précédente" })).toHaveAttribute("href", "?id=m1-l1");
+  await expect(page.getByRole("link", { name: "Leçon suivante →" })).toHaveAttribute("href", "?id=m1-l3");
+  await page.getByRole("button", { name: "Marquer comme terminée" }).click();
+  await expect(page.getByText(/Progression enregistrée : 1 leçon/)).toBeVisible();
+
+  await page.goto(`${SITE}/formation/`);
+  await expect(page.locator("#module-1 .module-tete .etat")).toHaveText("En cours");
+  await expect(page.locator('#module-1 .lecon[data-etat="termine"]')).toContainText("Choisir un public précis");
+  await expect(page.locator('#module-1 .lecon[data-etat="termine"]')).toContainText("Terminé");
+});
+
+test("commande : étapes visibles, l’étape actuelle est signalée", async ({ page }) => {
+  await page.goto(`${SITE}/commande/?formule=complet`);
+  await expect(page.locator('#etapes-commande li[aria-current="step"]')).toHaveText("Compte");
+  await page.getByRole("link", { name: "Me connecter ou créer mon compte" }).click();
+  await creerCompte(page, unique(), "/commande/?formule=complet");
+  await expect(page.locator('#etapes-commande li[aria-current="step"]')).toHaveText("Conditions");
+  await expect(page.locator('#etapes-commande li[data-etat="fait"]')).toHaveCount(2);
 });
