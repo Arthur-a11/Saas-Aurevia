@@ -66,3 +66,12 @@ npx netlify-cli blobs:get inscriptions INS-AAAAMMJJ-XXXXXX
 - Blocage : Arthur n'arrive pas à créer un nouveau projet sur Netlify. Pistes à vérifier : e-mail Netlify non confirmé ou accueil non terminé, application Netlify sans accès au dépôt privé (« Configure the Netlify app on GitHub »), ou mauvais parcours (glisser-déposer au lieu d'« Import from GitHub »).
 - Reprise : demander une capture d'écran de la page bloquante, puis reprendre à l'étape 4 de la section 3.
 - Pour vérifier le site en ligne depuis une session Claude, il faudra autoriser le domaine `xxxx.netlify.app` dans les réglages réseau de l'environnement.
+
+## 6. Site en ligne (1er novembre 2026)
+
+- Adresse : https://aurevia-saas.netlify.app, déployée depuis le dépôt GitHub public `Arthur-a11/Saas-Aurevia` (branche `main`). Chaque envoi sur `main` republie le site automatiquement.
+- Projet Netlify passé de « Private » à public sur décision d'Arthur. Le site reste non indexé (`noindex`, `robots.txt` bloquant) tant que `SITE_URL` n'est pas réglé.
+- Vérifié sur le site réel (Chromium, ordinateur et mobile) : 27 pages, 1 500 idées, 15 marchés, recherche, mobile sans débordement, console sans erreur, aucune ressource extérieure, en-têtes de sécurité, 8 protections serveur. Inscription et rétractation réelles enregistrées dans Netlify Blobs, avec détection des doublons.
+- Défaut propre à Netlify corrigé : le badge « Powered by Netlify » (fixe, 201 × 64 px, en bas à droite) recouvrait le bouton de l'assistant. Le bouton est désormais placé au-dessus (`--zone-badge`).
+- Entrées de test à supprimer dans **Blobs** : e-mail `test-claude-1793548763377@exemple.fr` (références `INS-20261101-SV9YHS` et `RET-20261101-GYXMQY`).
+- À faire : régler `SEL_EMPREINTE` (sinon une valeur par défaut publique est utilisée), puis redéployer.
