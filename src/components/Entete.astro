@@ -14,6 +14,7 @@ const { courant } = Astro.props;
         {PAGES.map((p) => (
           <li><a href={p.href} aria-current={courant === p.href ? "page" : undefined}>{p.label}</a></li>
         ))}
+        <li><a href="/formation/" aria-current={courant === "/formation/" ? "page" : undefined}>Ma formation</a></li>
         <li class="nav-inscription"><a href="/inscription/" aria-current={courant === "/inscription/" ? "page" : undefined}>Je m’inscris</a></li>
       </ul>
     </nav>

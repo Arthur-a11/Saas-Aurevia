@@ -21,18 +21,21 @@ import { site } from "../lib/site.js";
         <ol>
           {programme.modules.map((m, i) => <li><a href={`#module-${i + 1}`}><span class="mono">{String(i + 1).padStart(2, "0")}</span> {m.titre}</a></li>)}
         </ol>
-        <button type="button" class="btn alt petit sans-js-masque" id="tout-ouvrir" aria-controls="liste-modules">Tout ouvrir</button>
       </nav>
-      <div id="liste-modules">
+      <ol class="liste-modules" id="liste-modules">
       {programme.modules.map((m, i) => (
-        <details class="module" id={`module-${i + 1}`} open={i === 0}>
-          <summary><span class="num-module" aria-hidden="true">{String(i + 1).padStart(2, "0")}</span>Module {i + 1} : {m.titre.charAt(0).toLowerCase() + m.titre.slice(1)}</summary>
-          <p>{m.resume}</p>
-          <ul>{m.points.map((pt) => <li>{pt}</li>)}</ul>
+        <li class="carte module-bloc" id={`module-${i + 1}`}>
+          <div class="module-tete">
+            <span class="num-module" aria-hidden="true">{String(i + 1).padStart(2, "0")}</span>
+            <h3 id={`titre-module-${i + 1}`}><span class="sr-only">Module {i + 1} : </span>{m.titre}</h3>
+          </div>
+          <p class="module-resume">{m.resume}</p>
+          <p class="module-sous-titre">Au programme</p>
+          <ul class="module-points">{m.points.map((pt) => <li>{pt}</li>)}</ul>
           <p class="resultat"><span class="pastille-livrable">Livrable</span> {m.resultat.replace(/^À la fin : /, "")}</p>
-        </details>
+        </li>
       ))}
-      </div>
+      </ol>
     </div>
   </section>
 
@@ -53,18 +56,3 @@ import { site } from "../lib/site.js";
   </section>
 </Base>
 
-<script>
-  // Ouvre le module visé par un lien (#module-3) ; bouton « Tout ouvrir / Tout fermer ».
-  const modules = Array.from(document.querySelectorAll<HTMLDetailsElement>("details.module"));
-  const bouton = document.getElementById("tout-ouvrir") as HTMLButtonElement;
-  const ouvrirCible = () => {
-    const cible = location.hash ? document.getElementById(decodeURIComponent(location.hash.slice(1))) : null;
-    if (cible instanceof HTMLDetailsElement && cible.classList.contains("module")) { cible.open = true; cible.querySelector("summary")?.focus(); }
-  };
-  window.addEventListener("hashchange", ouvrirCible);
-  ouvrirCible();
-  const maj = () => { bouton.textContent = modules.every((d) => d.open) ? "Tout fermer" : "Tout ouvrir"; };
-  modules.forEach((d) => d.addEventListener("toggle", maj));
-  bouton.addEventListener("click", () => { const ouvrir = !modules.every((d) => d.open); modules.forEach((d) => (d.open = ouvrir)); maj(); });
-  maj();
-</script>

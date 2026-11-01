@@ -5,8 +5,9 @@ import site from "../src/data/site.json" with { type: "json" };
 import { json, lireJson, origineAutorisee, empreinteIp, empreinte, reference, methodeNonAutorisee } from "./http.js";
 import { incrementer } from "./stockage.js";
 import { envoyerEmail, emailConfigure } from "./email.js";
-import { validerInscription, validerRetractation, validerCommande, estRobot, TEXTES_CONSENTEMENT } from "./validation.js";
+import { validerInscription, validerRetractation, estRobot, TEXTES_CONSENTEMENT } from "./validation.js";
 import { contexteAssistant } from "./contexte-assistant.js";
+import { modePaiement } from "./stripe.js";
 
 const HEURE = 3_600_000;
 const DELAI_MIN_MS = 1_500;
@@ -130,48 +131,6 @@ export async function traiterRetractation(requete, ctx) {
   return json(201, { ok: true, reference: ref, recuLe: enregistrement.recuLe, emailAccuse: statut });
 }
 
-// ---------------------------------------------------------------- Commande (préparée, fermée par défaut)
-export async function traiterCommande(requete, ctx, config = site) {
-  if (requete.method !== "POST") return methodeNonAutorisee();
-  if (!config.paiement.actif) return json(403, { ok: false, code: "commandes_fermees" });
-  // Sans e-mail, impossible d'envoyer la confirmation obligatoire sur support durable : on refuse.
-  if (!emailConfigure(ctx.env)) return json(503, { ok: false, code: "confirmation_impossible" });
-  const p = await preparer(requete, ctx, { cleLimite: "commande", limiteParHeure: entier(ctx.env.LIMITE_FORMULAIRES_HEURE, 10) });
-  if (p.reponse) return p.reponse;
-  const { ok, erreurs, valeurs } = validerCommande(p.donnees);
-  if (!ok) return json(400, { ok: false, code: "champs_invalides", erreurs });
-
-  const maintenant = new Date(ctx.maintenant?.() ?? Date.now());
-  const ref = reference("CMD", maintenant);
-  const accords = {
-    version: TEXTES_CONSENTEMENT.version,
-    cgv: { accepte: true, texte: TEXTES_CONSENTEMENT.cgv },
-    accesImmediat: { accepte: valeurs.accesImmediat, texte: TEXTES_CONSENTEMENT.accesImmediat },
-    ...(valeurs.formule === "accompagne" ? { executionService: { accepte: valeurs.executionService, texte: TEXTES_CONSENTEMENT.executionService } } : {}),
-  };
-  const enregistrement = {
-    reference: ref, type: "commande", recuLe: maintenant.toISOString(), statut: "en-attente-de-paiement",
-    formule: valeurs.formule, prixAffiche: prixFormule(valeurs.formule), client: { prenom: valeurs.prenom, nom: valeurs.nom, email: valeurs.email },
-    accords, empreinteIp: p.empreinte,
-  };
-  if (!(await sauver(ctx, "commandes", ref, enregistrement))) return json(503, { ok: false, code: "stockage_erreur" });
-
-  const lignesAccords = [
-    `- ${TEXTES_CONSENTEMENT.cgv} : oui`,
-    `- ${TEXTES_CONSENTEMENT.accesImmediat} : ${valeurs.accesImmediat ? "oui" : "non"}`,
-    ...(valeurs.formule === "accompagne" ? [`- ${TEXTES_CONSENTEMENT.executionService} : ${valeurs.executionService ? "oui" : "non"}`] : []),
-  ].join("\n");
-  const statut = await envoyerEmail(ctx.env, {
-    a: valeurs.email,
-    sujet: `Votre commande AUREVIA SAAS ${ref}`,
-    texte: `Bonjour ${valeurs.prenom},\n\nVotre commande est enregistrée, en attente de paiement.\n\nRéférence : ${ref}\nFormule : ${nomFormule(valeurs.formule)} – ${prixFormule(valeurs.formule)}\n\nVos choix (horodatés le ${maintenant.toLocaleString("fr-FR", { timeZone: "Europe/Paris" })}) :\n${lignesAccords}\n\nPaiement : ${config.paiement.lienPaypalMe} (indiquez le montant et la référence). Le paiement n’est pas vérifié automatiquement : je vous confirme la commande et l’accès par e-mail.\n\nConditions générales de vente : ${ctx.env.SITE_URL ? new URL("/cgv/", ctx.env.SITE_URL).href : "page CGV du site"}\nDroit de rétractation : ${ctx.env.SITE_URL ? new URL("/retractation/", ctx.env.SITE_URL).href : "page Droit de rétractation du site"}\n\nAUREVIA SAAS – ${site.contactEmail}`,
-  }, ctx.fetchFn);
-  enregistrement.emailConfirmation = statut;
-  await sauver(ctx, "commandes", ref, enregistrement);
-  if (statut !== "envoye") return json(502, { ok: false, code: "confirmation_echec", reference: ref });
-  return json(201, { ok: true, reference: ref, formule: valeurs.formule, emailConfirmation: statut });
-}
-
 // ---------------------------------------------------------------- Assistant IA
 const MODELES_AVEC_REPLI = new Set(["claude-opus-5-5", "claude-opus-5", "claude-sonnet-5-5", "claude-fable-5-1"]);
 
@@ -277,6 +236,7 @@ export async function traiterEtat(requete, ctx) {
       assistantIA: env.ASSISTANT_IA === "active" && Boolean(env.ANTHROPIC_API_KEY),
       siteUrl: Boolean(env.SITE_URL),
       paiementActif: Boolean(site.paiement.actif),
+      paiementStripe: modePaiement(env),   // "test", "reel" ou null : jamais la clé elle-même
     },
   });
 }

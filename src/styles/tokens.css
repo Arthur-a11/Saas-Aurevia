@@ -52,7 +52,10 @@
   --police-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;  /* étiquettes, chiffres */
 
   /* Mise en page */
-  --largeur: 1080px;
+  --largeur: 1240px;      /* sections larges sur ordinateur ; les textes gardent leur propre largeur de lecture */
+  --espace-section: clamp(3rem, 6vw, 5rem);
+  --espace-cartes: clamp(1rem, 2.2vw, 1.75rem);
+  --pad-carte: clamp(1.25rem, 2.4vw, 2rem);
   --gouttiere: 1rem;
   --header-h: 4.5rem;
   --rayon: 18px;

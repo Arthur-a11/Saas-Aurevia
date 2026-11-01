@@ -1,22 +1,37 @@
 ---
 // Carte d'une formule (accueil et page Tarifs). Les éléments non disponibles restent « En préparation ».
-import { site, mentionTaxes, LIBELLE_STATUT } from "../lib/site.js";
+// Le bouton mène à l'inscription sans paiement ; il ne mène à la commande que si le SERVEUR indique
+// que la vente de cette formule est ouverte (paiement configuré).
+import { site, mentionTaxes, LIBELLE_STATUT, contenuFormule } from "../lib/site.js";
 interface Props { f: (typeof site.formules)[number] }
 const { f } = Astro.props;
-const ouvert = site.paiement.actif;
 ---
 <li class={`carte tarif${f.recommandee ? " recommandee neon" : ""}`}>
   <div class="haut">{f.recommandee && <span class="badge">Notre recommandation</span>}</div>
   <h3>{f.nom}</h3>
-  <p class="montant">{f.prixAffiche}<span class="taxes">{mentionTaxes()} · paiement unique</span></p>
+  <p class="montant">{f.prixAffiche}<span class="taxes">{mentionTaxes()}</span></p>
+  <p class="frequence">Paiement unique · sans abonnement</p>
+  <p class="obtenez">Ce que vous obtenez</p>
   <ul>
-    {f.inclus.map((x) => (
+    {contenuFormule(f).map((x) => (
       <li>{x.texte}{LIBELLE_STATUT[x.statut] && <span class="statut">{LIBELLE_STATUT[x.statut]}{x.precision ? ` : ${x.precision}` : ""}</span>}</li>
     ))}
   </ul>
-  <a class={`btn${f.recommandee ? "" : " alt"}`}
-     href={ouvert ? `/commande/?formule=${f.id}` : `/inscription/?formule=${f.id}`}
+  <a class={`btn${f.recommandee ? "" : " alt"}`} data-formule={f.id}
+     href={`/inscription/?formule=${f.id}`}
      aria-label={`Choisir la formule ${f.nom} (${f.prixAffiche})`}>
-    {ouvert ? "Commander" : "Choisir"}
+    Choisir
   </a>
 </li>
+
+<script>
+  import { api } from "../lib/espace-client";
+  // Vente ouverte côté serveur → le bouton mène à la commande. Sinon : inscription sans paiement.
+  api("/api/paiement/etat", undefined, 8_000).then((r) => {
+    if (!r.data?.mode) return;
+    if (Object.values<any>(r.data.ventes ?? {}).some((v) => v.ouverte)) document.getElementById("avis-commandes")?.setAttribute("hidden", "");
+    for (const a of Array.from(document.querySelectorAll<HTMLAnchorElement>("a[data-formule]"))) {
+      if (r.data.ventes?.[a.dataset.formule!]?.ouverte) a.href = `/commande/?formule=${a.dataset.formule}`;
+    }
+  });
+</script>

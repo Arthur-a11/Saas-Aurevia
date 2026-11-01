@@ -1,0 +1,94 @@
+/* Programme en blocs, tarifs détaillés, compte, commande et espace « Ma formation ».
+   Couleurs : uniquement les jetons de tokens.css. */
+
+.section-serree { padding-top: 0; }
+.titre-carte { font-size: clamp(1.25rem, 2vw, 1.5rem); margin: 0 0 1rem; }
+.titre-carte::after { display: none; }
+
+/* ---------- Programme : un bloc distinct par module ---------- */
+.sommaire-programme { padding: 1rem 1.25rem; border: 1px solid var(--line); border-radius: var(--rayon-petit); background: rgba(9, 11, 40, 0.45); margin-bottom: var(--espace-cartes); }
+.liste-modules { list-style: none; padding: 0; margin: 0; display: grid; gap: var(--espace-cartes); grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.module-bloc { display: flex; flex-direction: column; gap: 0.85rem; scroll-margin-top: calc(var(--header-h) + 1rem); }
+.module-tete { display: flex; align-items: center; gap: 1rem; }
+.num-module { flex: none; display: inline-grid; place-items: center; width: 3.25rem; height: 3.25rem; border-radius: 14px; font: 700 1.15rem var(--police-mono); color: var(--gold); border: 1px solid rgba(232, 196, 106, 0.55); background: rgba(232, 196, 106, 0.08); }
+.module-tete h3 { margin: 0; font-size: clamp(1.2rem, 1.8vw, 1.45rem); }
+.module-resume { margin: 0; font-size: 1.05rem; color: var(--ink); }
+.module-sous-titre { margin: 0.25rem 0 0; font: 700 0.78rem var(--police-mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+.module-points { margin: 0; padding: 0; list-style: none; display: grid; gap: 0.6rem; color: var(--muted); }
+.module-points li { position: relative; padding-left: 1.4rem; }
+.module-points li::before { content: "→"; position: absolute; left: 0; color: var(--brand); font-weight: 700; }
+.module-bloc .resultat { margin: auto 0 0; padding-top: 0.9rem; border-top: 1px solid var(--line); font-weight: 600; }
+@media (max-width: 900px) { .liste-modules { grid-template-columns: 1fr; } }
+
+/* ---------- Tarifs : ce que l'on obtient ---------- */
+.tarif { gap: 0.9rem; }
+.tarif .frequence { margin: 0; font-weight: 600; color: var(--succes); font-size: 0.95rem; }
+.tarif .obtenez { margin: 0.4rem 0 0; padding-top: 0.9rem; border-top: 1px solid var(--line); font: 700 0.78rem var(--police-mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+
+/* ---------- Compte ---------- */
+.grille-compte { display: grid; gap: var(--espace-cartes); grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; }
+.formulaire-simple { grid-template-columns: 1fr; align-content: start; }
+.formulaire-simple .titre-carte { margin-bottom: 0.25rem; }
+#zone-compte { margin-bottom: var(--espace-cartes); }
+@media (max-width: 820px) { .grille-compte { grid-template-columns: 1fr; } }
+
+/* ---------- Commande ---------- */
+.commande-grille { display: grid; gap: var(--espace-cartes); grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); align-items: start; }
+.choix-formules { margin: 0; display: grid; gap: 1rem; }
+.choix-formules legend { float: left; width: 100%; padding: 0; font: 700 clamp(1.25rem, 2vw, 1.5rem) var(--police-titre); }
+.choix-formule { position: relative; border: 1.5px solid var(--line); border-radius: var(--rayon-petit); padding: 1rem 1.1rem 1rem 3rem; background: rgba(9, 11, 40, 0.5); }
+.choix-formule:has(input:checked) { border-color: var(--brand); box-shadow: 0 0 24px rgba(34, 211, 238, 0.25); }
+.choix-formule:has(input:disabled) { opacity: 0.7; }
+.choix-formule input[type="radio"] { position: absolute; left: 1rem; top: 1.2rem; width: 1.25rem; height: 1.25rem; accent-color: var(--brand); margin: 0; }
+.choix-entete { display: flex; justify-content: space-between; gap: 1rem; font-size: 1.1rem; cursor: pointer; }
+.choix-entete .mono { font-weight: 700; color: var(--gold); }
+.liste-contenu { margin: 0.6rem 0 0; padding-left: 1.1rem; color: var(--muted); display: grid; gap: 0.3rem; font-size: 0.95rem; }
+.liste-contenu .statut, .ferme-raison { display: inline-block; margin-left: 0.4rem; color: var(--gold); font-size: 0.85rem; font-weight: 600; }
+.ferme-raison { margin: 0.5rem 0 0; }
+.commande-accords { grid-template-columns: 1fr; }
+.bouton-large { width: 100%; }
+#message-commande, #bandeau-test, #bloc-connexion { margin-bottom: var(--espace-cartes); }
+@media (max-width: 900px) { .commande-grille { grid-template-columns: 1fr; } }
+
+/* ---------- Espace « Ma formation » ---------- */
+#etat-formation, #etat-lecon { margin-bottom: var(--espace-cartes); }
+.tableau-formation { margin-bottom: var(--espace-section); }
+.formules-detenues { list-style: none; padding: 0; margin: 0 0 1rem; display: grid; gap: 0.4rem; }
+.formules-detenues .etiquette { margin-left: 0.5rem; }
+.progression-texte { margin: 0 0 0.5rem; color: var(--muted); }
+.barre-progression { height: 0.65rem; border-radius: 999px; background: rgba(150, 170, 255, 0.18); overflow: hidden; margin-bottom: 1.25rem; max-width: 32rem; }
+.barre-progression span { display: block; height: 100%; background: var(--grad); border-radius: inherit; }
+.titre-section-espace { margin: 0 0 var(--espace-cartes); }
+.modules-espace { list-style: none; padding: 0; margin: 0 0 var(--espace-section); display: grid; gap: var(--espace-cartes); grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.module-espace { display: flex; flex-direction: column; gap: 0.8rem; }
+.module-espace h3 { margin: 0; font-size: 1.25rem; }
+.lecons { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.5rem; }
+.lecon { display: grid; grid-template-columns: 7.5rem minmax(0, 1fr) auto; align-items: center; gap: 0.75rem; padding: 0.65rem 0.8rem; border-radius: var(--rayon-petit); border: 1px solid var(--line); background: rgba(9, 11, 40, 0.45); }
+.lecon.fermee { color: var(--muted); }
+.lecon-type { font: 600 0.75rem var(--police-mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.lecon .fait { color: var(--succes); font-weight: 600; }
+.etiquette { display: inline-block; font-size: 0.82rem; font-weight: 600; padding: 0.15rem 0.6rem; border-radius: 999px; border: 1px solid currentColor; white-space: nowrap; }
+.etiquette.attente { color: var(--gold); }
+.etiquette.verrou { color: var(--muted); }
+.etiquette.verrou::before { content: "🔒 "; }
+.ressources-espace { list-style: none; padding: 0; margin: 0 0 1.5rem; display: grid; gap: var(--espace-cartes); grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.ressources-espace .carte { display: flex; flex-wrap: wrap; gap: 0.5rem 0.75rem; align-items: center; }
+.ressources-espace .note { flex-basis: 100%; margin: 0; }
+.pied-espace { margin-top: var(--espace-cartes); }
+@media (max-width: 900px) {
+  .modules-espace, .ressources-espace { grid-template-columns: 1fr; }
+}
+@media (max-width: 560px) {
+  .lecon { grid-template-columns: minmax(0, 1fr) auto; }
+  .lecon-type { grid-column: 1 / -1; }
+}
+
+/* ---------- Leçon ---------- */
+.lecon-contenu { max-width: 52rem; }
+.lecon-contenu h2 { font-size: 1.3rem; margin-top: 1.5rem; }
+.etapes-lecon { padding-left: 1.4rem; display: grid; gap: 0.75rem; }
+.etapes-lecon li { padding-left: 0.3rem; }
+.lecon-contenu .resultat { font-weight: 600; padding-top: 1rem; border-top: 1px solid var(--line); }
+.lecon-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem 1rem; margin: 1.5rem 0; }
+.lecon-actions .note { margin: 0; }
+.lecon-navigation { display: flex; justify-content: space-between; gap: 0.75rem; flex-wrap: wrap; padding-top: 1rem; border-top: 1px solid var(--line); }

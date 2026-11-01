@@ -13,7 +13,7 @@ export default defineConfig({
   build: { format: "directory" },
   integrations: [
     sitemap({
-      filter: (page) => !page.includes("/commande/") && !page.includes("/404"),
+      filter: (page) => !["/commande/", "/compte/", "/formation/", "/404"].some((x) => page.includes(x)),
     }),
   ],
 });

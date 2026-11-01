@@ -22,6 +22,7 @@ function stockageMemoire() {
     mode: "memoire",
     async enregistrer(collection, id, donnees) { m.set(`${collection}/${id}`, structuredClone(donnees)); },
     async lire(collection, id) { return structuredClone(m.get(`${collection}/${id}`) ?? null); },
+    async lireFichier(collection, id) { return m.get(`fichier:${collection}/${id}`) ?? null; },
     _contenu: m,
   };
 }
@@ -37,6 +38,9 @@ function stockageFichier(dossier) {
     async lire(collection, id) {
       try { return JSON.parse(await readFile(chemin(collection, id), "utf8")); } catch { return null; }
     },
+    async lireFichier(collection, id) {
+      try { return await readFile(path.join(dossier, collection, id.replace(/[^a-zA-Z0-9_.-]/g, "_"))); } catch { return null; }
+    },
   };
 }
 
@@ -51,6 +55,8 @@ function stockageNetlify() {
     mode: "netlify",
     async enregistrer(collection, id, donnees) { await (await magasin(collection)).setJSON(id, donnees); },
     async lire(collection, id) { return (await (await magasin(collection)).get(id, { type: "json" })) ?? null; },
+    // Fichiers protégés (fiches, modèles) : déposés par Arthur dans le magasin Blobs « fichiers-formation ».
+    async lireFichier(collection, id) { return (await (await magasin(collection)).get(id, { type: "arrayBuffer" })) ?? null; },
   };
 }
 

@@ -17,6 +17,9 @@ const PAGES = [
   ["/cgv/", "Conditions générales de vente"],
   ["/confidentialite/", "Politique de confidentialité"],
   ["/retractation/", "Droit de rétractation"],
+  ["/compte/", "Accéder à ma formation"],
+  ["/formation/", "Ma formation"],
+  ["/formation/lecon/", "Leçon"],
   ...donnees.marches.map((m) => [`/idees/${m.id}/`, m.nom]),
 ];
 
@@ -245,24 +248,38 @@ test.describe("explorateur d’idées", () => {
 });
 
 test.describe("programme", () => {
-  test("sommaire : un lien ouvre le bon module ; « Tout ouvrir » puis « Tout fermer »", async ({ page }) => {
+  test("six modules en blocs distincts : numéro, titre, description, contenu et livrable", async ({ page }) => {
     await page.goto("/programme/");
-    await expect(page.locator("details.module")).toHaveCount(6);
-    await page.getByRole("navigation", { name: "Sommaire du programme" }).getByRole("link", { name: /04 Fixer le prix/ }).click();
-    await expect(page).toHaveURL(/#module-4$/);
-    await expect(page.locator("#module-4")).toHaveAttribute("open", "");
-    const bouton = page.getByRole("button", { name: "Tout ouvrir" });
-    await bouton.click();
-    for (let i = 1; i <= 6; i++) await expect(page.locator(`#module-${i}`)).toHaveAttribute("open", "");
-    await expect(page.getByRole("button", { name: "Tout fermer" })).toBeVisible();
-    await page.getByRole("button", { name: "Tout fermer" }).click();
-    await expect(page.locator("details.module[open]")).toHaveCount(0);
+    const blocs = page.locator(".module-bloc");
+    await expect(blocs).toHaveCount(6);
+    for (let i = 1; i <= 6; i++) {
+      const b = page.locator(`#module-${i}`);
+      await expect(b.locator(".num-module")).toHaveText(String(i).padStart(2, "0"));
+      await expect(b.getByRole("heading", { level: 3 })).toBeVisible();
+      await expect(b.locator(".module-resume")).not.toBeEmpty();
+      expect(await b.locator(".module-points li").count()).toBeGreaterThanOrEqual(3);
+      await expect(b.locator(".resultat")).toContainText("Livrable");
+    }
   });
 
-  test("lien direct vers un module : il s’ouvre à l’arrivée", async ({ page }) => {
-    await page.goto("/programme/#module-5");
-    await expect(page.locator("#module-5")).toHaveAttribute("open", "");
-    await expect(page.locator("#module-5 .resultat")).toContainText("Livrable");
+  test("sommaire : un lien mène au bon module, visible sous l’en-tête", async ({ page }) => {
+    await page.goto("/programme/");
+    await page.getByRole("navigation", { name: "Sommaire du programme" }).getByRole("link", { name: /04 Fixer le prix/ }).click();
+    await expect(page).toHaveURL(/#module-4$/);
+    await expect(page.locator("#module-4")).toBeInViewport();
+    const haut = await page.locator("#module-4").evaluate((e) => e.getBoundingClientRect().top);
+    const entete = await page.locator(".entete").evaluate((e) => e.getBoundingClientRect().bottom);
+    expect(haut).toBeGreaterThanOrEqual(entete - 1);
+  });
+
+  test("ordinateur : deux modules par rangée, sections plus larges qu’avant (1 080 px)", async ({ page }, info) => {
+    test.skip(info.project.name !== "ordinateur", "une colonne sur mobile");
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/programme/");
+    const hauts = await page.locator(".module-bloc").evaluateAll((bs) => bs.slice(0, 2).map((b) => Math.round(b.getBoundingClientRect().top)));
+    expect(hauts[0]).toBe(hauts[1]);
+    const largeur = await page.locator("#liste-modules").evaluate((e) => e.getBoundingClientRect().width);
+    expect(largeur).toBeGreaterThan(1080);
   });
 });
 
@@ -296,7 +313,7 @@ test.describe("accueil : éléments de vente", () => {
     await page.goto("/tarifs/");
     const table = page.getByRole("table", { name: "Comparer les formules" });
     await expect(table).toBeVisible();
-    await expect(table.getByRole("row")).toHaveCount(6);
+    await expect(table.getByRole("row")).toHaveCount(7);   // en-tête + 6 lignes (dont l'espace « Ma formation »)
     await expect(table.getByText("En préparation").first()).toBeVisible();
     await expect(table.getByText("Modalités à définir")).toBeVisible();
   });
@@ -410,12 +427,14 @@ test.describe("formulaires", () => {
     await expect(zone).toContainText("Aucun accusé de réception n’a pu être envoyé");
   });
 
-  test("commande : fermée, renvoie vers l’inscription", async ({ page, request }) => {
+  test("commande : fermée sans paiement configuré, renvoie vers l’inscription", async ({ page, request }) => {
     await page.goto("/commande/?formule=complet");
     await expect(page.getByText("Les commandes en ligne ne sont pas encore ouvertes.")).toBeVisible();
-    await expect(page.locator("#form-commande")).toHaveCount(0);
-    const r = await request.post("/api/commande", { data: {} });
-    expect(r.status()).toBe(403);
+    await expect(page.getByRole("link", { name: "M’inscrire sans payer" })).toHaveAttribute("href", "/inscription/?formule=complet");
+    await expect(page.locator("#form-commande")).toBeHidden();
+    const r = await request.post("/api/paiement/session", { data: { formule: "complet", cgv: true } });
+    expect(r.status()).toBe(503);
+    expect((await r.json()).code).toBe("paiement_non_configure");
   });
 });
 
@@ -504,7 +523,7 @@ test.describe("clavier et mobile", () => {
       await expect(menu).toHaveAttribute("aria-expanded", "true");
     }
     const nav = page.getByRole("navigation", { name: "Navigation principale" });
-    for (const nom of ["Le programme", "Marchés et idées", "Tarifs", "Questions", "Contact"]) {
+    for (const nom of ["Le programme", "Marchés et idées", "Tarifs", "Questions", "Contact", "Ma formation"]) {
       await expect(nav.getByRole("link", { name: nom })).toBeVisible();
     }
     await expect(nav.getByRole("link", { name: "Questions" })).toHaveAttribute("aria-current", "page");
@@ -536,7 +555,7 @@ test.describe("clavier et mobile", () => {
 });
 
 test.describe("accessibilité automatique (axe)", () => {
-  for (const url of ["/", "/programme/", "/idees/", "/idees/sante/", "/tarifs/", "/questions/", "/contact/", "/inscription/", "/retractation/", "/cgv/"]) {
+  for (const url of ["/", "/programme/", "/idees/", "/idees/sante/", "/tarifs/", "/questions/", "/contact/", "/inscription/", "/retractation/", "/cgv/", "/compte/", "/formation/"]) {
     test(`${url} sans violation WCAG A/AA détectée`, async ({ page }) => {
       await page.goto(url);
       await page.emulateMedia({ reducedMotion: "reduce" });

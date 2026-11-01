@@ -1,0 +1,149 @@
+---
+// Espace « Ma formation ». Tout son contenu vient du serveur, qui vérifie le compte et les droits.
+// Après un paiement (?commande=…), la page attend la confirmation VÉRIFIÉE par le serveur :
+// le paramètre d'adresse seul ne débloque rien.
+import Base from "../../layouts/Base.astro";
+---
+<Base titre="Ma formation" noindex description="Votre espace de formation AUREVIA SAAS : modules, leçons, ressources et progression.">
+  <section class="entete-page">
+    <div class="wrap">
+      <p class="surtitre">Espace personnel</p>
+      <h1 class="titre-degrade">Ma formation</h1>
+    </div>
+  </section>
+  <section class="section-serree">
+    <div class="wrap">
+      <div id="etat-formation" class="message-formulaire info" role="status">
+        <p>Chargement de votre espace…</p>
+      </div>
+      <noscript><p class="encadre attention">Votre espace nécessite JavaScript, désactivé dans votre navigateur.</p></noscript>
+      <div id="espace" hidden></div>
+    </div>
+  </section>
+</Base>
+
+<script>
+  import { message } from "../../lib/formulaire";
+  import { api, el, attendre, dateFr } from "../../lib/espace-client";
+  import site from "../../data/site.json";
+
+  const etat = document.getElementById("etat-formation") as HTMLElement;
+  const espace = document.getElementById("espace") as HTMLElement;
+  const commande = new URLSearchParams(location.search).get("commande");
+  const lienCompte = () => el("a", { class: "btn", href: `/compte/?suite=${encodeURIComponent(location.pathname + location.search)}` }, "Me connecter");
+  const LIBELLES: Record<string, string> = { "en-preparation": "En préparation", "a-definir": "Modalités à définir", "non-inclus": "Non inclus dans votre formule" };
+  const TYPES: Record<string, string> = { texte: "Leçon écrite", video: "Vidéo", fiche: "Fiche résumé" };
+
+  /** Attend la confirmation du paiement vérifiée par le serveur (notification Stripe ou vérification directe). */
+  async function verifierPaiement(ref: string) {
+    message(etat, "info", "Vérification du paiement en cours…", ["Nous attendons la confirmation de Stripe. Cela prend en général quelques secondes."]);
+    for (let i = 0; i < 20; i++) {
+      const r = await api(`/api/paiement/statut?commande=${encodeURIComponent(ref)}`, undefined, 10_000);
+      if (r.statut === 401) { message(etat, "ko", "Connectez-vous pour voir votre achat", [lienCompte()]); return false; }
+      if (r.statut === 404) { message(etat, "ko", "Commande introuvable", ["Cette commande n’existe pas ou n’appartient pas à votre compte. Aucun accès n’a été ouvert."]); return true; }
+      const s = r.data?.statut;
+      if (s === "payee") {
+        const ouvert = !r.data.accesLe || Date.parse(r.data.accesLe) <= Date.now();
+        message(etat, "ok", "Paiement confirmé", [ouvert ? "Votre formation est ouverte. Bonne découverte !" : `Comme vous avez gardé votre droit de rétractation, votre accès s’ouvrira le ${dateFr(r.data.accesLe)}.`]);
+        return true;
+      }
+      if (["refuse", "annule"].includes(s)) {
+        message(etat, "ko", "Paiement refusé ou annulé", ["Aucun accès n’a été ouvert. Vous pouvez recommencer depuis la page Tarifs.", el("a", { class: "btn", href: "/tarifs/" }, "Voir les tarifs")]);
+        return true;
+      }
+      if (s === "anomalie") {
+        message(etat, "ko", "Vérification nécessaire", [`Le paiement reçu ne correspond pas à la commande ${ref}. Aucun accès n’a été ouvert : écrivez à ${site.contactEmail} en indiquant cette référence.`]);
+        return true;
+      }
+      await attendre(2_000);
+    }
+    const encore = el("button", { type: "button", class: "btn" }, "Vérifier à nouveau");
+    encore.addEventListener("click", () => location.reload());
+    message(etat, "info", "Confirmation pas encore reçue", [`La confirmation de Stripe n’est pas encore arrivée pour la commande ${ref}. Aucun accès n’est ouvert tant qu’elle n’est pas reçue. Si vous avez été débité(e), elle arrivera : revenez dans quelques minutes.`, encore]);
+    return true;
+  }
+
+  function badge(acces: string) {
+    return acces === "ouvert" ? null : el("span", { class: `etiquette ${acces === "non-inclus" ? "verrou" : "attente"}` }, LIBELLES[acces] ?? acces);
+  }
+
+  function afficher(d: any) {
+    espace.replaceChildren();
+    const aDesDroits = d.modules.some((m: any) => m.lecons.some((l: any) => l.acces !== "non-inclus"));
+    const tableau = el("div", { class: "carte tableau-formation" },
+      el("h2", { class: "titre-carte" }, `Bonjour ${d.prenom}`),
+    );
+    if (d.formules.length) {
+      tableau.append(el("ul", { class: "formules-detenues" }, ...d.formules.map((f: any) => el("li", {},
+        el("strong", {}, `Formule ${f.nom}`), ` · achetée le ${dateFr(f.depuis)}`,
+        f.ouvert ? "" : el("span", { class: "etiquette attente" }, `Accès le ${dateFr(f.accesLe)}`)))));
+    } else {
+      tableau.append(el("p", {}, "Vous n’avez pas encore de formule. Choisissez-en une pour ouvrir vos modules."), el("p", {}, el("a", { class: "btn", href: "/tarifs/" }, "Voir les formules")));
+    }
+    if (d.progression.total > 0) {
+      const pct = Math.round((d.progression.faites / d.progression.total) * 100);
+      tableau.append(
+        el("p", { class: "progression-texte", id: "progression-texte" }, `Progression : ${d.progression.faites} leçon(s) terminée(s) sur ${d.progression.total}`),
+        el("div", { class: "barre-progression", role: "progressbar", "aria-labelledby": "progression-texte", "aria-valuemin": "0", "aria-valuemax": "100", "aria-valuenow": String(pct) }, el("span", { style: `width:${pct}%` })),
+        el("p", { class: "cta" }, el("a", { class: "btn", href: `/formation/lecon/?id=${d.prochaine}` }, d.progression.faites === 0 ? "Commencer ma formation" : "Reprendre ma formation")),
+      );
+    }
+    espace.append(tableau);
+
+    const liste = el("ol", { class: "modules-espace" });
+    for (const m of d.modules) {
+      const lecons = el("ul", { class: "lecons" });
+      for (const l of m.lecons) {
+        const ouverte = l.acces === "ouvert";
+        lecons.append(el("li", { class: `lecon ${ouverte ? "ouverte" : "fermee"}` },
+          el("span", { class: "lecon-type" }, TYPES[l.type] ?? l.type),
+          el("span", { class: "lecon-titre" }, l.titre, l.fait ? el("span", { class: "fait" }, " · terminée") : ""),
+          ouverte ? el("a", { class: "btn petit" + (l.fait ? " alt" : ""), href: `/formation/lecon/?id=${l.id}`, "aria-label": `${l.fait ? "Revoir" : "Commencer"} : ${l.titre}` }, l.fait ? "Revoir" : "Commencer") : badge(l.acces)));
+      }
+      liste.append(el("li", { class: "carte module-espace", id: `module-${m.numero}` },
+        el("div", { class: "module-tete" }, el("span", { class: "num-module" }, String(m.numero).padStart(2, "0")), el("h3", {}, m.titre)),
+        el("p", { class: "module-resume" }, m.resume),
+        lecons));
+    }
+    espace.append(el("h2", { class: "titre-section-espace" }, "Les modules"), liste);
+
+    espace.append(el("h2", { class: "titre-section-espace" }, "Ressources"),
+      el("ul", { class: "ressources-espace" }, ...d.ressources.map((r: any) => el("li", { class: "carte" },
+        el("strong", {}, r.titre), badge(r.acces), r.precision && r.acces !== "non-inclus" ? el("p", { class: "note" }, r.precision) : null))));
+
+    if (aDesDroits) {
+      espace.append(el("p", { class: "note" }, "Les éléments « En préparation » ne sont pas encore disponibles : ils apparaîtront ici dès qu’ils seront prêts."));
+    }
+    const sortir = el("button", { type: "button", class: "btn alt" }, "Me déconnecter");
+    sortir.addEventListener("click", async () => { await api("/api/compte/deconnexion", {}); location.assign("/compte/"); });
+    espace.append(el("p", { class: "cta pied-espace" }, sortir));
+    espace.hidden = false;
+  }
+
+  async function demarrer() {
+    // D'abord : la personne est-elle connectée ? (réponse toujours 200, pas d'erreur dans la console)
+    const moi = await api("/api/compte/moi", undefined, 8_000);
+    if (moi.statut === 0 || moi.data?.stockage === false) {
+      message(etat, "ko", "Espace indisponible", ["L’espace de formation n’est pas encore en service sur ce site, ou le serveur ne répond pas."]);
+      return;
+    }
+    if (!moi.data?.connecte) {
+      message(etat, "info", "Connectez-vous pour accéder à votre formation", ["Votre formation est liée à votre compte.", lienCompte()]);
+      return;
+    }
+    let garderMessage = false;
+    if (commande) garderMessage = await verifierPaiement(commande);
+    const r = await api("/api/formation", undefined, 10_000);
+    if (r.statut === 401) {
+      message(etat, "info", "Connectez-vous pour accéder à votre formation", ["Votre formation est liée à votre compte.", lienCompte()]);
+      return;
+    }
+    if (r.statut !== 200 || !r.data?.ok) {
+      message(etat, "ko", "Espace indisponible", ["Le serveur ne répond pas pour le moment. Vos achats et votre progression sont conservés : réessayez dans quelques minutes."]);
+      return;
+    }
+    if (!garderMessage) etat.hidden = true;
+    afficher(r.data);
+  }
+  demarrer();
+</script>

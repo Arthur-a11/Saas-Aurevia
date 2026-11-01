@@ -8,6 +8,7 @@ const prep = (x) => x?.statut === "en-preparation";
 const ligne = (texte) => site.formules.map((f) => f.inclus.find((x) => x.texte === texte));
 // Lignes du comparatif, construites à partir des formules (aucun contenu ajouté).
 const lignes = [
+  { nom: "Les 6 modules dans l’espace « Ma formation », avec suivi de progression", cellules: [ess, comp, acc].map(() => ({ oui: true })) },
   { nom: "Les cours en vidéo", cellules: [ess, comp, acc].map(() => ({ oui: true, prep: prep(ligne("Les cours en vidéo")[0]) })) },
   { nom: "Des fiches résumé", cellules: [ess, comp, acc].map(() => ({ oui: true, prep: prep(ligne("Des fiches résumé")[0]) })) },
   { nom: "Des modèles à copier", cellules: [{ oui: false }, { oui: true, prep: true }, { oui: true, prep: true }] },
@@ -23,7 +24,7 @@ const lignes = [
       <h1 class="titre-degrade">Choisissez votre formule</h1>
       <p class="chapeau">Un seul paiement. Pas d’abonnement.</p>
       {!ouvert && (
-        <div class="encadre">
+        <div class="encadre" id="avis-commandes">
           <p><strong>Les commandes en ligne ne sont pas encore ouvertes.</strong> Vous pouvez vous inscrire dès maintenant, sans paiement : je vous recontacte par e-mail pour la suite.</p>
           <p>Les éléments marqués « En préparation » ne sont pas encore disponibles.</p>
         </div>

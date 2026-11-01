@@ -1,0 +1,87 @@
+---
+// Une leçon de l'espace « Ma formation ». Le contenu est envoyé par le serveur seulement si le compte y a droit.
+import Base from "../../layouts/Base.astro";
+---
+<Base titre="Leçon" noindex description="Leçon de la formation AUREVIA SAAS.">
+  <section class="entete-page">
+    <div class="wrap">
+      <p class="retour"><a href="/formation/">← Retour à ma formation</a></p>
+      <p class="surtitre" id="lecon-module">Ma formation</p>
+      <h1 class="titre-degrade" id="lecon-titre">Leçon</h1>
+    </div>
+  </section>
+  <section class="section-serree">
+    <div class="wrap">
+      <div id="etat-lecon" class="message-formulaire info" role="status"><p>Chargement de la leçon…</p></div>
+      <article id="lecon" class="carte lecon-contenu" hidden></article>
+    </div>
+  </section>
+</Base>
+
+<script>
+  import { message } from "../../lib/formulaire";
+  import { api, el } from "../../lib/espace-client";
+
+  const id = new URLSearchParams(location.search).get("id") || "";
+  const etat = document.getElementById("etat-lecon") as HTMLElement;
+  const zone = document.getElementById("lecon") as HTMLElement;
+
+  async function demarrer() {
+    const moi = await api("/api/compte/moi", undefined, 8_000);
+    if (!moi.data?.connecte) {
+      message(etat, "info", "Connectez-vous pour suivre cette leçon", [el("a", { class: "btn", href: `/compte/?suite=${encodeURIComponent(location.pathname + location.search)}` }, "Me connecter")]);
+      return;
+    }
+    const r = await api(`/api/formation/lecon?id=${encodeURIComponent(id)}`, undefined, 10_000);
+    if (r.statut === 401) {
+      message(etat, "info", "Connectez-vous pour suivre cette leçon", [el("a", { class: "btn", href: `/compte/?suite=${encodeURIComponent(location.pathname + location.search)}` }, "Me connecter")]);
+      return;
+    }
+    if (r.statut === 403) {
+      message(etat, "ko", "Leçon non incluse", ["Cette leçon n’est pas incluse dans votre formule (ou votre accès n’est pas encore ouvert).", el("a", { class: "btn", href: "/formation/" }, "Retour à ma formation")]);
+      return;
+    }
+    if (r.statut === 404) {
+      message(etat, "info", "Leçon pas encore disponible", ["Cette leçon est en préparation ou n’existe pas.", el("a", { class: "btn", href: "/formation/" }, "Retour à ma formation")]);
+      return;
+    }
+    if (r.statut !== 200 || !r.data?.ok) {
+      message(etat, "ko", "Leçon indisponible", ["Le serveur ne répond pas pour le moment. Réessayez dans quelques minutes."]);
+      return;
+    }
+    const l = r.data.lecon;
+    document.title = `${l.titre} | AUREVIA SAAS`;
+    (document.getElementById("lecon-module") as HTMLElement).textContent = `Module ${l.module.numero} · ${l.module.titre}`;
+    (document.getElementById("lecon-titre") as HTMLElement).textContent = l.titre;
+    etat.hidden = true;
+
+    const c = l.contenu;
+    const fait = el("button", { type: "button", class: "btn alt", "aria-pressed": String(Boolean(l.fait)) }, l.fait ? "Leçon terminée ✓" : "Marquer comme terminée");
+    const retour = el("p", { class: "note", role: "status" });
+    fait.addEventListener("click", async () => {
+      const nouveau = fait.getAttribute("aria-pressed") !== "true";
+      fait.disabled = true;
+      const p = await api("/api/formation/progression", { lecon: l.id, fait: nouveau });
+      fait.disabled = false;
+      if (p.data?.ok) {
+        fait.setAttribute("aria-pressed", String(p.data.fait));
+        fait.textContent = p.data.fait ? "Leçon terminée ✓" : "Marquer comme terminée";
+        retour.textContent = `Progression enregistrée : ${p.data.progression.faites} leçon(s) sur ${p.data.progression.total}.`;
+      } else {
+        retour.textContent = "La progression n’a pas pu être enregistrée. Réessayez dans un instant.";
+      }
+    });
+    zone.replaceChildren(
+      el("p", { class: "chapeau" }, c.resume),
+      el("h2", {}, "Les étapes"),
+      el("ol", { class: "etapes-lecon" }, ...c.points.map((p: string) => el("li", {}, p))),
+      el("p", { class: "resultat" }, el("span", { class: "pastille-livrable" }, "Livrable"), " ", c.resultat.replace(/^À la fin : /, "")),
+      el("div", { class: "lecon-actions" }, fait, retour),
+      el("nav", { class: "lecon-navigation", "aria-label": "Leçons voisines" },
+        l.precedente ? el("a", { class: "btn alt petit", href: `?id=${l.precedente}` }, "← Leçon précédente") : el("span"),
+        l.suivante ? el("a", { class: "btn petit", href: `?id=${l.suivante}` }, "Leçon suivante →") : el("a", { class: "btn petit", href: "/formation/" }, "Retour à ma formation")),
+    );
+    zone.hidden = false;
+  }
+  demarrer();
+</script>

@@ -66,15 +66,35 @@ export function validerRetractation(d = {}, aujourdHui = new Date()) {
   return { ok: Object.keys(e).length === 0, erreurs: e, valeurs: v };
 }
 
-export function validerCommande(d = {}) {
+export const MDP_MIN = 10;
+
+export function validerCreationCompte(d = {}) {
   const e = {}, v = {};
   champTexte(e, v, d, "prenom", { requis: true, max: 80, libelle: "Prénom" });
-  champTexte(e, v, d, "nom", { requis: true, max: 80, libelle: "Nom" });
   champEmail(e, v, d);
+  const mdp = typeof d.motDePasse === "string" ? d.motDePasse : "";
+  if (mdp.length < MDP_MIN) e.motDePasse = `Mot de passe : ${MDP_MIN} caractères au minimum.`;
+  else if (mdp.length > 200) e.motDePasse = "Mot de passe : 200 caractères au maximum.";
+  v.motDePasse = mdp;
+  v.confidentialite = coche(d.confidentialite);
+  if (!v.confidentialite) e.confidentialite = "Cochez la case pour confirmer avoir pris connaissance de la politique de confidentialité.";
+  return { ok: Object.keys(e).length === 0, erreurs: e, valeurs: v };
+}
+
+export function validerConnexion(d = {}) {
+  const e = {}, v = {};
+  champEmail(e, v, d);
+  v.motDePasse = typeof d.motDePasse === "string" ? d.motDePasse.slice(0, 200) : "";
+  if (!v.motDePasse) e.motDePasse = "Mot de passe : champ obligatoire.";
+  return { ok: Object.keys(e).length === 0, erreurs: e, valeurs: v };
+}
+
+/** Achat par une personne connectée : formule et accords (les identités viennent du compte). */
+export function validerAchat(d = {}) {
+  const e = {}, v = {};
   champFormule(e, v, d);
   v.cgv = coche(d.cgv);
   if (!v.cgv) e.cgv = "Vous devez accepter les conditions générales de vente pour commander.";
-  // Choix facultatifs : la personne peut refuser, l'accès / le service commence alors après le délai de rétractation.
   v.accesImmediat = coche(d.accesImmediat);
   v.executionService = v.formule === "accompagne" ? coche(d.executionService) : false;
   return { ok: Object.keys(e).length === 0, erreurs: e, valeurs: v };

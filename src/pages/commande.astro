@@ -1,90 +1,149 @@
 ---
-// Page de commande PRÉPARÉE. Elle reste fermée tant que site.json > paiement.actif vaut false.
+// Commande d'une formule : compte obligatoire, accords horodatés, puis paiement sur la page sécurisée de Stripe.
+// L'accès n'est ouvert qu'après la confirmation du paiement reçue et vérifiée par le serveur.
+// Sans paiement configuré côté serveur, la page reste fermée et propose l'inscription sans paiement.
 import Base from "../layouts/Base.astro";
-import Champ from "../components/Champ.astro";
 import Case from "../components/Case.astro";
-import PiegeRobots from "../components/PiegeRobots.astro";
-import { site, mentionTaxes } from "../lib/site.js";
+import { site, mentionTaxes, contenuFormule, LIBELLE_STATUT } from "../lib/site.js";
 import { TEXTES_CONSENTEMENT as T } from "../../serveur/validation.js";
-const ouvert = site.paiement.actif;
-const options = site.formules.map((f) => ({ valeur: f.id, label: `${f.nom} – ${f.prixAffiche}` }));
 ---
 <Base titre="Commande" noindex description="Commander une formule AUREVIA SAAS.">
   <section class="entete-page">
     <div class="wrap">
       <p class="retour"><a href="/tarifs/">← Retour aux tarifs</a></p>
       <h1 class="titre-degrade">Commande</h1>
-      {!ouvert ? (
-        <div class="encadre">
-          <p><strong>Les commandes en ligne ne sont pas encore ouvertes.</strong></p>
-          <p>Vous pouvez vous inscrire dès maintenant, sans paiement : je vous recontacte par e-mail pour la suite.</p>
-          <p><a class="btn" href="/inscription/">M’inscrire sans payer</a></p>
-        </div>
-      ) : (
-        <p class="chapeau">Prix : {mentionTaxes()}. Le paiement se fait ensuite sur PayPal. Il n’est pas vérifié automatiquement : je confirme votre commande et votre accès par e-mail.</p>
-      )}
+      <div class="encadre" id="commandes-fermees">
+        <p><strong>Les commandes en ligne ne sont pas encore ouvertes.</strong></p>
+        <p>Vous pouvez vous inscrire dès maintenant, sans paiement : je vous recontacte par e-mail pour la suite.</p>
+        <p><a class="btn" href="/inscription/" id="lien-inscription">M’inscrire sans payer</a></p>
+      </div>
     </div>
   </section>
-  {ouvert && (
-    <section style="padding-top:0">
-      <div class="wrap">
-        <form class="carte formulaire" id="form-commande" novalidate>
-          <Champ nom="formule" label="Formule" requis pleine options={options} valeur="complet" />
-          <Champ nom="prenom" label="Prénom" requis autocomplete="given-name" max={80} />
-          <Champ nom="nom" label="Nom" requis autocomplete="family-name" max={80} />
-          <Champ nom="email" label="E-mail" type="email" requis pleine autocomplete="email" max={254} />
-          <Case nom="cgv" requis>J’ai lu et j’accepte les <a href="/cgv/">conditions générales de vente</a>.</Case>
-          <Case nom="accesImmediat">{T.accesImmediat} (Facultatif : sans cette case, vous gardez votre droit de rétractation.)</Case>
-          <div id="bloc-service" hidden><Case nom="executionService">{T.executionService} (Facultatif.)</Case></div>
-          <PiegeRobots />
-          <div class="pleine"><button class="btn" type="submit">Valider et passer au paiement</button></div>
-          <div class="pleine" id="zone-message" role="status" hidden></div>
-        </form>
+
+  <section class="section-serree" id="zone-commande" hidden>
+    <div class="wrap">
+      <p class="encadre attention" id="bandeau-test" hidden><strong>Mode test :</strong> aucun paiement réel n’est possible. Sur la page de paiement, utilisez une carte de test Stripe (par exemple 4242 4242 4242 4242).</p>
+      <div id="message-commande" class="message-formulaire" role="status" hidden></div>
+
+      <div id="bloc-connexion" class="carte" hidden>
+        <h2 class="titre-carte">Étape 1 : votre compte</h2>
+        <p>Pour retrouver votre formation après le paiement, connectez-vous ou créez votre compte.</p>
+        <p class="cta"><a class="btn" id="lien-compte" href="/compte/">Me connecter ou créer mon compte</a></p>
       </div>
-    </section>
-  )}
+
+      <form class="commande-grille" id="form-commande" novalidate hidden>
+        <fieldset class="carte choix-formules">
+          <legend class="titre-carte">Votre formule</legend>
+          {site.formules.map((f) => (
+            <div class="choix-formule">
+              <input type="radio" name="formule" id={`formule-${f.id}`} value={f.id} checked={f.id === "complet"} aria-describedby={`contenu-${f.id}`} />
+              <label class="choix-entete" for={`formule-${f.id}`}><strong>{f.nom}</strong><span class="mono">{f.prixAffiche}</span></label>
+              <ul class="liste-contenu" id={`contenu-${f.id}`}>
+                {contenuFormule(f).map((x) => <li>{x.texte}{LIBELLE_STATUT[x.statut] && <span class="statut">{LIBELLE_STATUT[x.statut]}</span>}</li>)}
+              </ul>
+              <p class="ferme-raison" data-raison={f.id} hidden></p>
+            </div>
+          ))}
+          <p class="note">Paiement unique, sans abonnement ni prélèvement. Prix : {mentionTaxes()}.</p>
+        </fieldset>
+
+        <div class="carte formulaire commande-accords">
+          <h2 class="titre-carte">Vos accords</h2>
+          <Case nom="cgv" requis>J’ai lu et j’accepte les <a href="/cgv/">conditions générales de vente</a>.</Case>
+          <Case nom="accesImmediat">{T.accesImmediat} (Facultatif : sans cette case, vous gardez votre droit de rétractation et l’accès s’ouvre à la fin du délai de 14 jours.)</Case>
+          <div id="bloc-service" class="pleine" hidden><Case nom="executionService">{T.executionService} (Facultatif.)</Case></div>
+          <div class="pleine">
+            <button class="btn bouton-large" type="submit" id="bouton-payer">Payer sur la page sécurisée</button>
+            <p class="note">Vous serez redirigé(e) vers Stripe, le prestataire de paiement. Votre formation s’ouvre dès que Stripe nous confirme le paiement.</p>
+          </div>
+        </div>
+      </form>
+    </div>
+  </section>
 </Base>
 
 <script>
-  import { brancher, message } from "../lib/formulaire";
-  import { validerCommande } from "../../serveur/validation.js";
+  import { afficherErreurs, message } from "../lib/formulaire";
+  import { api, el } from "../lib/espace-client";
+  import { validerAchat } from "../../serveur/validation.js";
   import site from "../data/site.json";
 
-  const form = document.getElementById("form-commande") as HTMLFormElement | null;
-  if (form) {
-    const zone = document.getElementById("zone-message") as HTMLElement;
-    const select = form.elements.namedItem("formule") as HTMLSelectElement;
-    const blocService = document.getElementById("bloc-service") as HTMLElement;
-    const choix = new URLSearchParams(location.search).get("formule");
-    if (choix && site.formules.some((f) => f.id === choix)) select.value = choix;
-    const majService = () => { blocService.hidden = select.value !== "accompagne"; };
-    select.addEventListener("change", majService);
-    majService();
-
-    brancher(form, {
-      url: "/api/commande",
-      valider: validerCommande,
-      zone,
-      succes(rep) {
-        const f = site.formules.find((x) => x.id === rep.formule)!;
-        const lien = document.createElement("a");
-        lien.className = "btn";
-        lien.href = site.paiement.lienPaypalMe;
-        lien.target = "_blank";
-        lien.rel = "noopener";
-        lien.textContent = `Payer ${f.prixAffiche} sur PayPal`;
-        message(zone, "ok", "Dernière étape : le paiement", [
-          `Référence de commande : ${rep.reference}.`,
-          `Sur PayPal, indiquez le montant de ${f.prixAffiche} et la référence ${rep.reference} dans le message.`,
-          "Le paiement n’est pas vérifié automatiquement : je confirme votre commande et votre accès par e-mail après vérification.",
-          lien,
-        ]);
-      },
-      indisponible() {
-        message(zone, "ko", "La commande n’a pas pu être enregistrée.", [
-          "Aucun paiement ne doit être fait tant que la commande n’est pas enregistrée. Réessayez plus tard ou écrivez à " + site.contactEmail + ".",
-        ]);
-      },
-    });
+  const params = new URLSearchParams(location.search);
+  const choix = params.get("formule");
+  const $ = (id: string) => document.getElementById(id) as HTMLElement;
+  const form = $("form-commande") as HTMLFormElement;
+  const zoneMsg = $("message-commande");
+  const prix = (id: string) => site.formules.find((f) => f.id === id)?.prixAffiche ?? "";
+  const formuleChoisie = () => (form.querySelector("input[name=formule]:checked") as HTMLInputElement | null)?.value ?? "";
+  if (choix && site.formules.some((f) => f.id === choix)) {
+    (form.querySelector(`input[name=formule][value="${choix}"]`) as HTMLInputElement).checked = true;
+    ($("lien-inscription") as HTMLAnchorElement).href = `/inscription/?formule=${choix}`;
   }
+  const majFormule = () => {
+    $("bloc-service").hidden = formuleChoisie() !== "accompagne";
+    $("bouton-payer").textContent = `Payer ${prix(formuleChoisie())} sur la page sécurisée`;
+  };
+  form.addEventListener("change", majFormule);
+  majFormule();
+
+  const RAISONS: Record<string, string> = {
+    ventes_fermees: "Ventes pas encore ouvertes.",
+    contenus_en_preparation: "Des contenus de cette formule sont encore en préparation.",
+    confirmation_email_impossible: "L’e-mail de confirmation n’est pas encore en service.",
+  };
+
+  async function demarrer() {
+    const [etat, moi] = await Promise.all([api("/api/paiement/etat", undefined, 8_000), api("/api/compte/moi", undefined, 8_000)]);
+    const mode = etat.data?.mode;
+    const ventes = etat.data?.ventes ?? {};
+    if (!mode || !Object.values(ventes).some((v: any) => v.ouverte)) return;   // reste fermé : rien n'est simulé
+    $("commandes-fermees").hidden = true;
+    $("zone-commande").hidden = false;
+    $("bandeau-test").hidden = mode !== "test";
+    for (const [id, v] of Object.entries<any>(ventes)) {
+      const input = form.querySelector(`input[name=formule][value="${id}"]`) as HTMLInputElement;
+      input.disabled = !v.ouverte;
+      const r = form.querySelector(`[data-raison="${id}"]`) as HTMLElement;
+      r.hidden = v.ouverte;
+      r.textContent = v.ouverte ? "" : `Indisponible : ${v.raisons.map((x: string) => RAISONS[x] ?? x).join(" ")}`;
+    }
+    if (params.get("annulee")) {
+      message(zoneMsg, "info", "Paiement annulé", ["Vous avez quitté la page de paiement : aucun accès n’a été ouvert. Vous pouvez recommencer quand vous voulez."]);
+    }
+    if (!moi.data?.connecte) {
+      ($("lien-compte") as HTMLAnchorElement).href = `/compte/?suite=${encodeURIComponent(location.pathname + location.search)}`;
+      $("bloc-connexion").hidden = false;
+      return;
+    }
+    form.hidden = false;
+  }
+
+  form.addEventListener("submit", async (ev) => {
+    ev.preventDefault();
+    const donnees = {
+      formule: formuleChoisie(),
+      cgv: (form.elements.namedItem("cgv") as HTMLInputElement).checked,
+      accesImmediat: (form.elements.namedItem("accesImmediat") as HTMLInputElement).checked,
+      executionService: (form.elements.namedItem("executionService") as HTMLInputElement).checked,
+    };
+    const v = validerAchat(donnees);
+    afficherErreurs(form, v.erreurs);
+    if (!v.ok) return;
+    const bouton = $("bouton-payer") as HTMLButtonElement;
+    bouton.disabled = true;
+    bouton.textContent = "Préparation du paiement…";
+    const r = await api("/api/paiement/session", donnees);
+    if (r.statut === 201 && typeof r.data?.url === "string") { location.assign(r.data.url); return; }
+    bouton.disabled = false;
+    majFormule();
+    if (r.data?.code === "deja_acquise") {
+      message(zoneMsg, "info", "Vous avez déjà cette formule", [el("a", { class: "btn", href: "/formation/" }, "Aller à ma formation")]);
+    } else if (r.statut === 401) {
+      message(zoneMsg, "ko", "Session expirée", ["Reconnectez-vous puis recommencez.", el("a", { class: "btn", href: `/compte/?suite=${encodeURIComponent(location.pathname + location.search)}` }, "Me connecter")]);
+    } else {
+      message(zoneMsg, "ko", "Le paiement n’a pas pu être préparé", ["Aucun paiement n’a été demandé et aucun montant n’a été débité. Réessayez dans quelques minutes ou écrivez à " + site.contactEmail + "."]);
+    }
+  });
+
+  demarrer();
 </script>

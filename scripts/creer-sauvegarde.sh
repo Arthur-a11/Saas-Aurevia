@@ -27,7 +27,7 @@ Pour repartir : décompresser, puis « npm install » et « npm test » (voir RE
 Vérifier l'intégrité : « sha256sum -c EMPREINTES.txt ». SAUVEGARDE.md et EMPREINTES.txt ne font pas partie de l'historique Git.
 TXT
 ( cd "$DEST" && find . -type f -not -path "./.git/*" -not -name EMPREINTES.txt | sort | xargs sha256sum > EMPREINTES.txt )
-ZIP="$PWD/livraison/aurevia-saas-sauvegarde-$DATE.zip"
+ZIP="$PWD/livraison/aurevia-saas-sauvegarde-$DATE-$(git rev-parse --short HEAD).zip"
 rm -f "$ZIP"
 ( cd "$TMP" && zip -qr -9 "$ZIP" aurevia-saas )
 rm -rf "$TMP"

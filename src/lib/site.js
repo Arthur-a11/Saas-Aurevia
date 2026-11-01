@@ -22,6 +22,12 @@ export function mentionTaxes() {
 }
 
 export const formuleParId = (id) => site.formules.find((f) => f.id === id);
+
+/** Ce que la personne obtient avec une formule : l'espace de formation, puis les éléments de la formule (site.json). */
+export const contenuFormule = (f) => [
+  { texte: "Les 6 modules du programme dans votre espace « Ma formation », avec suivi de progression", statut: "inclus" },
+  ...f.inclus,
+];
 export const LIBELLE_STATUT = { "en-preparation": "En préparation", "a-definir": "Modalités à définir", inclus: "" };
 
 /** Valeur d'une information d'entreprise, ou null si inconnue. */

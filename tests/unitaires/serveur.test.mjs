@@ -2,7 +2,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import Anthropic from "@anthropic-ai/sdk";
-import { traiterInscription, traiterRetractation, traiterCommande, traiterAssistant, traiterEtat, parametresAssistant } from "../../serveur/fonctions.js";
+import { traiterInscription, traiterRetractation, traiterAssistant, traiterEtat, parametresAssistant } from "../../serveur/fonctions.js";
 import { creerStockage } from "../../serveur/stockage.js";
 import { validerInscription, validerRetractation } from "../../serveur/validation.js";
 import site from "../../src/data/site.json" with { type: "json" };
@@ -79,34 +79,6 @@ test("rétractation : enregistrée et horodatée, accusé « non-configure » sa
   assert.match(d.reference, /^RET-/);
   assert.ok(Date.parse(d.recuLe));
   assert.equal(d.emailAccuse, "non-configure");
-});
-
-test("commande : fermée tant que paiement.actif = false", async () => {
-  assert.equal(site.paiement.actif, false);
-  const r = await traiterCommande(req("/api/commande", {}), ctxBase());
-  assert.equal(r.status, 403);
-  assert.equal((await r.json()).code, "commandes_fermees");
-});
-
-test("commande (si activée) : refusée sans e-mail de confirmation possible, accords conservés sinon", async () => {
-  const ouverte = { ...site, paiement: { ...site.paiement, actif: true } };
-  const corps = { prenom: "Marie", nom: "Durand", email: "marie@exemple.fr", formule: "accompagne", cgv: true, accesImmediat: true, executionService: false };
-  const sansEmail = await traiterCommande(req("/api/commande", corps), ctxBase(), ouverte);
-  assert.equal(sansEmail.status, 503);
-  assert.equal((await sansEmail.json()).code, "confirmation_impossible");
-
-  const ctx = ctxBase({ env: { BREVO_API_KEY: "x", EMAIL_EXPEDITEUR: "c@e.fr" }, fetchFn: async () => new Response("{}", { status: 201 }) });
-  const r = await traiterCommande(req("/api/commande", corps), ctx, ouverte);
-  assert.equal(r.status, 201);
-  const d = await r.json();
-  const enr = await ctx.stockage.lire("commandes", d.reference);
-  assert.equal(enr.accords.accesImmediat.accepte, true);
-  assert.equal(enr.accords.executionService.accepte, false);
-  assert.ok(enr.accords.accesImmediat.texte.includes("perdre mon droit de rétractation"));
-  assert.equal(enr.statut, "en-attente-de-paiement");
-
-  const sansCgv = await traiterCommande(req("/api/commande", { ...corps, cgv: false }), ctx, ouverte);
-  assert.equal(sansCgv.status, 400);
 });
 
 // ---------------------------------------------------------------- Assistant

@@ -145,8 +145,6 @@
   }
 }
 
-/* Programme : numéro de module */
-details.module summary .num-module { font: 700 0.8rem var(--police-mono); color: var(--gold); letter-spacing: 0.1em; margin-right: 0.75rem; }
 
 /* Carte tarif : prix en police technique */
 .tarif .montant { font-family: var(--police-mono); letter-spacing: -0.04em; }
@@ -163,5 +161,4 @@ section.finale .wrap { position: relative; z-index: 1; }
 .sommaire-programme a:hover { color: var(--lien); text-decoration: underline; }
 .sommaire-programme .mono { color: var(--gold); font-weight: 700; }
 .pastille-livrable { display: inline-block; font: 700 0.72rem var(--police-mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--on-brand); background: var(--gold); border-radius: 6px; padding: 0.1rem 0.45rem; margin-right: 0.4rem; vertical-align: 0.1em; }
-details.module { scroll-margin-top: calc(var(--header-h) + 1rem); }
 @media (max-width: 820px) { .sommaire-programme ol { grid-template-columns: 1fr; } }
