@@ -1,0 +1,61 @@
+---
+// Gabarit commun à toutes les pages : métadonnées, en-tête, contenu, pied de page, assistant.
+import "../styles/tokens.css";
+import "../styles/global.css";
+import "../styles/futur.css";
+import Entete from "../components/Entete.astro";
+import Pied from "../components/Pied.astro";
+import Assistant from "../components/Assistant.astro";
+import { SITE_PROVISOIRE } from "../lib/constantes.js";
+
+interface Props {
+  titre: string;          // titre de la page, sans le nom du site
+  description: string;    // résumé pour Google et les partages (150 caractères environ)
+  courant?: string;       // lien du menu à marquer comme page actuelle
+  noindex?: boolean;      // page à ne pas référencer
+  titreComplet?: string;  // remplace « titre | AUREVIA SAAS »
+}
+const { titre, description, courant, noindex = false, titreComplet } = Astro.props;
+const titreOnglet = titreComplet ?? `${titre} | AUREVIA SAAS`;
+const domaineConnu = Astro.site && Astro.site.origin !== new URL(SITE_PROVISOIRE).origin;
+const canonique = domaineConnu ? new URL(Astro.url.pathname, Astro.site).href : null;
+const statsScript = import.meta.env.PUBLIC_STATS_SCRIPT;   // ex. Plausible, désactivé par défaut
+const statsDomaine = import.meta.env.PUBLIC_STATS_DOMAINE;
+---
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>{titreOnglet}</title>
+    <meta name="description" content={description} />
+    {canonique && <link rel="canonical" href={canonique} />}
+    {(noindex || !domaineConnu) && <meta name="robots" content={noindex ? "noindex, follow" : "noindex, nofollow"} />}
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="fr_FR" />
+    <meta property="og:site_name" content="AUREVIA SAAS" />
+    <meta property="og:title" content={titreOnglet} />
+    <meta property="og:description" content={description} />
+    {canonique && <meta property="og:url" content={canonique} />}
+    {domaineConnu && <meta property="og:image" content={new URL("/partage.png", Astro.site).href} />}
+    {domaineConnu && <meta property="og:image:width" content="1200" />}
+    {domaineConnu && <meta property="og:image:height" content="630" />}
+    {domaineConnu && <meta property="og:image:alt" content="AUREVIA SAAS : construisez l’entreprise qui encaisse chaque mois. 6 modules, 1 500 idées de SaaS, 15 marchés." />}
+    <meta name="twitter:card" content={domaineConnu ? "summary_large_image" : "summary"} />
+    <meta name="theme-color" content="#090b28" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="preload" href="/fonts/public-sans-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/bricolage-grotesque-latin-800-normal.woff2" as="font" type="font/woff2" crossorigin />
+    <script is:inline>document.documentElement.classList.add("js");</script>
+    {statsScript && statsDomaine && <script is:inline defer data-domain={statsDomaine} src={statsScript}></script>}
+  </head>
+  <body>
+    <a class="lien-evitement" href="#contenu">Aller au contenu</a>
+    <Entete courant={courant} />
+    <main id="contenu" tabindex="-1">
+      <slot />
+    </main>
+    <Pied />
+    <Assistant />
+  </body>
+</html>

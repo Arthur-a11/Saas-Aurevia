@@ -1,0 +1,91 @@
+{
+  "intro": "Six modules, du choix de l’idée aux premiers clients. Chaque module vous dit quoi faire, dans quel ordre, et ce que vous devez avoir à la fin. Ouvrez un module pour voir le détail.",
+  "modules": [
+    {
+      "titre": "Trouver une bonne idée",
+      "resume": "Un bon SaaS part d’un problème réel et fréquent, pas d’une technologie.",
+      "points": [
+        "Choisir un public précis (par exemple des coiffeurs ou des comptables) plutôt que « tout le monde ».",
+        "Parler à une dizaine de personnes de ce public : comment font-elles aujourd’hui, qu’est-ce qui leur fait perdre du temps ou de l’argent ?",
+        "Vérifier qu’elles paient déjà pour une solution, même imparfaite, ou qu’elles perdent clairement du temps.",
+        "Regarder la concurrence : des concurrents sont plutôt bon signe. Cherchez ce que vous pouvez faire de plus simple."
+      ],
+      "resultat": "À la fin : une phrase claire, « Mon logiciel aide [un public] à [obtenir un résultat] »."
+    },
+    {
+      "titre": "Définir le produit minimum",
+      "resume": "Vous ne construisez pas tout. Vous construisez le strict nécessaire pour résoudre le problème.",
+      "points": [
+        "Lister toutes les fonctions possibles, puis ne garder que celles qui résolvent le problème principal.",
+        "Dessiner le parcours : inscription, première action utile, premier résultat. Le client doit obtenir de la valeur le plus vite possible.",
+        "Faire une maquette simple (papier, Canva ou Figma) et la montrer à 3 à 5 personnes avant de construire."
+      ],
+      "resultat": "À la fin : une maquette et une liste de 3 à 5 fonctions."
+    },
+    {
+      "titre": "Construire la première version",
+      "resume": "Avec ou sans code, l’objectif est d’avoir quelque chose que des testeurs peuvent utiliser.",
+      "points": [
+        "Choisir ses outils : un outil sans code pour aller vite, ou du code (avec l’aide de l’IA) pour plus de liberté. Le bon choix dépend de votre budget et de votre besoin.",
+        "Les briques indispensables : comptes utilisateurs, base de données, écrans principaux, e-mails automatiques et paiement par abonnement.",
+        "La base de la sécurité : mots de passe protégés, connexion sécurisée (HTTPS) et sauvegardes régulières.",
+        "Le cadre légal : conditions d’utilisation, politique de confidentialité et respect du RGPD pour les données de vos clients.",
+        "Un nom de domaine et un hébergement fiables."
+      ],
+      "resultat": "À la fin : une première version utilisable par 5 testeurs."
+    },
+    {
+      "titre": "Fixer le prix et le modèle",
+      "resume": "Le prix dit aussi à vos clients à quel point votre produit est utile.",
+      "points": [
+        "Choisir l’abonnement mensuel, avec une réduction possible pour l’abonnement annuel.",
+        "Proposer deux ou trois formules, construites sur la valeur apportée au client plutôt que sur vos coûts.",
+        "Choisir comment faire essayer : essai gratuit limité dans le temps, version gratuite limitée ou démonstration.",
+        "Calculer ce que chaque client vous coûte, pour savoir à partir de quel prix vous gagnez de l’argent.",
+        "Préparer la facturation et la TVA, à valider avec un comptable."
+      ],
+      "resultat": "À la fin : une page de tarifs claire et un prix justifié."
+    },
+    {
+      "titre": "Trouver ses premiers clients",
+      "resume": "Les premiers clients viennent rarement d’eux-mêmes. Il faut aller les chercher.",
+      "points": [
+        "Commencer par les personnes interviewées au module 1 : elles connaissent déjà le problème.",
+        "Aller là où se trouve votre public : réseaux sociaux professionnels, groupes, communautés, salons.",
+        "Publier du contenu utile (articles, vidéos courtes) qui répond aux questions de votre public.",
+        "Écrire une page d’accueil qui convainc : une promesse claire, une preuve, un prix et un bouton.",
+        "Proposer un tarif de lancement aux premiers clients, en échange de leurs retours."
+      ],
+      "resultat": "À la fin : vos premiers abonnés payants. Les résultats dépendent de votre travail et ne peuvent pas être garantis."
+    },
+    {
+      "titre": "Mesurer, améliorer, grandir",
+      "resume": "Un SaaS se construit dans la durée. Les chiffres vous disent quoi améliorer.",
+      "points": [
+        "Suivre quelques chiffres clés : le revenu mensuel récurrent, le nombre de clients qui partent chaque mois, et le coût pour gagner un client.",
+        "Écouter les clients : un support rapide et les retours guident vos prochaines améliorations.",
+        "Améliorer d’abord ce qui retient les clients, avant d’ajouter de nouvelles fonctions.",
+        "Savoir quand automatiser, et quand se faire aider."
+      ],
+      "resultat": "À la fin : un tableau de bord simple et un plan d’amélioration."
+    }
+  ],
+  "parcours": [
+    { "titre": "L’idée", "texte": "Un problème réel, un public précis." },
+    { "titre": "Le produit", "texte": "Le strict minimum qui crée de la valeur." },
+    { "titre": "La première version", "texte": "Utilisable par de vrais testeurs." },
+    { "titre": "Le prix", "texte": "Une offre claire et rentable." },
+    { "titre": "Les premiers clients", "texte": "Des abonnés qui paient." },
+    { "titre": "La croissance", "texte": "Des chiffres pour décider." }
+  ],
+  "checklist": [
+    "Un problème clair et fréquent",
+    "Un public précis",
+    "De la valeur dès les premières minutes",
+    "Un produit simple à utiliser",
+    "Un prix clair et justifié",
+    "Une base fiable et sécurisée",
+    "Un support qui répond vite",
+    "Des chiffres suivis chaque mois"
+  ]
+}

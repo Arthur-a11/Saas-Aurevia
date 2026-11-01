@@ -1,0 +1,12 @@
+---
+// Case à cocher accessible avec message d'erreur.
+interface Props { nom: string; requis?: boolean }
+const { nom, requis = false } = Astro.props;
+---
+<div class="champ pleine">
+  <label class="case" for={`champ-${nom}`}>
+    <input type="checkbox" id={`champ-${nom}`} name={nom} required={requis} aria-describedby={`err-${nom}`} />
+    <span><slot />{requis && <span class="obligatoire" aria-hidden="true"> *</span>}</span>
+  </label>
+  <p class="erreur" id={`err-${nom}`} hidden></p>
+</div>

@@ -1,0 +1,22 @@
+[
+  {
+    "question": "Faut-il savoir coder ?",
+    "reponse": "Non. La formation commence sans code et vous explique quand il devient utile."
+  },
+  {
+    "question": "Combien de temps faut-il ?",
+    "reponse": "Quelques heures par semaine suffisent. Vous avancez à votre rythme."
+  },
+  {
+    "question": "Et si j’ai une question ?",
+    "reponse": "Vous pouvez la poser à l’assistant du site : ses réponses sont automatiques et peuvent contenir des erreurs. Vous pouvez aussi m’écrire par e-mail, je vous réponds directement."
+  },
+  {
+    "question": "Les ressources de chaque formule sont-elles déjà disponibles ?",
+    "reponse": "Pas encore toutes. Sur la page Tarifs, chaque élément en cours de préparation est indiqué comme tel. Les commandes en ligne ne sont pas encore ouvertes."
+  },
+  {
+    "question": "Les idées de SaaS du site sont-elles validées ?",
+    "reponse": "Non. Ce sont des pistes de travail. Une idée rédigée n’est pas une niche validée : seule la rencontre avec de vrais clients valide une niche. Vérifiez aussi que le nom n’est pas déjà une marque déposée."
+  }
+]

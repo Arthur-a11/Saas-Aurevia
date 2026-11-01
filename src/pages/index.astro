@@ -1,0 +1,274 @@
+---
+import Base from "../layouts/Base.astro";
+import CarteTarif from "../components/CarteTarif.astro";
+import programme from "../data/programme.json";
+import faq from "../data/faq.json";
+import { marches, site, totalIdees, donneesIdees, nombre } from "../lib/site.js";
+
+const prixMin = site.formules[0].prixAffiche;
+const nf = nombre;
+// Idée affichée au chargement du laboratoire (tirée au hasard à chaque construction du site).
+const mDepart = marches[Math.floor(Math.random() * marches.length)];
+const nDepart = mDepart.niches[Math.floor(Math.random() * mDepart.niches.length)];
+const iDepart = nDepart.idees[Math.floor(Math.random() * nDepart.idees.length)];
+// Barres du graphique initial (29 € × 50 clients, clients ajoutés progressivement sur 12 mois).
+const barres = Array.from({ length: 12 }, (_, i) => (i + 1) / 12);
+---
+<Base
+  titreComplet="AUREVIA SAAS – Apprenez à créer un SaaS"
+  titre="Accueil"
+  description="Formation en ligne pour apprendre à créer, lancer et vendre un logiciel par abonnement (SaaS), sans savoir coder. Six modules, de l’idée aux premiers clients, et 1 500 idées de SaaS à explorer."
+>
+  <div class="heros">
+    <div class="horizon" aria-hidden="true"></div>
+    <div class="wrap hero">
+      <div>
+        <p class="surtitre">Formation en ligne · sans code</p>
+        <h1 class="titre-degrade">Construisez l’entreprise qui encaisse chaque mois.</h1>
+        <p class="chapeau">Pour les entrepreneurs, indépendants et salariés qui débutent : AUREVIA SAAS vous apprend à créer, lancer et vendre un logiciel par abonnement, étape par étape, sans savoir coder.</p>
+        <div class="cta">
+          <a class="btn grand" href="/inscription/">Rejoindre AUREVIA SAAS</a>
+          <a class="btn alt grand" href="/programme/">Voir le programme</a>
+        </div>
+        <ul class="chiffres-cles">
+          <li><strong>06</strong><span>modules, dans l’ordre</span></li>
+          <li><strong>{nf(totalIdees)}</strong><span>idées de SaaS</span></li>
+          <li><strong>{marches.length}</strong><span>marchés explorés</span></li>
+          <li><strong>{prixMin}</strong><span>paiement unique, dès</span></li>
+        </ul>
+      </div>
+
+      <section class="hud neon simulateur" aria-labelledby="sim-titre">
+        <div class="hud-tete">
+          <h2 id="sim-titre">Simulateur de revenu récurrent</h2>
+          <span class="hud-etat">interactif</span>
+        </div>
+        <label for="r-prix">
+          <span class="ligne-label">Prix de votre abonnement <output id="o-prix" for="r-prix">29 €</output></span>
+          <input type="range" id="r-prix" min="5" max="200" step="1" value="29" />
+        </label>
+        <label for="r-clients">
+          <span class="ligne-label">Nombre de clients <output id="o-clients" for="r-clients">50</output></span>
+          <input type="range" id="r-clients" min="1" max="1000" step="1" value="50" />
+        </label>
+        <dl class="kpi">
+          <div><dt>Par mois</dt><dd id="k-mois">1 450 €</dd></div>
+          <div><dt>Par an</dt><dd id="k-an">17 400 €</dd></div>
+        </dl>
+        <div class="graphe">
+          <svg viewBox="0 0 240 70" role="img" aria-labelledby="graphe-desc" preserveAspectRatio="none">
+            <desc id="graphe-desc">Revenu mensuel si les clients arrivent progressivement sur 12 mois, jusqu’au nombre choisi.</desc>
+            <defs>
+              <linearGradient id="degrade-barre" x1="0" y1="1" x2="0" y2="0">
+                <stop offset="0" stop-color="#8b6cff" /><stop offset="1" stop-color="#22d3ee" />
+              </linearGradient>
+            </defs>
+            {barres.map((r, i) => <rect class="barre" x={i * 20 + 3} y={70 - 66 * r} width="14" height={66 * r} rx="3" />)}
+          </svg>
+          <p class="legende"><span>Mois 1</span><span>Mois 12</span></p>
+        </div>
+        <p class="note" style="margin:0">Simulation indicative : clients ajoutés progressivement sur 12 mois, avant charges et impôts. Aucun résultat n’est garanti.</p>
+      </section>
+    </div>
+  </div>
+
+  <section aria-labelledby="pour-qui">
+    <div class="wrap">
+      <div class="titre-section">
+        <p class="surtitre">Pour qui</p>
+        <h2 id="pour-qui">Conçue pour les débutants qui veulent bâtir sérieusement</h2>
+        <p>Pas besoin d’être développeur. Il faut surtout un peu de temps chaque semaine et l’envie de parler à de vrais clients.</p>
+      </div>
+      <div class="profils">
+        <div class="carte profil">
+          <span class="icone" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 2l3 7h7l-5.5 4.5L18.5 21 12 16.5 5.5 21l2-7.5L2 9h7z" /></svg></span>
+          <h3>Entrepreneurs</h3>
+          <p>Vous avez une idée ou un métier, et vous voulez un revenu qui revient chaque mois plutôt que des ventes ponctuelles.</p>
+        </div>
+        <div class="carte profil">
+          <span class="icone" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4" /><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6" /></svg></span>
+          <h3>Indépendants</h3>
+          <p>Vous vendez votre temps. Un logiciel par abonnement est une façon de ne plus dépendre uniquement de vos heures.</p>
+        </div>
+        <div class="carte profil">
+          <span class="icone" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2" /><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></svg></span>
+          <h3>Salariés</h3>
+          <p>Vous voulez lancer un projet à côté de votre emploi, à votre rythme, sans savoir coder.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="bande" aria-labelledby="pourquoi">
+    <div class="wrap">
+      <div class="titre-section">
+        <p class="surtitre">Le modèle</p>
+        <h2 id="pourquoi">Pourquoi le SaaS séduit les entrepreneurs</h2>
+      </div>
+      <div class="grille3">
+        <div class="carte"><h3>Un revenu qui se répète</h3><p>Vos clients paient chaque mois. Vous bâtissez un chiffre d’affaires qui s’accumule.</p></div>
+        <div class="carte"><h3>Un produit, beaucoup de clients</h3><p>Vous le construisez une fois, puis vous le vendez à autant de clients que vous en trouvez.</p></div>
+        <div class="carte"><h3>Vous pilotez avec des chiffres</h3><p>Vous suivez vos revenus, vos clients et vos départs, comme un vrai dirigeant.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="livrables">
+    <div class="wrap">
+      <div class="titre-section">
+        <p class="surtitre">Ce que vous aurez entre les mains</p>
+        <h2 id="livrables">Un résultat concret à la fin de chaque module</h2>
+        <p>Chaque module se termine par un livrable précis. Vous avancez sur votre propre projet, pas sur un exercice.</p>
+      </div>
+      <ol class="livrables">
+        {programme.modules.map((m) => (
+          <li class="carte"><h3>{m.titre}</h3><p>{m.resultat.replace(/^À la fin : /, "")}</p></li>
+        ))}
+      </ol>
+      <p style="margin-top:1.5rem"><a class="btn alt" href="/programme/">Voir le programme détaillé</a></p>
+    </div>
+  </section>
+
+  <section class="bande" aria-labelledby="parcours">
+    <div class="wrap">
+      <div class="titre-section">
+        <p class="surtitre">La méthode</p>
+        <h2 id="parcours">Votre parcours de fondateur</h2>
+        <p>Six étapes, dans l’ordre, de l’idée à la croissance.</p>
+      </div>
+      <ol class="parcours">
+        {programme.parcours.map((e) => <li><strong>{e.titre}</strong><span>{e.texte}</span></li>)}
+      </ol>
+    </div>
+  </section>
+
+  <section aria-labelledby="labo-titre">
+    <div class="wrap labo">
+      <div>
+        <p class="surtitre">Laboratoire d’idées</p>
+        <h2 id="labo-titre">Pas encore d’idée ? Tirez-en une.</h2>
+        <p class="sous-titre" style="margin-bottom:0">{nf(totalIdees)} idées de SaaS, réparties dans {marches.length} marchés et 300 niches. Choisissez un marché ou laissez faire le hasard.</p>
+        <div class="labo-actions">
+          <label for="labo-marche">Marché
+            <select id="labo-marche">
+              <option value="">Tous les marchés</option>
+              {marches.map((m) => <option value={m.id}>{m.nom}</option>)}
+            </select>
+          </label>
+          <button class="btn" type="button" id="labo-tirer">Tirer une idée</button>
+        </div>
+      </div>
+      <article class="labo-carte neon" id="labo-carte" aria-live="polite">
+        <p class="ou" id="labo-ou">{mDepart.nom} · {nDepart.nom}</p>
+        <h3 class="nom-idee" id="labo-nom">{iDepart.nom}</h3>
+        <p class="desc" id="labo-desc">{iDepart.description.charAt(0).toUpperCase() + iDepart.description.slice(1)}.</p>
+        <p><a id="labo-lien" href={`/idees/${mDepart.id}/#${nDepart.id}`}>Voir les idées de cette niche →</a></p>
+        <p class="avert">{donneesIdees.avertissement}</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="bande" aria-labelledby="marches">
+    <div class="wrap">
+      <div class="titre-section">
+        <p class="surtitre">15 marchés</p>
+        <h2 id="marches">Choisissez votre marché</h2>
+        <p>15 marchés, 300 niches et {nf(totalIdees)} idées de SaaS à explorer. Ce sont des pistes à tester, pas des niches validées.</p>
+      </div>
+      <ul class="puces">
+        {marches.map((m) => <li><a class="puce grande" href={`/idees/${m.id}/`}>{m.court}</a></li>)}
+      </ul>
+    </div>
+  </section>
+
+  <section aria-labelledby="formules-accueil">
+    <div class="wrap">
+      <div class="titre-section">
+        <p class="surtitre">Tarifs</p>
+        <h2 id="formules-accueil">Un seul paiement, pas d’abonnement</h2>
+        <p>Choisissez la formule qui vous convient. Les éléments encore en préparation sont indiqués clairement.</p>
+      </div>
+      <ul class="tarifs">{site.formules.map((f) => <CarteTarif f={f} />)}</ul>
+      <p class="note" style="margin-top:1rem"><a href="/tarifs/">Comparer les formules en détail →</a></p>
+    </div>
+  </section>
+
+  <section class="bande" aria-labelledby="faq-accueil">
+    <div class="wrap">
+      <div class="titre-section">
+        <p class="surtitre">Questions</p>
+        <h2 id="faq-accueil">Ce que l’on nous demande le plus</h2>
+      </div>
+      {faq.slice(0, 3).map((q) => (
+        <details>
+          <summary><h3>{q.question}</h3></summary>
+          <p>{q.reponse}</p>
+        </details>
+      ))}
+      <p class="note" style="margin-top:1rem"><a href="/questions/">Toutes les questions →</a></p>
+    </div>
+  </section>
+
+  <section class="finale" aria-labelledby="finale">
+    <div class="wrap">
+      <p class="surtitre" style="justify-content:center">Prochaine étape</p>
+      <h2 id="finale">Votre entreprise commence aujourd’hui.</h2>
+      <p class="sous-titre">Inscrivez-vous en deux minutes. L’inscription n’engage à aucun paiement.</p>
+      <div class="cta"><a class="btn grand" href="/inscription/">Rejoindre AUREVIA SAAS</a></div>
+    </div>
+  </section>
+</Base>
+
+<script is:inline>
+  // Anciennes adresses de la version à page unique (#formation, #tarifs…) : redirection vers les vraies pages.
+  (function () {
+    var anciennes = { top: "/", formation: "/programme/", idees: "/idees/", tarifs: "/tarifs/", questions: "/questions/",
+      contact: "/contact/", inscription: "/inscription/", mentions: "/mentions-legales/", cgv: "/cgv/",
+      confidentialite: "/confidentialite/", retractation: "/retractation/" };
+    var h = location.hash.replace("#", "");
+    if (h && anciennes[h] && anciennes[h] !== "/") location.replace(anciennes[h]);
+  })();
+</script>
+<script>
+  // Simulateur : revenus et graphique (clients ajoutés progressivement sur 12 mois).
+  const prix = document.getElementById("r-prix") as HTMLInputElement;
+  const clients = document.getElementById("r-clients") as HTMLInputElement;
+  const barres = Array.from(document.querySelectorAll<SVGRectElement>(".graphe .barre"));
+  const euros = (n: number) => new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 0 }).format(n) + " €";
+  function maj() {
+    const p = Number(prix.value), c = Number(clients.value);
+    document.getElementById("o-prix")!.textContent = euros(p);
+    document.getElementById("o-clients")!.textContent = new Intl.NumberFormat("fr-FR").format(c);
+    document.getElementById("k-mois")!.textContent = euros(p * c);
+    document.getElementById("k-an")!.textContent = euros(p * c * 12);
+    // Échelle logarithmique : de 5 € (minimum) à 200 000 € par mois (maximum du simulateur).
+    const echelle = Math.min(1, Math.max(0.12, Math.log10(p * c) / Math.log10(200 * 1000)));
+    barres.forEach((b, i) => {
+      const h = 66 * echelle * ((i + 1) / 12);
+      b.setAttribute("height", String(h));
+      b.setAttribute("y", String(70 - h));
+    });
+  }
+  prix.addEventListener("input", maj);
+  clients.addEventListener("input", maj);
+  maj();
+
+  // Laboratoire d'idées : les 1 500 idées ne sont chargées qu'au premier tirage.
+  const bouton = document.getElementById("labo-tirer") as HTMLButtonElement;
+  const choixMarche = document.getElementById("labo-marche") as HTMLSelectElement;
+  const carte = document.getElementById("labo-carte") as HTMLElement;
+  bouton.addEventListener("click", async () => {
+    const { default: donnees } = await import("../data/marches.json");
+    const liste = donnees.marches.filter((m) => !choixMarche.value || m.id === choixMarche.value);
+    const m = liste[Math.floor(Math.random() * liste.length)];
+    const n = m.niches[Math.floor(Math.random() * m.niches.length)];
+    const i = n.idees[Math.floor(Math.random() * n.idees.length)];
+    document.getElementById("labo-ou")!.textContent = `${m.nom} · ${n.nom}`;
+    document.getElementById("labo-nom")!.textContent = i.nom;
+    document.getElementById("labo-desc")!.textContent = i.description.charAt(0).toUpperCase() + i.description.slice(1) + ".";
+    (document.getElementById("labo-lien") as HTMLAnchorElement).href = `/idees/${m.id}/#${n.id}`;
+    carte.classList.remove("tire");
+    void carte.offsetWidth;
+    carte.classList.add("tire");
+  });
+</script>

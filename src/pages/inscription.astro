@@ -1,0 +1,80 @@
+---
+import Base from "../layouts/Base.astro";
+import Champ from "../components/Champ.astro";
+import Case from "../components/Case.astro";
+import PiegeRobots from "../components/PiegeRobots.astro";
+import { site } from "../lib/site.js";
+const options = site.formules.map((f) => ({ valeur: f.id, label: `${f.nom} – ${f.prixAffiche}` }));
+---
+<Base titre="Inscription" courant="/inscription/"
+  description="Inscrivez-vous à la formation AUREVIA SAAS en deux minutes. L’inscription n’engage à aucun paiement.">
+  <section class="entete-page">
+    <div class="wrap">
+      <p class="retour"><a href="/">← Retour à l’accueil</a></p>
+      <h1 class="titre-degrade">Je m’inscris</h1>
+      <p class="chapeau">Quelques informations suffisent. L’inscription n’engage à aucun paiement : je vous recontacte par e-mail pour la suite.</p>
+    </div>
+  </section>
+  <section>
+    <div class="wrap">
+      <form class="carte formulaire" id="form-inscription" novalidate>
+        <p class="note pleine" style="margin:0">Les champs marqués d’une étoile (*) sont obligatoires.</p>
+        <Champ nom="prenom" label="Prénom" requis autocomplete="given-name" max={80} />
+        <Champ nom="nom" label="Nom" requis autocomplete="family-name" max={80} />
+        <Champ nom="email" label="E-mail" type="email" requis autocomplete="email" max={254} />
+        <Champ nom="tel" label="Téléphone (facultatif)" type="tel" autocomplete="tel" max={30} />
+        <Champ nom="profession" label="Profession" requis autocomplete="organization-title" max={120} />
+        <Champ nom="entreprise" label="Entreprise ou école (facultatif)" autocomplete="organization" max={120} />
+        <Champ nom="formule" label="Formule qui vous intéresse" requis pleine options={options} valeur="complet" />
+        <Champ nom="projet" label="Votre projet de SaaS (facultatif)" pleine lignes={4} max={1500} />
+        <Case nom="confidentialite" requis>J’ai pris connaissance de la <a href="/confidentialite/">politique de confidentialité</a> : mes informations servent à traiter mon inscription et à me répondre.</Case>
+        <PiegeRobots />
+        <div class="pleine"><button class="btn" type="submit">Envoyer mon inscription</button></div>
+        <div class="pleine" id="zone-message" role="status" hidden></div>
+      </form>
+    </div>
+  </section>
+</Base>
+
+<script>
+  import { brancher, message, boutonsBrouillon } from "../lib/formulaire";
+  import { validerInscription } from "../../serveur/validation.js";
+  import site from "../data/site.json";
+
+  const form = document.getElementById("form-inscription") as HTMLFormElement;
+  const zone = document.getElementById("zone-message") as HTMLElement;
+
+  // Formule pré-choisie depuis la page Tarifs (?formule=essentiel).
+  const choix = new URLSearchParams(location.search).get("formule");
+  const select = form.elements.namedItem("formule") as HTMLSelectElement;
+  if (choix && site.formules.some((f) => f.id === choix)) select.value = choix;
+
+  brancher(form, {
+    url: "/api/inscription",
+    valider: validerInscription,
+    zone,
+    succes(rep) {
+      if (rep.doublon) {
+        message(zone, "ok", "Vous êtes déjà inscrit(e).", [
+          `Votre inscription a déjà été enregistrée avec cette adresse e-mail (référence : ${rep.reference}). Aucun doublon n’a été créé.`,
+          "Pour modifier vos informations, écrivez-moi directement par e-mail.",
+        ]);
+        return;
+      }
+      const lignes = [`Référence : ${rep.reference}.`];
+      if (rep.emailConfirmation === "envoye") lignes.push("Un e-mail de confirmation vient de vous être envoyé.");
+      else lignes.push("Aucun e-mail de confirmation automatique ne vous a été envoyé (envoi d’e-mails pas encore activé). Je vous réponds personnellement par e-mail.");
+      message(zone, "ok", "Votre inscription est enregistrée.", lignes);
+      form.querySelectorAll("input:not([type=checkbox]), textarea").forEach((el) => ((el as HTMLInputElement).value = ""));
+    },
+    indisponible(v) {
+      const nomFormule = site.formules.find((f) => f.id === v.formule)?.nom ?? v.formule;
+      const corps = `Bonjour,\n\nVoici mon inscription à la formation AUREVIA SAAS :\n\nPrénom : ${v.prenom}\nNom : ${v.nom}\nE-mail : ${v.email}\nTéléphone : ${v.tel || "(non renseigné)"}\nProfession : ${v.profession}\nEntreprise ou école : ${v.entreprise || "(non renseigné)"}\nFormule : ${nomFormule}\nProjet : ${v.projet || "(non renseigné)"}\n\nMerci !`;
+      message(zone, "info", "L’enregistrement en ligne n’est pas disponible pour le moment.", [
+        "Votre inscription n’a pas été enregistrée. Vous pouvez l’envoyer par e-mail : les boutons ci-dessous préparent un message déjà rempli.",
+        "Rien n’est envoyé tant que vous ne cliquez pas sur « Envoyer » dans votre messagerie.",
+        boutonsBrouillon(site.contactEmail, `Inscription formation SaaS – ${v.prenom} ${v.nom}`, corps),
+      ]);
+    },
+  });
+</script>

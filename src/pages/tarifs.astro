@@ -1,0 +1,70 @@
+---
+import Base from "../layouts/Base.astro";
+import CarteTarif from "../components/CarteTarif.astro";
+import { site, mentionTaxes } from "../lib/site.js";
+const ouvert = site.paiement.actif;
+const [ess, comp, acc] = site.formules;
+const prep = (x) => x?.statut === "en-preparation";
+const ligne = (texte) => site.formules.map((f) => f.inclus.find((x) => x.texte === texte));
+// Lignes du comparatif, construites à partir des formules (aucun contenu ajouté).
+const lignes = [
+  { nom: "Les cours en vidéo", cellules: [ess, comp, acc].map(() => ({ oui: true, prep: prep(ligne("Les cours en vidéo")[0]) })) },
+  { nom: "Des fiches résumé", cellules: [ess, comp, acc].map(() => ({ oui: true, prep: prep(ligne("Des fiches résumé")[0]) })) },
+  { nom: "Des modèles à copier", cellules: [{ oui: false }, { oui: true, prep: true }, { oui: true, prep: true }] },
+  { nom: "Une communauté pour s’entraider", cellules: [{ oui: false }, { oui: true, prep: true }, { oui: true, prep: true }] },
+  { nom: "Mon avis personnel sur votre projet", cellules: [{ oui: false }, { oui: false }, { oui: true, adefinir: true }] },
+];
+---
+<Base titre="Tarifs" courant="/tarifs/"
+  description="Les trois formules AUREVIA SAAS : Essentiel 14,90 €, Complet 24,90 €, Accompagné 54,90 €. Un seul paiement, sans abonnement.">
+  <section class="entete-page">
+    <div class="wrap">
+      <p class="surtitre">Tarifs</p>
+      <h1 class="titre-degrade">Choisissez votre formule</h1>
+      <p class="chapeau">Un seul paiement. Pas d’abonnement.</p>
+      {!ouvert && (
+        <div class="encadre">
+          <p><strong>Les commandes en ligne ne sont pas encore ouvertes.</strong> Vous pouvez vous inscrire dès maintenant, sans paiement : je vous recontacte par e-mail pour la suite.</p>
+          <p>Les éléments marqués « En préparation » ne sont pas encore disponibles.</p>
+        </div>
+      )}
+    </div>
+  </section>
+  <section class="bande" aria-labelledby="formules">
+    <div class="wrap">
+      <h2 id="formules" class="sr-only">Les formules</h2>
+      <ul class="tarifs">{site.formules.map((f) => <CarteTarif f={f} />)}</ul>
+
+      <div class="comparatif-zone" tabindex="0" role="region" aria-label="Tableau comparatif des formules (défilement horizontal sur petit écran)">
+        <table class="comparatif">
+          <caption>Comparer les formules</caption>
+          <thead>
+            <tr><th scope="col">Contenu</th>{site.formules.map((f) => <th scope="col">{f.nom}<br /><span class="mono" style="color:#fff">{f.prixAffiche}</span></th>)}</tr>
+          </thead>
+          <tbody>
+            {lignes.map((l) => (
+              <tr>
+                <th scope="row">{l.nom}</th>
+                {l.cellules.map((c) => (
+                  <td>
+                    {c.oui ? <span class="oui">Inclus</span> : <span class="non">Non inclus</span>}
+                    {c.prep && <span class="prep">En préparation</span>}
+                    {c.adefinir && <span class="prep">Modalités à définir</span>}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p class="note" style="margin-top:0.75rem">Prix : {mentionTaxes()}. Paiement unique pour chaque formule.</p>
+
+      <ul class="engagements">
+        <li><strong>Un seul paiement</strong><span>Pas d’abonnement, pas de prélèvement caché.</span></li>
+        <li><strong>14 jours pour changer d’avis</strong><span>Droit de rétractation pour les consommateurs, sauf renoncement exprès à l’accès immédiat. <a href="/retractation/">Détails</a></span></li>
+        <li><strong>Transparence</strong><span>Ce qui n’est pas encore prêt est indiqué « En préparation ». Aucun résultat n’est garanti.</span></li>
+      </ul>
+      <p class="note" style="margin-top:1.25rem">La formule Accompagné comprend un service (mon avis personnel sur votre projet) en plus des contenus numériques : ses règles de rétractation sont différentes, voir les <a href="/cgv/">conditions générales de vente</a>.</p>
+    </div>
+  </section>
+</Base>

@@ -1,0 +1,109 @@
+---
+import Base from "../../layouts/Base.astro";
+import ActionsIdees from "../../components/ActionsIdees.astro";
+import { marches, donneesIdees } from "../../lib/site.js";
+
+export function getStaticPaths() {
+  return marches.map((m) => ({ params: { marche: m.id }, props: { m } }));
+}
+const { m } = Astro.props;
+const majuscule = (s) => s.charAt(0).toUpperCase() + s.slice(1);
+const texteCopie = (i, n) => `${i.nom} : ${i.description} (marché ${m.nom}, niche ${n.nom}). Idée à tester auprès de vrais clients : une idée rédigée n’est pas une niche validée.`;
+---
+<Base titre={`Idées de SaaS : ${m.nom}`} courant="/idees/"
+  description={`20 niches et 100 idées de SaaS pour le marché ${m.nom}. Des pistes à tester auprès de vrais clients.`}>
+  <section class="entete-page">
+    <div class="wrap">
+      <p class="retour"><a href="/idees/">← Tous les marchés et la recherche</a></p>
+      <p class="surtitre">Marché · 20 niches · 100 idées</p>
+      <h1 class="titre-degrade">{m.nom}</h1>
+      <p class="chapeau">{m.pourquoi}</p>
+      <nav aria-label="Autres marchés" class="defilant-zone">
+        <ul class="puces defilant">
+          {marches.map((x) => (
+            <li><a class="puce" href={`/idees/${x.id}/`} aria-current={x.id === m.id ? "page" : undefined}>{x.court}</a></li>
+          ))}
+        </ul>
+      </nav>
+    </div>
+  </section>
+
+  <section class="bande" aria-labelledby="niches-titre">
+    <div class="wrap">
+      <h2 id="niches-titre">Les 20 niches</h2>
+      <div class="encadre attention"><p><strong>{donneesIdees.avertissement}</strong> {donneesIdees.avertissementMarques}</p></div>
+      <div class="filtre-marche sans-js-masque">
+        <div class="champ">
+          <label for="filtre-q">Filtrer les idées de ce marché</label>
+          <input id="filtre-q" type="search" autocomplete="off" placeholder="Ex. : rendez-vous, stock, devis…" />
+        </div>
+        <p class="explo-compte" id="filtre-compte" role="status" aria-live="polite"></p>
+      </div>
+      <nav aria-label="Niches de ce marché" class="defilant-zone">
+        <ul class="puces defilant" id="sommaire-niches">
+          {m.niches.map((n, j) => <li><a class="puce" href={`#${n.id}`} data-niche={n.id}>{j + 1}. {n.nom}</a></li>)}
+        </ul>
+      </nav>
+      <div class="explo-vide" id="filtre-vide" hidden>
+        <p><strong>Aucune idée de ce marché ne correspond à ce filtre.</strong> Essayez un autre mot, ou <a href="/idees/">cherchez dans les 15 marchés</a>.</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="wrap">
+    {m.niches.map((n, j) => (
+      <section class="niche" id={n.id} aria-labelledby={`t-${n.id}`}>
+        <h2 id={`t-${n.id}`}>{j + 1}. {n.nom}</h2>
+        <ul class="grille-idees">
+          {n.idees.map((idee, k) => (
+            <li class="carte idee" data-idee>
+              <span class="num">{k + 1} sur 5</span>
+              <h3>{idee.nom}</h3>
+              <p>{majuscule(idee.description)}.</p>
+              <div class="idee-actions sans-js-masque">
+                <button type="button" class="action-idee" data-favori={`${m.id}:${n.id}:${idee.nom}`} aria-pressed="false" aria-label={`Favori : ${idee.nom}`}>☆ Favori</button>
+                <button type="button" class="action-idee" data-copier={texteCopie(idee, n)} aria-label={`Copier l’idée ${idee.nom}`}>Copier</button>
+              </div>
+            </li>
+          ))}
+        </ul>
+      </section>
+    ))}
+    <p class="note" style="margin-top:2rem"><a href="#contenu">↑ Haut de page</a></p>
+  </div>
+  <ActionsIdees />
+</Base>
+
+<script>
+  import { normaliser } from "../../lib/idees-client";
+  // Filtre instantané à l'intérieur du marché (texte déjà présent dans la page : aucun chargement).
+  const champ = document.getElementById("filtre-q") as HTMLInputElement;
+  const compte = document.getElementById("filtre-compte")!;
+  const vide = document.getElementById("filtre-vide")!;
+  const niches = Array.from(document.querySelectorAll<HTMLElement>("section.niche"));
+  const index = niches.map((s) => ({
+    section: s,
+    titre: normaliser(s.querySelector("h2")!.textContent || ""),
+    cartes: Array.from(s.querySelectorAll<HTMLElement>("[data-idee]")).map((c) => ({ c, texte: normaliser(c.textContent || "") })),
+    lien: document.querySelector<HTMLElement>(`#sommaire-niches a[data-niche="${s.id}"]`)?.parentElement,
+  }));
+  let minuteur: number | undefined;
+  function filtrer() {
+    const mots = normaliser(champ.value).split(" ").filter(Boolean);
+    let total = 0;
+    for (const n of index) {
+      let visibles = 0;
+      for (const { c, texte } of n.cartes) {
+        const ok = !mots.length || mots.every((m) => texte.includes(m) || n.titre.includes(m));
+        c.hidden = !ok;
+        if (ok) visibles++;
+      }
+      n.section.hidden = visibles === 0;
+      if (n.lien) n.lien.hidden = visibles === 0;
+      total += visibles;
+    }
+    vide.hidden = total > 0;
+    compte.textContent = mots.length ? `${total} idée${total > 1 ? "s" : ""} sur 100 dans ce marché.` : "";
+  }
+  champ.addEventListener("input", () => { clearTimeout(minuteur); minuteur = window.setTimeout(filtrer, 150); });
+</script>

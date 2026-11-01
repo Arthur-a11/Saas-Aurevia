@@ -1,0 +1,65 @@
+/* Jetons de style AUREVIA SAAS : couleurs, polices, espacements.
+   Toute couleur du site doit venir d'ici. Contrastes vérifiés (WCAG AA, 4,5:1 minimum pour le texte). */
+
+@font-face { font-family: "Public Sans"; font-weight: 400; font-style: normal; font-display: swap; src: url("/fonts/public-sans-latin-400-normal.woff2") format("woff2"); }
+@font-face { font-family: "Public Sans"; font-weight: 500; font-style: normal; font-display: swap; src: url("/fonts/public-sans-latin-500-normal.woff2") format("woff2"); }
+@font-face { font-family: "Public Sans"; font-weight: 600; font-style: normal; font-display: swap; src: url("/fonts/public-sans-latin-600-normal.woff2") format("woff2"); }
+@font-face { font-family: "Public Sans"; font-weight: 700; font-style: normal; font-display: swap; src: url("/fonts/public-sans-latin-700-normal.woff2") format("woff2"); }
+@font-face { font-family: "JetBrains Mono"; font-weight: 500; font-style: normal; font-display: swap; src: url("/fonts/jetbrains-mono-latin-500-normal.woff2") format("woff2"); }
+@font-face { font-family: "JetBrains Mono"; font-weight: 700; font-style: normal; font-display: swap; src: url("/fonts/jetbrains-mono-latin-700-normal.woff2") format("woff2"); }
+@font-face { font-family: "Bricolage Grotesque"; font-weight: 500; font-style: normal; font-display: swap; src: url("/fonts/bricolage-grotesque-latin-500-normal.woff2") format("woff2"); }
+@font-face { font-family: "Bricolage Grotesque"; font-weight: 700; font-style: normal; font-display: swap; src: url("/fonts/bricolage-grotesque-latin-700-normal.woff2") format("woff2"); }
+@font-face { font-family: "Bricolage Grotesque"; font-weight: 800; font-style: normal; font-display: swap; src: url("/fonts/bricolage-grotesque-latin-800-normal.woff2") format("woff2"); }
+
+:root {
+  color-scheme: dark;
+
+  /* Couleurs de base */
+  --bg: #090b28;
+  --bg-grad: linear-gradient(160deg, #0a0b2e, #16106a 50%, #08365a);
+  --surface: rgba(255, 255, 255, 0.06);
+  --surface-forte: rgba(18, 20, 64, 0.92);   /* cartes sur mobile, sans effet de flou */
+  --ink: #eef2ff;          /* texte principal */
+  --muted: #a9b4dd;        /* texte secondaire : 5,5:1 sur le fond le plus clair */
+  --line: rgba(150, 170, 255, 0.26);
+  --line-forte: rgba(150, 170, 255, 0.55);
+
+  /* Marque */
+  --brand: #22d3ee;        /* cyan */
+  --accent: #7c5cff;       /* violet (décor) */
+  --accent-texte: #6646e8; /* violet foncé : fond des badges à texte blanc (5,8:1) */
+  --on-brand: #06122b;     /* texte sombre sur dégradé violet → cyan */
+  --gold: #e8c46a;         /* chiffres */
+  --lien: #8eefff;
+  --grad: linear-gradient(90deg, #8b6cff, #22d3ee);
+  --titre-grad: linear-gradient(100deg, #fff 25%, #8eefff 60%, #b7a2ff);
+  --halo-violet: rgba(124, 92, 255, 0.45);
+  --halo-cyan: rgba(34, 211, 238, 0.4);
+  --surface-hud: rgba(10, 14, 52, 0.82);    /* panneaux « tableau de bord » */
+
+  /* Assistant (vert) */
+  --chat-bg: #0b0d18;
+  --chat-vert: #3ddc84;
+  --chat-muted: #8fa3c8;
+
+  /* Erreur / succès */
+  --erreur: #ffb4b4;
+  --succes: #9df0c4;
+
+  /* Typographie */
+  --police-texte: "Public Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --police-titre: "Bricolage Grotesque", "Public Sans", system-ui, sans-serif;
+  --police-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;  /* étiquettes, chiffres */
+
+  /* Mise en page */
+  --largeur: 1080px;
+  --gouttiere: 1rem;
+  --header-h: 4.5rem;
+  --rayon: 18px;
+  --rayon-petit: 12px;
+  --chat-espace: 5.5rem;   /* place réservée en bas de page pour le bouton de l'assistant */
+}
+
+@media (min-width: 821px) {
+  :root { --gouttiere: 1.25rem; }
+}

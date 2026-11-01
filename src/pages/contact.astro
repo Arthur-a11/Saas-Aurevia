@@ -1,0 +1,24 @@
+---
+import Base from "../layouts/Base.astro";
+import { site } from "../lib/site.js";
+const sujet = encodeURIComponent("Formation SaaS");
+---
+<Base titre="Contact" courant="/contact/"
+  description="Une question avant de vous inscrire à AUREVIA SAAS ? Écrivez directement à l’organisateur par e-mail.">
+  <section class="entete-page">
+    <div class="wrap">
+      <h1 class="titre-degrade">Contact</h1>
+      <p class="chapeau">Une question avant de vous inscrire ? Écrivez-moi, je réponds directement par e-mail.</p>
+    </div>
+  </section>
+  <section>
+    <div class="wrap">
+      <p>Adresse : <strong>{site.contactEmail}</strong></p>
+      <div class="cta">
+        <a class="btn" href={`mailto:${site.contactEmail}?subject=${sujet}`}>Écrire avec mon application mail</a>
+        <a class="btn alt" href={`https://mail.google.com/mail/?view=cm&fs=1&to=${site.contactEmail}&su=${sujet}`} target="_blank" rel="noopener">Écrire avec Gmail <span class="sr-only">(nouvel onglet)</span></a>
+      </div>
+      <p class="note" style="margin-top:1rem">Ces boutons ouvrent un brouillon : rien n’est envoyé tant que vous ne cliquez pas sur « Envoyer » dans votre messagerie.</p>
+    </div>
+  </section>
+</Base>

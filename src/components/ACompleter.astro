@@ -1,0 +1,8 @@
+---
+// Affiche une information d'entreprise si elle est connue, sinon un champ « à compléter » bien visible.
+import { info } from "../lib/site.js";
+interface Props { champ?: string; label: string; valeur?: string | null }
+const { champ, label, valeur } = Astro.props;
+const v = valeur !== undefined ? valeur : champ ? info(champ) : null;
+---
+{v ? <span>{v}</span> : <span class="a-completer">[{label} — à compléter]</span>}

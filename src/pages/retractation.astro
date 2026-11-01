@@ -1,0 +1,92 @@
+---
+import Base from "../layouts/Base.astro";
+import AC from "../components/ACompleter.astro";
+import Champ from "../components/Champ.astro";
+import Case from "../components/Case.astro";
+import PiegeRobots from "../components/PiegeRobots.astro";
+import BrouillonLegal from "../components/BrouillonLegal.astro";
+import { site } from "../lib/site.js";
+const options = site.formules.map((f) => ({ valeur: f.id, label: `${f.nom} – ${f.prixAffiche}` }));
+---
+<Base titre="Droit de rétractation" description="Comment exercer votre droit de rétractation de 14 jours sur une formule AUREVIA SAAS, avec le formulaire en ligne.">
+  <section class="legal entete-page">
+    <div class="wrap">
+      <p class="retour"><a href="/">← Retour à l’accueil</a></p>
+      <h1 class="titre-degrade">Droit de rétractation</h1>
+      <BrouillonLegal />
+
+      <h2>Vos 14 jours</h2>
+      <p>Si vous êtes consommateur, vous pouvez vous rétracter de votre commande dans un délai de 14 jours à compter de la conclusion du contrat, sans donner de motif.</p>
+      <p>Exceptions : si vous avez demandé l’accès immédiat aux contenus numériques en reconnaissant perdre votre droit de rétractation, ce droit ne s’applique plus à ces contenus dès le début de l’accès. Pour l’accompagnement commencé à votre demande avant la fin du délai, une rétractation reste possible mais la part du service déjà fournie reste due. Le détail est dans les <a href="/cgv/">conditions générales de vente</a> (article 8).</p>
+
+      <h2 id="formulaire-titre">Se rétracter du contrat ici</h2>
+      <p>Remplissez ce formulaire puis confirmez. Votre demande est horodatée et vous recevez sa référence à l’écran.</p>
+    </div>
+  </section>
+  <section style="padding-top:0">
+    <div class="wrap">
+      <form class="carte formulaire" id="form-retractation" aria-labelledby="formulaire-titre" novalidate>
+        <Champ nom="prenom" label="Prénom" requis autocomplete="given-name" max={80} />
+        <Champ nom="nom" label="Nom" requis autocomplete="family-name" max={80} />
+        <Champ nom="email" label="E-mail utilisé pour la commande" type="email" requis autocomplete="email" max={254} />
+        <Champ nom="dateCommande" label="Date de la commande" type="date" requis />
+        <Champ nom="formule" label="Formule commandée" requis options={options} />
+        <Champ nom="reference" label="Référence de commande (facultatif)" max={60} />
+        <Champ nom="message" label="Message (facultatif)" pleine lignes={3} max={1000} />
+        <Case nom="declaration" requis>Je déclare me rétracter du contrat portant sur la formule indiquée ci-dessus.</Case>
+        <PiegeRobots />
+        <div class="pleine"><button class="btn" type="submit">Confirmer ma rétractation</button></div>
+        <div class="pleine" id="zone-message" role="status" hidden></div>
+      </form>
+    </div>
+  </section>
+  <section class="legal" style="padding-top:0">
+    <div class="wrap">
+      <h2>Autres moyens</h2>
+      <p>Vous pouvez aussi écrire à {site.contactEmail}, ou par courrier à <AC champ="entreprise.adresseSiege" label="adresse postale" />, par exemple avec le modèle ci-dessous.</p>
+      <h2>Modèle de formulaire de rétractation</h2>
+      <div class="carte">
+        <p>À l’attention de <AC champ="entreprise.denomination" label="nom de l’exploitant" />, <AC champ="entreprise.adresseSiege" label="adresse" />, {site.contactEmail} :</p>
+        <p>Je vous notifie par la présente ma rétractation du contrat portant sur la formule ci-dessous :</p>
+        <p>Formule : …<br />Commandée le : …<br />Nom du consommateur : …<br />Adresse du consommateur : …<br />Signature du consommateur (uniquement en cas d’envoi sur papier) : …<br />Date : …</p>
+      </div>
+      <h2>Remboursement</h2>
+      <p>En cas de rétractation valable, le remboursement est effectué au plus tard 14 jours après la réception de votre demande, par le même moyen de paiement que celui utilisé pour la commande.</p>
+    </div>
+  </section>
+</Base>
+
+<script>
+  import { brancher, message, boutonsBrouillon } from "../lib/formulaire";
+  import { validerRetractation } from "../../serveur/validation.js";
+  import site from "../data/site.json";
+
+  const form = document.getElementById("form-retractation") as HTMLFormElement;
+  const zone = document.getElementById("zone-message") as HTMLElement;
+  brancher(form, {
+    url: "/api/retractation",
+    valider: (d) => validerRetractation(d),
+    zone,
+    succes(rep) {
+      const quand = new Date(rep.recuLe).toLocaleString("fr-FR");
+      if (rep.doublon) {
+        message(zone, "ok", "Cette demande de rétractation est déjà enregistrée.", [
+          `Référence : ${rep.reference}. Reçue le ${quand}. Aucune nouvelle demande n’a été créée.`,
+        ]);
+        return;
+      }
+      const lignes = [`Référence : ${rep.reference}. Reçue le ${quand}.`];
+      if (rep.emailAccuse === "envoye") lignes.push("Un accusé de réception vient de vous être envoyé par e-mail.");
+      else lignes.push("Aucun accusé de réception n’a pu être envoyé automatiquement par e-mail : conservez cette référence (par exemple avec une capture d’écran). L’organisateur vous répondra par e-mail.");
+      message(zone, "ok", "Votre demande de rétractation est enregistrée.", lignes);
+    },
+    indisponible(v) {
+      const corps = `Bonjour,\n\nJe vous informe que je me rétracte de ma commande.\n\nPrénom et nom : ${v.prenom} ${v.nom}\nE-mail utilisé pour la commande : ${v.email}\nDate de la commande : ${v.dateCommande}\nFormule : ${v.formule}\nRéférence : ${v.reference || "(non renseignée)"}\n${v.message ? "\nMessage : " + v.message + "\n" : ""}`;
+      message(zone, "info", "Le formulaire en ligne n’est pas disponible pour le moment.", [
+        "Votre demande n’a pas été enregistrée. Envoyez-la par e-mail : les boutons ci-dessous préparent le message.",
+        "Rien n’est envoyé tant que vous ne cliquez pas sur « Envoyer » dans votre messagerie. Gardez une copie de votre message.",
+        boutonsBrouillon(site.contactEmail, "Rétractation de ma commande", corps),
+      ]);
+    },
+  });
+</script>

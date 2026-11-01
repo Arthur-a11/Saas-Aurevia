@@ -1,0 +1,43 @@
+---
+import { PAGES } from "../lib/site.js";
+interface Props { courant?: string }
+const { courant } = Astro.props;
+---
+<header class="entete">
+  <div class="wrap">
+    <a class="logo" href="/">AUREVIA SAAS</a>
+    <button class="menu-bouton" type="button" aria-expanded="false" aria-controls="nav-principale">
+      <span class="barres" aria-hidden="true"></span><span>Menu</span>
+    </button>
+    <nav class="nav-principale" id="nav-principale" aria-label="Navigation principale">
+      <ul>
+        {PAGES.map((p) => (
+          <li><a href={p.href} aria-current={courant === p.href ? "page" : undefined}>{p.label}</a></li>
+        ))}
+        <li class="nav-inscription"><a href="/inscription/" aria-current={courant === "/inscription/" ? "page" : undefined}>Je m’inscris</a></li>
+      </ul>
+    </nav>
+    <a class="btn petit btn-entete" href="/inscription/">Je m’inscris</a>
+  </div>
+</header>
+<script>
+  // Menu mobile : bouton accessible (aria-expanded), fermeture avec Échap, focus rendu au bouton.
+  const bouton = document.querySelector<HTMLButtonElement>(".menu-bouton");
+  const nav = document.getElementById("nav-principale");
+  if (bouton && nav) {
+    const fermer = (rendreFocus: boolean) => {
+      nav.classList.remove("ouvert");
+      bouton.setAttribute("aria-expanded", "false");
+      if (rendreFocus) bouton.focus();
+    };
+    bouton.addEventListener("click", () => {
+      const ouvrir = bouton.getAttribute("aria-expanded") !== "true";
+      nav.classList.toggle("ouvert", ouvrir);
+      bouton.setAttribute("aria-expanded", String(ouvrir));
+      if (ouvrir) nav.querySelector<HTMLAnchorElement>("a")?.focus();
+    });
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && nav.classList.contains("ouvert")) fermer(true);
+    });
+  }
+</script>

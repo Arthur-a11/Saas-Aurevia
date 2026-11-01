@@ -1,0 +1,90 @@
+---
+// Page de commande PRÉPARÉE. Elle reste fermée tant que site.json > paiement.actif vaut false.
+import Base from "../layouts/Base.astro";
+import Champ from "../components/Champ.astro";
+import Case from "../components/Case.astro";
+import PiegeRobots from "../components/PiegeRobots.astro";
+import { site, mentionTaxes } from "../lib/site.js";
+import { TEXTES_CONSENTEMENT as T } from "../../serveur/validation.js";
+const ouvert = site.paiement.actif;
+const options = site.formules.map((f) => ({ valeur: f.id, label: `${f.nom} – ${f.prixAffiche}` }));
+---
+<Base titre="Commande" noindex description="Commander une formule AUREVIA SAAS.">
+  <section class="entete-page">
+    <div class="wrap">
+      <p class="retour"><a href="/tarifs/">← Retour aux tarifs</a></p>
+      <h1 class="titre-degrade">Commande</h1>
+      {!ouvert ? (
+        <div class="encadre">
+          <p><strong>Les commandes en ligne ne sont pas encore ouvertes.</strong></p>
+          <p>Vous pouvez vous inscrire dès maintenant, sans paiement : je vous recontacte par e-mail pour la suite.</p>
+          <p><a class="btn" href="/inscription/">M’inscrire sans payer</a></p>
+        </div>
+      ) : (
+        <p class="chapeau">Prix : {mentionTaxes()}. Le paiement se fait ensuite sur PayPal. Il n’est pas vérifié automatiquement : je confirme votre commande et votre accès par e-mail.</p>
+      )}
+    </div>
+  </section>
+  {ouvert && (
+    <section style="padding-top:0">
+      <div class="wrap">
+        <form class="carte formulaire" id="form-commande" novalidate>
+          <Champ nom="formule" label="Formule" requis pleine options={options} valeur="complet" />
+          <Champ nom="prenom" label="Prénom" requis autocomplete="given-name" max={80} />
+          <Champ nom="nom" label="Nom" requis autocomplete="family-name" max={80} />
+          <Champ nom="email" label="E-mail" type="email" requis pleine autocomplete="email" max={254} />
+          <Case nom="cgv" requis>J’ai lu et j’accepte les <a href="/cgv/">conditions générales de vente</a>.</Case>
+          <Case nom="accesImmediat">{T.accesImmediat} (Facultatif : sans cette case, vous gardez votre droit de rétractation.)</Case>
+          <div id="bloc-service" hidden><Case nom="executionService">{T.executionService} (Facultatif.)</Case></div>
+          <PiegeRobots />
+          <div class="pleine"><button class="btn" type="submit">Valider et passer au paiement</button></div>
+          <div class="pleine" id="zone-message" role="status" hidden></div>
+        </form>
+      </div>
+    </section>
+  )}
+</Base>
+
+<script>
+  import { brancher, message } from "../lib/formulaire";
+  import { validerCommande } from "../../serveur/validation.js";
+  import site from "../data/site.json";
+
+  const form = document.getElementById("form-commande") as HTMLFormElement | null;
+  if (form) {
+    const zone = document.getElementById("zone-message") as HTMLElement;
+    const select = form.elements.namedItem("formule") as HTMLSelectElement;
+    const blocService = document.getElementById("bloc-service") as HTMLElement;
+    const choix = new URLSearchParams(location.search).get("formule");
+    if (choix && site.formules.some((f) => f.id === choix)) select.value = choix;
+    const majService = () => { blocService.hidden = select.value !== "accompagne"; };
+    select.addEventListener("change", majService);
+    majService();
+
+    brancher(form, {
+      url: "/api/commande",
+      valider: validerCommande,
+      zone,
+      succes(rep) {
+        const f = site.formules.find((x) => x.id === rep.formule)!;
+        const lien = document.createElement("a");
+        lien.className = "btn";
+        lien.href = site.paiement.lienPaypalMe;
+        lien.target = "_blank";
+        lien.rel = "noopener";
+        lien.textContent = `Payer ${f.prixAffiche} sur PayPal`;
+        message(zone, "ok", "Dernière étape : le paiement", [
+          `Référence de commande : ${rep.reference}.`,
+          `Sur PayPal, indiquez le montant de ${f.prixAffiche} et la référence ${rep.reference} dans le message.`,
+          "Le paiement n’est pas vérifié automatiquement : je confirme votre commande et votre accès par e-mail après vérification.",
+          lien,
+        ]);
+      },
+      indisponible() {
+        message(zone, "ko", "La commande n’a pas pu être enregistrée.", [
+          "Aucun paiement ne doit être fait tant que la commande n’est pas enregistrée. Réessayez plus tard ou écrivez à " + site.contactEmail + ".",
+        ]);
+      },
+    });
+  }
+</script>

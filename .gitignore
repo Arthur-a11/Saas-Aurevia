@@ -1,0 +1,17 @@
+node_modules/
+dist/
+.astro/
+.netlify/
+.donnees-locales/
+test-results/
+playwright-report/
+video/sortie/*.mp4
+video/sortie/images/
+.env
+apercu/
+apercu-fichiers.json
+livraison/
+apercu-v2/
+apercu-v2-fichiers.json
+apercu-v3/
+apercu-v3-fichiers.json

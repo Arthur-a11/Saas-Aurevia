@@ -1,0 +1,52 @@
+---
+// Fait fonctionner les boutons « Favori » et « Copier » des idées (délégation d'événements),
+// et annonce le résultat aux lecteurs d'écran dans une zone discrète.
+---
+<p class="sr-only" id="annonce-actions" role="status" aria-live="polite"></p>
+<div class="toast" id="toast-actions" hidden></div>
+
+<script>
+  import { lireFavoris, basculerFavori, copier } from "../lib/idees-client";
+
+  const annonce = document.getElementById("annonce-actions")!;
+  const toast = document.getElementById("toast-actions")!;
+  let minuteur: number | undefined;
+  function informer(texte: string) {
+    annonce.textContent = texte;
+    toast.textContent = texte;
+    toast.hidden = false;
+    clearTimeout(minuteur);
+    minuteur = window.setTimeout(() => { toast.hidden = true; }, 2600);
+  }
+
+  function synchroniser() {
+    const f = lireFavoris();
+    document.querySelectorAll<HTMLButtonElement>("button[data-favori]").forEach((b) => {
+      const oui = f.has(b.dataset.favori!);
+      const nom = b.dataset.favori!.split(":").slice(2).join(":");
+      b.setAttribute("aria-pressed", String(oui));
+      b.setAttribute("aria-label", `Favori : ${nom}`);
+      b.textContent = oui ? "★ Favori" : "☆ Favori";
+    });
+  }
+  synchroniser();
+  window.addEventListener("favoris-modifies", synchroniser);
+
+  document.addEventListener("click", async (e) => {
+    const cible = e.target as HTMLElement;
+    const fav = cible.closest<HTMLButtonElement>("button[data-favori]");
+    if (fav) {
+      const nom = fav.dataset.favori!.split(":").slice(2).join(":");
+      const r = basculerFavori(fav.dataset.favori!);
+      if (!r.enregistre) { informer("Impossible d’enregistrer le favori : votre navigateur bloque le stockage local."); return; }
+      synchroniser();
+      informer(r.favori ? `${nom} ajouté aux favoris (dans ce navigateur).` : `${nom} retiré des favoris.`);
+      return;
+    }
+    const cop = cible.closest<HTMLButtonElement>("button[data-copier]");
+    if (cop) {
+      const ok = await copier(cop.dataset.copier!);
+      informer(ok ? "Idée copiée dans le presse-papiers." : "La copie a échoué : sélectionnez le texte de l’idée et copiez-le manuellement.");
+    }
+  });
+</script>

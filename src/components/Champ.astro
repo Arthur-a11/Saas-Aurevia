@@ -1,0 +1,24 @@
+---
+// Champ de formulaire accessible : étiquette liée, aide, message d'erreur annoncé.
+interface Props {
+  nom: string; label: string; type?: string; requis?: boolean; autocomplete?: string; aide?: string;
+  pleine?: boolean; options?: { valeur: string; label: string }[]; valeur?: string; lignes?: number; max?: number;
+}
+const { nom, label, type = "text", requis = false, autocomplete, aide, pleine = false, options, valeur, lignes, max } = Astro.props;
+const id = `champ-${nom}`;
+const decrit = [aide ? `aide-${nom}` : null, `err-${nom}`].filter(Boolean).join(" ");
+---
+<div class={`champ${pleine ? " pleine" : ""}`}>
+  <label for={id}>{label}{requis && <span class="obligatoire" aria-hidden="true"> *</span>}{requis && <span class="sr-only"> (obligatoire)</span>}</label>
+  {aide && <p class="aide" id={`aide-${nom}`}>{aide}</p>}
+  {options ? (
+    <select id={id} name={nom} required={requis} aria-describedby={decrit}>
+      {options.map((o) => <option value={o.valeur} selected={o.valeur === valeur}>{o.label}</option>)}
+    </select>
+  ) : lignes ? (
+    <textarea id={id} name={nom} rows={lignes} maxlength={max} required={requis} aria-describedby={decrit}></textarea>
+  ) : (
+    <input id={id} name={nom} type={type} required={requis} autocomplete={autocomplete} maxlength={max} value={valeur} aria-describedby={decrit} />
+  )}
+  <p class="erreur" id={`err-${nom}`} hidden></p>
+</div>

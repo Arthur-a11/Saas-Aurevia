@@ -1,0 +1,145 @@
+---
+// Recherche dans les 1 500 idées : texte libre (sans accents ni majuscules), filtre par marché, favoris, copie.
+// Sans JavaScript, ce bloc reste masqué et la liste des marchés (en dessous) suffit pour naviguer.
+import { marches } from "../lib/site.js";
+---
+<section class="explorateur sans-js-masque" aria-labelledby="explo-titre">
+  <div class="wrap">
+    <div class="titre-section">
+      <p class="surtitre">Explorer</p>
+      <h2 id="explo-titre">Rechercher parmi les 1 500 idées</h2>
+      <p>Tapez un métier, un besoin ou un mot-clé : majuscules et accents sont ignorés (« medecin » trouve « Médecine »).</p>
+    </div>
+    <form class="explo-form" id="explo-form" role="search">
+      <div class="champ">
+        <label for="explo-q">Rechercher une idée, une niche ou un métier</label>
+        <input id="explo-q" type="search" autocomplete="off" placeholder="Ex. : devis, rendez-vous, boulangerie, stock…" />
+      </div>
+      <div class="champ">
+        <label for="explo-marche">Marché</label>
+        <select id="explo-marche">
+          <option value="">Tous les marchés</option>
+          {marches.map((m) => <option value={m.id}>{m.nom}</option>)}
+        </select>
+      </div>
+      <label class="case explo-fav" for="explo-favoris"><input type="checkbox" id="explo-favoris" /> <span>Seulement mes favoris (<span id="explo-nb-favoris">0</span>)</span></label>
+    </form>
+    <p class="explo-suggestions" id="explo-suggestions">Essayez :
+      {["devis", "rendez-vous", "stock", "facture", "planning", "avis clients"].map((m) => <button type="button" class="puce" data-mot={m}>{m}</button>)}
+    </p>
+    <p class="explo-compte" id="explo-compte" role="status" aria-live="polite"></p>
+    <ul class="grille-idees explo-resultats" id="explo-resultats" aria-label="Résultats de la recherche"></ul>
+    <div class="explo-vide" id="explo-vide" hidden>
+      <p><strong>Aucune idée ne correspond à votre recherche.</strong></p>
+      <p>Vérifiez l’orthographe, essayez un mot plus court ou plus général, ou retirez le filtre de marché.</p>
+      <button type="button" class="btn alt" id="explo-reinit">Effacer la recherche</button>
+    </div>
+    <p class="explo-plus-zone"><button type="button" class="btn alt" id="explo-plus" hidden>Afficher plus de résultats</button></p>
+    <p class="note explo-note">Vos favoris sont enregistrés uniquement dans ce navigateur, sur cet appareil. Ils ne sont envoyés nulle part et disparaissent si vous effacez les données de ce site.</p>
+  </div>
+</section>
+
+<script>
+  import { chargerIdees, rechercher, lireFavoris, texteIdee, type Idee } from "../lib/idees-client";
+
+  const PAR_PAGE = 24;
+  const q = document.getElementById("explo-q") as HTMLInputElement;
+  const marche = document.getElementById("explo-marche") as HTMLSelectElement;
+  const favCase = document.getElementById("explo-favoris") as HTMLInputElement;
+  const compte = document.getElementById("explo-compte")!;
+  const resultats = document.getElementById("explo-resultats")!;
+  const vide = document.getElementById("explo-vide")!;
+  const plus = document.getElementById("explo-plus") as HTMLButtonElement;
+  const nbFav = document.getElementById("explo-nb-favoris")!;
+  let liste: Idee[] = [];
+  let affiches = 0;
+  let minuteur: number | undefined;
+
+  const majNbFavoris = () => { nbFav.textContent = String(lireFavoris().size); };
+  majNbFavoris();
+  window.addEventListener("favoris-modifies", majNbFavoris);
+
+  function carte(i: Idee, favoris: Set<string>) {
+    const li = document.createElement("li");
+    li.className = "carte idee";
+    const ou = document.createElement("span");
+    ou.className = "num";
+    ou.textContent = `${i.marche} · ${i.niche}`;
+    const h = document.createElement("h3");
+    h.textContent = i.nom;
+    const p = document.createElement("p");
+    p.textContent = i.description.charAt(0).toUpperCase() + i.description.slice(1) + ".";
+    const actions = document.createElement("div");
+    actions.className = "idee-actions";
+    const fav = document.createElement("button");
+    fav.type = "button";
+    fav.className = "action-idee";
+    fav.dataset.favori = i.id;
+    const estFav = favoris.has(i.id);
+    fav.setAttribute("aria-pressed", String(estFav));
+    fav.setAttribute("aria-label", `Favori : ${i.nom}`);
+    fav.textContent = estFav ? "★ Favori" : "☆ Favori";
+    const cop = document.createElement("button");
+    cop.type = "button";
+    cop.className = "action-idee";
+    cop.dataset.copier = texteIdee(i);
+    cop.setAttribute("aria-label", `Copier l’idée ${i.nom}`);
+    cop.textContent = "Copier";
+    const lien = document.createElement("a");
+    lien.href = `/idees/${i.marcheId}/#${i.nicheId}`;
+    lien.className = "action-idee lien";
+    lien.textContent = "Voir la niche";
+    lien.setAttribute("aria-label", `Voir la niche ${i.niche}`);
+    actions.append(fav, cop, lien);
+    li.append(ou, h, p, actions);
+    return li;
+  }
+
+  function afficherSuite() {
+    const favoris = lireFavoris();
+    const tranche = liste.slice(affiches, affiches + PAR_PAGE);
+    resultats.append(...tranche.map((i) => carte(i, favoris)));
+    affiches += tranche.length;
+    plus.hidden = affiches >= liste.length;
+    plus.textContent = `Afficher plus de résultats (${liste.length - affiches} restants)`;
+  }
+
+  async function lancer() {
+    const texte = q.value.trim();
+    const actif = texte !== "" || marche.value !== "" || favCase.checked;
+    if (!actif) {
+      resultats.replaceChildren(); vide.hidden = true; plus.hidden = true;
+      compte.textContent = "";
+      return;
+    }
+    compte.textContent = "Recherche en cours…";
+    let idees: Idee[];
+    try {
+      idees = await chargerIdees();
+    } catch {
+      compte.textContent = "Les idées n’ont pas pu être chargées. Vérifiez votre connexion, puis réessayez. Vous pouvez aussi parcourir les marchés ci-dessous.";
+      return;
+    }
+    liste = rechercher(idees, texte, marche.value, favCase.checked ? lireFavoris() : undefined);
+    affiches = 0;
+    resultats.replaceChildren();
+    vide.hidden = liste.length > 0;
+    const nf = new Intl.NumberFormat("fr-FR");
+    compte.textContent = liste.length === 0 ? "0 idée trouvée." : `${nf.format(liste.length)} idée${liste.length > 1 ? "s" : ""} trouvée${liste.length > 1 ? "s" : ""}.`;
+    afficherSuite();
+  }
+
+  const differer = () => { clearTimeout(minuteur); minuteur = window.setTimeout(lancer, 180); };
+  q.addEventListener("input", differer);
+  marche.addEventListener("change", lancer);
+  favCase.addEventListener("change", lancer);
+  document.getElementById("explo-form")!.addEventListener("submit", (e) => { e.preventDefault(); lancer(); });
+  plus.addEventListener("click", afficherSuite);
+  document.getElementById("explo-reinit")!.addEventListener("click", () => { q.value = ""; marche.value = ""; favCase.checked = false; lancer(); q.focus(); });
+  document.getElementById("explo-suggestions")!.addEventListener("click", (e) => {
+    const b = (e.target as HTMLElement).closest<HTMLButtonElement>("button[data-mot]");
+    if (b) { q.value = b.dataset.mot || ""; lancer(); }
+  });
+  // Préchargement discret quand la personne s'apprête à chercher.
+  q.addEventListener("focus", () => { chargerIdees().catch(() => {}); }, { once: true });
+</script>

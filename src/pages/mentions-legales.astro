@@ -1,0 +1,48 @@
+---
+import Base from "../layouts/Base.astro";
+import AC from "../components/ACompleter.astro";
+import BrouillonLegal from "../components/BrouillonLegal.astro";
+import { site } from "../lib/site.js";
+---
+<Base titre="Mentions légales" description="Mentions légales du site AUREVIA SAAS : éditeur, hébergeur, propriété intellectuelle et responsabilité.">
+  <section class="legal entete-page">
+    <div class="wrap">
+      <p class="retour"><a href="/">← Retour à l’accueil</a></p>
+      <h1 class="titre-degrade">Mentions légales</h1>
+      <BrouillonLegal />
+
+      <h2>Éditeur du site</h2>
+      <p>
+        Nom commercial : AUREVIA SAAS.<br />
+        Exploitant : <AC champ="entreprise.denomination" label="nom de l’entrepreneur ou dénomination sociale" />, <AC champ="entreprise.formeJuridique" label="forme juridique (micro-entreprise, SASU…)" />.<br />
+        Adresse : <AC champ="entreprise.adresseSiege" label="adresse du siège ou de domiciliation" />.<br />
+        SIREN / SIRET : <AC champ="entreprise.siren" label="SIREN / SIRET" />. Immatriculation : <AC champ="entreprise.rcsOuRne" label="RCS ou RNE" />.<br />
+        Capital social : <AC champ="entreprise.capitalSocial" label="capital social, si société" />.<br />
+        TVA : <AC champ="entreprise.numeroTva" label="numéro de TVA intracommunautaire, ou mention « TVA non applicable, art. 293 B du CGI »" />.<br />
+        E-mail : {site.contactEmail}
+      </p>
+
+      <h2>Directeur de la publication</h2>
+      <p><AC champ="entreprise.directeurPublication" label={`nom du directeur de la publication (${site.responsable} ?)`} /></p>
+
+      <h2>Hébergeur</h2>
+      <p>
+        <AC champ="hebergeur.nom" label="nom de l’hébergeur" />, <AC champ="hebergeur.adresse" label="adresse de l’hébergeur" />, <AC champ="hebergeur.telephoneOuContact" label="téléphone ou contact de l’hébergeur" />.
+      </p>
+
+      <h2>Propriété intellectuelle</h2>
+      <p>Les textes, la structure, les visuels, les vidéos, le nom et le logo AUREVIA SAAS sont protégés. Toute reproduction ou réutilisation sans autorisation écrite est interdite.</p>
+      <p>Les noms d’idées de SaaS présentés sur le site sont des pistes de travail : ils peuvent correspondre à des marques existantes, et il vous appartient de vérifier leur disponibilité (INPI, EUIPO) avant toute utilisation.</p>
+      <p>Polices de caractères : Public Sans et Bricolage Grotesque, sous licence SIL Open Font License 1.1, hébergées sur ce site.</p>
+
+      <h2>Contenu informatif</h2>
+      <p>Les informations du site, notamment les marchés, niches et idées de SaaS, sont fournies à titre d’information et d’inspiration. Elles ne constituent ni un conseil juridique, fiscal ou financier, ni une promesse de résultat. Une idée rédigée n’est pas une niche validée : seule la rencontre avec de vrais clients valide une niche. Certaines activités (santé, finance, droit, données personnelles) sont réglementées : renseignez-vous avant de vous lancer.</p>
+
+      <h2>Responsabilité et liens</h2>
+      <p>L’éditeur s’efforce de fournir des informations exactes mais ne peut garantir l’absence d’erreur. Il n’est pas responsable du contenu des sites tiers vers lesquels le site pointe. L’assistant du site produit des réponses automatiques, qui peuvent comporter des erreurs.</p>
+
+      <h2>Droit applicable</h2>
+      <p>Le site est soumis au droit français. Pour exercer vos droits sur vos données, voir la <a href="/confidentialite/">politique de confidentialité</a>.</p>
+    </div>
+  </section>
+</Base>

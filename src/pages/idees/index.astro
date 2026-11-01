@@ -1,0 +1,43 @@
+---
+import Base from "../../layouts/Base.astro";
+import ExplorateurIdees from "../../components/ExplorateurIdees.astro";
+import ActionsIdees from "../../components/ActionsIdees.astro";
+import { marches, donneesIdees, totalIdees, nombre } from "../../lib/site.js";
+---
+<Base titre="Marchés et idées de SaaS" courant="/idees/"
+  description="15 marchés, 300 niches et 1 500 idées de SaaS à rechercher et explorer : des pistes de travail à tester auprès de vrais clients.">
+  <section class="entete-page">
+    <div class="wrap">
+      <p class="retour"><a href="/">← Retour à l’accueil</a></p>
+      <p class="surtitre">Marchés et idées</p>
+      <h1 class="titre-degrade">15 marchés, 300 niches, {nombre(totalIdees)} idées de SaaS</h1>
+      <p class="chapeau">Recherchez une idée par mot-clé ou parcourez un marché et ses 20 niches. Chaque idée est une piste à tester avec le module 1 de la formation.</p>
+      <div class="encadre attention">
+        <p><strong>{donneesIdees.avertissement}</strong> {donneesIdees.avertissementMarques}</p>
+      </div>
+    </div>
+  </section>
+
+  <ExplorateurIdees />
+
+  <section class="bande" aria-labelledby="choix">
+    <div class="wrap">
+      <div class="titre-section">
+        <p class="surtitre">Parcourir</p>
+        <h2 id="choix">Choisissez un marché</h2>
+      </div>
+      <ul class="marches-liste">
+        {marches.map((m) => (
+          <li>
+            <a class="carte" href={`/idees/${m.id}/`}>
+              <h3>{m.nom}</h3>
+              <p>{m.pourquoi}</p>
+              <p class="mono compteur-marche">20 niches · 100 idées</p>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+  <ActionsIdees />
+</Base>

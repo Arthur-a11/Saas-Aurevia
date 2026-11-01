@@ -1,0 +1,57 @@
+---
+import Base from "../layouts/Base.astro";
+import AC from "../components/ACompleter.astro";
+import BrouillonLegal from "../components/BrouillonLegal.astro";
+import { site } from "../lib/site.js";
+---
+<Base titre="Politique de confidentialité" description="Comment AUREVIA SAAS traite vos données personnelles : données collectées, finalités, durées de conservation et droits.">
+  <section class="legal entete-page">
+    <div class="wrap">
+      <p class="retour"><a href="/">← Retour à l’accueil</a></p>
+      <h1 class="titre-degrade">Politique de confidentialité</h1>
+      <BrouillonLegal />
+
+      <h2>Responsable du traitement</h2>
+      <p>L’exploitant du site AUREVIA SAAS (voir les <a href="/mentions-legales/">mentions légales</a>). Contact : {site.contactEmail}.</p>
+
+      <h2>Données collectées et finalités</h2>
+      <ul>
+        <li><strong>Inscription</strong> : prénom, nom, e-mail, téléphone (facultatif), profession, entreprise ou école (facultatif), formule, description du projet (facultatif), date de l’inscription et version du texte accepté. Finalité : traiter votre inscription et vous recontacter. Base légale : mesures précontractuelles prises à votre demande.</li>
+        <li><strong>Commande</strong> (quand elle sera ouverte) : identité, e-mail, formule, acceptation des conditions générales de vente, et vos choix sur l’accès immédiat et le début de l’accompagnement, avec leur date et le texte exact affiché. Finalité : exécuter la commande et prouver ces accords. Base légale : contrat et obligations légales.</li>
+        <li><strong>Rétractation</strong> : identité, e-mail, formule, date de commande, message. Finalité : traiter votre demande et en garder la preuve. Base légale : obligation légale.</li>
+        <li><strong>Assistant</strong> : les questions que vous saisissez. Si l’assistant IA est activé, elles sont transmises au fournisseur du modèle d’IA (Anthropic) pour produire la réponse ; le site ne conserve pas les conversations. Pour limiter les abus, un compteur de questions est associé à une empreinte non réversible de votre adresse IP, effacée après 48 heures. Base légale : intérêt légitime. N’y saisissez pas de données sensibles ni bancaires.</li>
+        <li><strong>E-mails que vous envoyez</strong> : leur contenu et votre adresse. Finalité : vous répondre. Base légale : intérêt légitime.</li>
+      </ul>
+
+      <h2>Destinataires et sous-traitants</h2>
+      <p>Vos données ne sont pas vendues. Elles sont accessibles à l’exploitant et traitées, pour son compte, par :</p>
+      <ul>
+        <li>l’hébergeur du site et de ses données : <AC champ="hebergeur.nom" label="hébergeur" /> ;</li>
+        <li>le service d’envoi d’e-mails, s’il est activé : <AC valeur={null} label="prestataire d’envoi (par exemple Brevo)" /> ;</li>
+        <li>le fournisseur du modèle d’IA de l’assistant, s’il est activé : Anthropic (États-Unis) ;</li>
+        <li>le prestataire de paiement, quand les commandes seront ouvertes : <AC valeur={site.paiement.actif ? "PayPal" : null} label="prestataire de paiement" /> ;</li>
+        <li>la messagerie de l’exploitant (Google Gmail) pour les e-mails échangés.</li>
+      </ul>
+      <p>Transferts hors de l’Union européenne et garanties applicables : <AC valeur={null} label="à préciser pour chaque prestataire retenu" />.</p>
+
+      <h2>Durées de conservation</h2>
+      <ul>
+        <li>Inscriptions sans commande : <AC valeur={null} label="3 ans après le dernier contact (à confirmer)" />.</li>
+        <li>Commandes, preuves d’accord et rétractations : <AC valeur={null} label="durée de la relation puis durées légales de conservation (à préciser)" />.</li>
+        <li>Compteurs de l’assistant : 48 heures.</li>
+      </ul>
+
+      <h2>Vos droits</h2>
+      <p>Vous pouvez demander l’accès, la rectification, l’effacement, la limitation, la portabilité de vos données, vous opposer à leur traitement et définir des directives après décès, en écrivant à {site.contactEmail}. Vous pouvez aussi introduire une réclamation auprès de la CNIL (cnil.fr).</p>
+
+      <h2>Cookies, traceurs et polices</h2>
+      <p>Le site ne dépose aucun cookie et n’utilise aucune mesure d’audience ni aucun traceur publicitaire. Les polices de caractères sont hébergées sur le site lui-même : votre adresse IP n’est pas transmise à Google Fonts.</p>
+
+      <h2>Démarchage téléphonique</h2>
+      <p>Si vous indiquez votre téléphone, il ne sert qu’à vous répondre. Vous pouvez vous opposer gratuitement au démarchage téléphonique via le service officiel prévu par la loi.</p>
+
+      <h2>Sécurité et mineurs</h2>
+      <p>Des mesures raisonnables protègent vos données (connexion chiffrée, accès limité). Le site s’adresse aux personnes majeures.</p>
+    </div>
+  </section>
+</Base>

@@ -1,0 +1,22 @@
+---
+// Carte d'une formule (accueil et page Tarifs). Les éléments non disponibles restent « En préparation ».
+import { site, mentionTaxes, LIBELLE_STATUT } from "../lib/site.js";
+interface Props { f: (typeof site.formules)[number] }
+const { f } = Astro.props;
+const ouvert = site.paiement.actif;
+---
+<li class={`carte tarif${f.recommandee ? " recommandee neon" : ""}`}>
+  <div class="haut">{f.recommandee && <span class="badge">Notre recommandation</span>}</div>
+  <h3>{f.nom}</h3>
+  <p class="montant">{f.prixAffiche}<span class="taxes">{mentionTaxes()} · paiement unique</span></p>
+  <ul>
+    {f.inclus.map((x) => (
+      <li>{x.texte}{LIBELLE_STATUT[x.statut] && <span class="statut">{LIBELLE_STATUT[x.statut]}{x.precision ? ` : ${x.precision}` : ""}</span>}</li>
+    ))}
+  </ul>
+  <a class={`btn${f.recommandee ? "" : " alt"}`}
+     href={ouvert ? `/commande/?formule=${f.id}` : `/inscription/?formule=${f.id}`}
+     aria-label={`Choisir la formule ${f.nom} (${f.prixAffiche})`}>
+    {ouvert ? "Commander" : "Choisir"}
+  </a>
+</li>
