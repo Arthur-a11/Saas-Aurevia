@@ -113,9 +113,9 @@ test("commande (si activée) : refusée sans e-mail de confirmation possible, ac
 const faux = (impl) => ({ beta: { messages: { create: impl } } });
 const Q = { question: "Combien coûte la formule Complet ?" };
 
-test("assistant : sans clé API, 503 « non configuré » (le navigateur passe en mode secours)", async () => {
+test("assistant : sans clé API, « non configuré » sans code d'erreur (le navigateur passe en mode secours)", async () => {
   const r = await traiterAssistant(req("/api/assistant", Q), ctxBase());
-  assert.equal(r.status, 503);
+  assert.equal(r.status, 200);
   assert.equal((await r.json()).code, "assistant_non_configure");
 });
 
@@ -176,8 +176,10 @@ test("assistant : une clé seule ne suffit pas, il faut ASSISTANT_IA=active (auc
   let appele = false;
   const ctx = ctxBase({ env: { ANTHROPIC_API_KEY: "k" }, clientAnthropic: faux(async () => { appele = true; return {}; }) });
   const r = await traiterAssistant(req("/api/assistant", Q), ctx);
-  assert.equal(r.status, 503);
-  assert.equal((await r.json()).code, "assistant_non_configure");
+  assert.equal(r.status, 200);
+  const d = await r.json();
+  assert.equal(d.ok, false);
+  assert.equal(d.code, "assistant_non_configure");
   assert.equal(appele, false);
 });
 

@@ -421,6 +421,8 @@ test.describe("formulaires", () => {
 
 test.describe("assistant", () => {
   test("mode secours : la question sur la formule Complet répond 24,90 €", async ({ page }) => {
+    const erreurs = [];
+    page.on("console", (m) => { if (m.type() === "error") erreurs.push(m.text()); });
     await page.goto("/");
     await page.getByRole("button", { name: /Posez votre question/ }).click();
     await expect(page.getByLabel("Votre question")).toBeFocused();
@@ -430,6 +432,7 @@ test.describe("assistant", () => {
     await expect(journal).toContainText("La formule Complet coûte 24,90 €");
     await expect(journal).toContainText("Réponse tirée des informations du site.");
     await expect(journal.getByRole("link", { name: "Voir les tarifs →" })).toBeVisible();
+    expect(erreurs, "IA non activée : état normal, aucune erreur dans la console").toEqual([]);
   });
 
   test("assistant ouvert : bouton d’ouverture masqué, panneau opaque", async ({ page }) => {
@@ -438,6 +441,26 @@ test.describe("assistant", () => {
     await expect(page.locator("#chat-ouvrir")).toBeHidden();
     const fond = await page.locator("#chat-panneau").evaluate((p) => getComputedStyle(p).backgroundColor);
     expect(fond).toBe("rgb(11, 13, 24)");
+  });
+
+  test("le badge « Powered by Netlify » du site en ligne ne recouvre pas le bouton de l’assistant", async ({ page }) => {
+    await page.goto("/programme/");
+    // Reproduit le badge ajouté par Netlify : cadre fixe 201 × 64 px en bas à droite, au premier plan.
+    await page.evaluate(() => {
+      const f = document.createElement("iframe");
+      f.id = "nl-badge-frame";
+      f.style.cssText = "position:fixed;right:0;bottom:0;width:201px;height:64px;z-index:2147483645;border:0";
+      document.body.append(f);
+    });
+    const bouton = page.getByRole("button", { name: /Posez votre question/ });
+    await bouton.click({ timeout: 5000 });
+    await expect(page.locator("#chat-panneau")).toBeVisible();
+    // Le dernier texte de la page reste lisible au-dessus du badge.
+    await page.keyboard.press("Escape");
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+    const badge = await page.locator("#nl-badge-frame").boundingBox();
+    const dernier = await page.locator(".pied .avert").boundingBox();
+    expect(dernier.y + dernier.height).toBeLessThanOrEqual(badge.y);
   });
 
   test("Échap ferme l’assistant et rend le focus au bouton", async ({ page }) => {

@@ -34,7 +34,9 @@
 </div>
 
 <style is:global>
-  .assistant { position: fixed; right: 1rem; bottom: calc(1rem + env(safe-area-inset-bottom, 0px)); z-index: 20; }
+  /* Placé au-dessus de la zone du badge « Powered by Netlify » (cadre fixe de 64 px de haut en bas à droite,
+     ajouté par Netlify sur le site en ligne) : sinon le badge recouvre le bouton et l'assistant est inutilisable. */
+  .assistant { position: fixed; right: 1rem; bottom: calc(var(--zone-badge) + 1rem + env(safe-area-inset-bottom, 0px)); z-index: 20; }
   .orb { display: inline-block; width: 0.8rem; height: 0.8rem; border-radius: 50%; flex: none;
     background: radial-gradient(circle at 35% 35%, #c9ffe0, var(--chat-vert) 60%, #12915a);
     box-shadow: 0 0 12px var(--chat-vert); }

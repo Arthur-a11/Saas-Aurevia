@@ -310,7 +310,7 @@ html:not(.js) .sans-js-masque { display: none !important; }
 
 /* Message de confirmation éphémère */
 .toast {
-  position: fixed; left: 50%; bottom: calc(1.25rem + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); z-index: 40;
+  position: fixed; left: 50%; bottom: calc(var(--zone-badge) + 1.25rem + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); z-index: 40;
   max-width: min(32rem, calc(100vw - 2rem)); background: #0b0d18; color: var(--ink); border: 1px solid var(--brand);
   border-radius: 12px; padding: 0.7rem 1rem; font-weight: 600; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
 }

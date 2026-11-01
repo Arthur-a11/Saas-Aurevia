@@ -57,7 +57,8 @@
   --header-h: 4.5rem;
   --rayon: 18px;
   --rayon-petit: 12px;
-  --chat-espace: 5.5rem;   /* place réservée en bas de page pour le bouton de l'assistant */
+  --zone-badge: 4.5rem;    /* hauteur réservée au badge « Powered by Netlify » (64 px) en bas à droite */
+  --chat-espace: 10rem;    /* place réservée en bas de page pour le badge et le bouton de l'assistant */
 }
 
 @media (min-width: 821px) {

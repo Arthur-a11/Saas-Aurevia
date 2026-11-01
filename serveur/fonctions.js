@@ -199,8 +199,9 @@ export async function traiterAssistant(requete, ctx) {
   if (!origineAutorisee(requete, ctx.env)) return json(403, { ok: false, code: "origine_refusee" });
   // L'IA payante ne s'active que sur décision explicite (ASSISTANT_IA=active) ET avec une clé et un stockage
   // (nécessaire aux limites d'usage). Sinon le navigateur utilise le mode secours, gratuit.
+  // État normal (pas une panne) : réponse 200 avec ok=false, sans erreur rouge dans la console du visiteur.
   if (ctx.env.ASSISTANT_IA !== "active" || !ctx.env.ANTHROPIC_API_KEY || !ctx.stockage) {
-    return json(503, { ok: false, code: "assistant_non_configure" });
+    return json(200, { ok: false, code: "assistant_non_configure", mode: "secours" });
   }
   const d = await lireJson(requete, 12_000);
   const question = typeof d?.question === "string" ? d.question.trim() : "";
