@@ -41,7 +41,7 @@ const duree = conditions.dureeAcces.valeur ? conditions.dureeAcces.options[condi
         <ul>
           <li><strong>Les 6 modules sont communs aux trois formules</strong> (19 leçons et 6 fiches récapitulatives).</li>
           <li><strong>Complet</strong> ajoute : {diffComplet.map((x) => `${x.texte.toLowerCase()} (${existe(x) ? "rédigé, en relecture" : x.statut === "a-definir" ? "à définir" : "n’existe pas encore"})`).join(" ; ")}.</li>
-          <li><strong>Accompagné</strong> ajoute : {diffAcc.map((x) => `${x.texte.toLowerCase()} (${existe(x) ? "rédigé, en relecture" : x.statut === "a-definir" ? "format, durée, délai et limites encore à définir : rien n’est promis" : "n’existe pas encore"})`).join(" ; ")}.</li>
+          <li><strong>Accompagné</strong> ajoute : {diffAcc.map((x) => `${x.texte.toLowerCase()} (${existe(x) ? "rédigé, en relecture" : x.statut === "a-definir" ? `prévu : ${conditions.accompagnement.format}, ${conditions.accompagnement.duree}, ${conditions.accompagnement.delaiRealisation} ; limites encore à définir, pas encore ouvert` : "n’existe pas encore"})`).join(" ; ")}.</li>
         </ul>
         <p class="note">Elles restent à préciser avant toute ouverture des ventes.</p>
       </div>

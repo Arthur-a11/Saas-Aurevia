@@ -431,7 +431,7 @@
       "titre": "Avis personnel sur votre projet",
       "droit": "avis",
       "statut": "a-definir",
-      "precision": "Format, durée, délai et limites à définir (voir conditions.json)."
+      "precision": "Retour écrit, une fois par mois d’abonnement, sous 5 jours ouvrés. Limites et part du prix encore à définir (voir conditions.json)."
     }
   ]
 }

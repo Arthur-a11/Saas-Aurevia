@@ -29,12 +29,12 @@
     "choisieParArthur": true
   },
   "accompagnement": {
-    "format": null,
-    "duree": null,
-    "delaiRealisation": null,
+    "format": "un retour écrit sur le projet envoyé par le client",
+    "duree": "un retour par mois d’abonnement",
+    "delaiRealisation": "réponse sous 5 jours ouvrés après réception du projet",
     "limites": null,
     "partDuPrix": null,
-    "_note": "Formule Accompagné : rien n'est promis tant que ces cinq points ne sont pas définis."
+    "_note": "Décidé par Arthur le 2 novembre 2026 : retour écrit, une fois par mois d'abonnement, sous 5 jours ouvrés. Restent à décider par Arthur : les limites (ex. retour non utilisé reporté ou non, longueur du projet envoyé) et la part du prix correspondant au service. Ventes réelles d'Accompagné bloquées tant que ces deux points sont null."
   },
   "juridique": {
     "reglesVerifieesSourcesOfficielles": false,

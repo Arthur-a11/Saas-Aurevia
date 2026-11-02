@@ -19,10 +19,10 @@ Les exemples sont fictifs et doivent le rester. Les vidéos n'existent pas : voi
 - Choisir un public précis (lecon, droit « lecons ») : BROUILLON (à relire)
 - Mener des entretiens de découverte (lecon, droit « lecons ») : BROUILLON (à relire)
 - Vérifier la demande avant de construire (lecon, droit « lecons ») : BROUILLON (à relire)
-- Exercice : vos 10 entretiens et votre décision (exercice, droit « lecons ») : BROUILLON (à relire)
+- Exercice : vos 10 entretiens et votre décision (exercice, droit « exercices ») : BROUILLON (à relire)
 - Fiche récapitulative du module 1 (fiche, droit « fiches ») : BROUILLON (à relire)
 - Modèle : grille d’entretien de découverte (modele, droit « modeles ») : BROUILLON (à relire)
-- Checklist de fin de module 1 (checklist, droit « lecons ») : BROUILLON (à relire)
+- Checklist de fin de module 1 (checklist, droit « checklists ») : BROUILLON (à relire)
 - Vidéo du module 1 (video, droit « videos ») : en préparation (n'existe pas)
 
 ### Partir d’un problème, pas d’une idée de logiciel (10 min)
@@ -57,7 +57,7 @@ Les 1 500 idées du site sont des points de départ. Elles ne sont pas validées
 
 ### Choisir un public précis (10 min)
 
-« Les petites entreprises » n’est pas un public : c’est des millions de personnes aux besoins différents. Un public précis vous permet de parler leur langage, de les trouver et de leur proposer exactement ce qu’il faut.
+« Les petites entreprises » n’est pas un public : ce sont des millions de personnes aux besoins différents. Un public précis vous permet de parler leur langage, de les trouver et de leur proposer exactement ce qu’il faut.
 
 #### Le bon niveau de précision
 
@@ -157,8 +157,9 @@ Choisissez un public et un problème, menez au moins 8 entretiens de découverte
 4. Après chaque entretien, remplissez la grille du modèle.
 5. Faites le bilan : combien ont décrit le problème, à quelle fréquence, avec quel coût, avec quel outil actuel.
 6. Proposez un engagement (test de maquette ou inscription) et comptez les réponses.
+7. Si vous continuez, résumez votre projet en une phrase : « Mon logiciel aide [public] à [résultat] ».
 
-**Livrable :** Un tableau de 8 à 10 entretiens et une décision écrite, justifiée par les chiffres de votre tableau.
+**Livrable :** Un tableau de 8 à 10 entretiens, une décision écrite justifiée par les chiffres de votre tableau et, si vous continuez, votre phrase « Mon logiciel aide [public] à [résultat] ».
 
 **Critères de réussite**
 
@@ -241,10 +242,10 @@ Copiez cette grille pour chaque entretien. Remplissez-la juste après, tant que 
 - Du problème à la promesse (lecon, droit « lecons ») : BROUILLON (à relire)
 - Réduire au strict nécessaire (lecon, droit « lecons ») : BROUILLON (à relire)
 - Tester une maquette avant de construire (lecon, droit « lecons ») : BROUILLON (à relire)
-- Exercice : la fiche de votre MVP et un test de maquette (exercice, droit « lecons ») : BROUILLON (à relire)
+- Exercice : la fiche de votre MVP et un test de maquette (exercice, droit « exercices ») : BROUILLON (à relire)
 - Fiche récapitulative du module 2 (fiche, droit « fiches ») : BROUILLON (à relire)
 - Modèle : fiche de cadrage du MVP (modele, droit « modeles ») : BROUILLON (à relire)
-- Checklist de fin de module 2 (checklist, droit « lecons ») : BROUILLON (à relire)
+- Checklist de fin de module 2 (checklist, droit « checklists ») : BROUILLON (à relire)
 - Vidéo du module 2 (video, droit « videos ») : en préparation (n'existe pas)
 
 ### Du problème à la promesse (10 min)
@@ -421,10 +422,10 @@ Remplissez cette fiche avant de construire. Relisez-la à chaque nouvelle idée 
 - Choisir ses outils : sans code, avec code, ou les deux (lecon, droit « lecons ») : BROUILLON (à relire)
 - Les briques indispensables et la sécurité de base (lecon, droit « lecons ») : BROUILLON (à relire)
 - Tester avec 5 utilisateurs et corriger (lecon, droit « lecons ») : BROUILLON (à relire)
-- Exercice : votre plan de construction et votre test à 5 (exercice, droit « lecons ») : BROUILLON (à relire)
+- Exercice : votre plan de construction et votre test à 5 (exercice, droit « exercices ») : BROUILLON (à relire)
 - Fiche récapitulative du module 3 (fiche, droit « fiches ») : BROUILLON (à relire)
 - Modèle : plan de construction et suivi des tests (modele, droit « modeles ») : BROUILLON (à relire)
-- Checklist de fin de module 3 (checklist, droit « lecons ») : BROUILLON (à relire)
+- Checklist de fin de module 3 (checklist, droit « checklists ») : BROUILLON (à relire)
 - Vidéo du module 3 (video, droit « videos ») : en préparation (n'existe pas)
 
 ### Choisir ses outils : sans code, avec code, ou les deux (15 min)
@@ -610,10 +611,10 @@ Un document pour choisir vos outils et suivre votre première série de tests.
 - Un prix fondé sur la valeur, pas sur vos coûts (lecon, droit « lecons ») : BROUILLON (à relire)
 - Construire des formules claires (lecon, droit « lecons ») : BROUILLON (à relire)
 - Calculer ses coûts et son seuil (lecon, droit « lecons ») : BROUILLON (à relire)
-- Exercice : votre page de tarifs et votre calcul de seuil (exercice, droit « lecons ») : BROUILLON (à relire)
+- Exercice : votre page de tarifs et votre calcul de seuil (exercice, droit « exercices ») : BROUILLON (à relire)
 - Fiche récapitulative du module 4 (fiche, droit « fiches ») : BROUILLON (à relire)
 - Modèle : calcul de prix et grille de formules (modele, droit « modeles ») : BROUILLON (à relire)
-- Checklist de fin de module 4 (checklist, droit « lecons ») : BROUILLON (à relire)
+- Checklist de fin de module 4 (checklist, droit « checklists ») : BROUILLON (à relire)
 - Vidéo du module 4 (video, droit « videos ») : en préparation (n'existe pas)
 
 ### Un prix fondé sur la valeur, pas sur vos coûts (12 min)
@@ -788,10 +789,10 @@ Remplissez ce modèle pour fixer votre prix et décrire vos formules.
 - Votre liste des 50 premiers contacts (lecon, droit « lecons ») : BROUILLON (à relire)
 - Le message de contact et la démonstration (lecon, droit « lecons ») : BROUILLON (à relire)
 - Une page d’accueil honnête qui convainc (lecon, droit « lecons ») : BROUILLON (à relire)
-- Exercice : 50 contacts, 10 démonstrations (exercice, droit « lecons ») : BROUILLON (à relire)
+- Exercice : 50 contacts, 10 démonstrations (exercice, droit « exercices ») : BROUILLON (à relire)
 - Fiche récapitulative du module 5 (fiche, droit « fiches ») : BROUILLON (à relire)
 - Modèle : suivi des contacts et message type (modele, droit « modeles ») : BROUILLON (à relire)
-- Checklist de fin de module 5 (checklist, droit « lecons ») : BROUILLON (à relire)
+- Checklist de fin de module 5 (checklist, droit « checklists ») : BROUILLON (à relire)
 - Vidéo du module 5 (video, droit « videos ») : en préparation (n'existe pas)
 
 ### Votre liste des 50 premiers contacts (12 min)
@@ -971,10 +972,10 @@ Une ligne par contact. Mettez à jour le tableau après chaque échange.
 - Les chiffres qui comptent (lecon, droit « lecons ») : BROUILLON (à relire)
 - Écouter les clients (lecon, droit « lecons ») : BROUILLON (à relire)
 - Prioriser, automatiser, se faire aider (lecon, droit « lecons ») : BROUILLON (à relire)
-- Exercice : votre tableau de bord et votre plan sur 3 mois (exercice, droit « lecons ») : BROUILLON (à relire)
+- Exercice : votre tableau de bord et votre plan sur 3 mois (exercice, droit « exercices ») : BROUILLON (à relire)
 - Fiche récapitulative du module 6 (fiche, droit « fiches ») : BROUILLON (à relire)
 - Modèle : tableau de bord et plan d’amélioration (modele, droit « modeles ») : BROUILLON (à relire)
-- Checklist de fin de module 6 (checklist, droit « lecons ») : BROUILLON (à relire)
+- Checklist de fin de module 6 (checklist, droit « checklists ») : BROUILLON (à relire)
 - Vidéo du module 6 (video, droit « videos ») : en préparation (n'existe pas)
 
 ### Les chiffres qui comptent (15 min)
@@ -994,6 +995,8 @@ Quelques chiffres bien suivis valent mieux qu’un tableau de bord rempli. Voici
 #### Un tableau mensuel suffit
 
 Au début, un tableur rempli le premier lundi du mois suffit. Notez aussi un commentaire : ce qui a changé ce mois-ci (nouvelle fonction, prix, campagne). Sans contexte, les chiffres sont difficiles à interpréter.
+
+Avec peu de clients, un pourcentage change beaucoup pour un seul départ : avec 10 clients, un départ fait 10 % de churn. Regardez alors les personnes derrière les chiffres : qui est parti, et pourquoi.
 
 **À retenir**
 
@@ -1078,6 +1081,7 @@ Plan : 1) simplifier l’import (impact 3, effort 2) en avril ; 2) e-mail d’ai
 - MRR = somme des abonnements mensuels actifs.
 - Activation = activés ÷ inscrits ; churn = départs ÷ clients en début de mois.
 - Coût d’acquisition = dépenses ÷ nouveaux clients.
+- Rentabilité par client : marge mensuelle par client comparée au coût d’acquisition.
 - Tableau mensuel avec commentaire de contexte.
 - Écoute : support classé, 2 à 3 entretiens par mois, raisons de départ.
 - Priorité à la rétention ; méthode impact × effort.

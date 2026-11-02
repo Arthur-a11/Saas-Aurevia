@@ -6,6 +6,8 @@ import { site, mentionTaxes } from "../lib/site.js";
 import { contenuOffre } from "../lib/offres.js";
 const prestataire = site.paiement.prestataire === "stripe" ? "Stripe" : site.paiement.prestataire === "paypal-me" ? "PayPal" : null;
 import { ABONNEMENT } from "../lib/offres.js";
+import conditions from "../data/conditions.json" with { type: "json" };
+const acc = conditions.accompagnement;
 ---
 <Base titre="Conditions générales de vente" description="Conditions générales de vente des formations en ligne AUREVIA SAAS (brouillon à faire relire).">
   <section class="legal entete-page">
@@ -26,7 +28,7 @@ import { ABONNEMENT } from "../lib/offres.js";
           <li><strong>{f.nom}</strong> ({f.prixAffiche}) : {contenuOffre(f.id).map((x) => x.texte).join(", ")}.</li>
         ))}
       </ul>
-      <p>Les formules Essentiel et Complet sont des <strong>contenus numériques</strong> fournis sans support matériel. La formule Accompagné comprend ces contenus numériques <strong>et un service</strong> : l’avis personnel de l’organisateur sur le projet du client, selon les modalités suivantes : <AC valeur={null} label="forme (écrit, visio…), durée, délai de réalisation" />. La part du prix correspondant au service est de <AC valeur={null} label="montant ou répartition à définir" />.</p>
+      <p>Les formules Essentiel et Complet sont des <strong>contenus numériques</strong> fournis sans support matériel. La formule Accompagné comprend ces contenus numériques <strong>et un service</strong> : l’avis personnel de l’organisateur sur le projet du client, selon les modalités suivantes : {acc.format}, {acc.duree}, {acc.delaiRealisation}. Limites : <AC valeur={acc.limites} label="limites du service (report d’un mois sur l’autre, taille du projet envoyé…)" />. La part du prix correspondant au service est de <AC valeur={acc.partDuPrix} label="montant ou répartition à définir" />.</p>
       <p>Le contenu de chaque formule est celui affiché au moment de la commande. Une ressource indiquée « en préparation » n’est pas vendue avant d’être disponible.</p>
 
       <h2>4. Prix</h2>

@@ -28,7 +28,8 @@
         {
           "titre": "Un tableau mensuel suffit",
           "paragraphes": [
-            "Au début, un tableur rempli le premier lundi du mois suffit. Notez aussi un commentaire : ce qui a changé ce mois-ci (nouvelle fonction, prix, campagne). Sans contexte, les chiffres sont difficiles à interpréter."
+            "Au début, un tableur rempli le premier lundi du mois suffit. Notez aussi un commentaire : ce qui a changé ce mois-ci (nouvelle fonction, prix, campagne). Sans contexte, les chiffres sont difficiles à interpréter.",
+            "Avec peu de clients, un pourcentage change beaucoup pour un seul départ : avec 10 clients, un départ fait 10 % de churn. Regardez alors les personnes derrière les chiffres : qui est parti, et pourquoi."
           ]
         }
       ],
@@ -132,6 +133,7 @@
       "MRR = somme des abonnements mensuels actifs.",
       "Activation = activés ÷ inscrits ; churn = départs ÷ clients en début de mois.",
       "Coût d’acquisition = dépenses ÷ nouveaux clients.",
+      "Rentabilité par client : marge mensuelle par client comparée au coût d’acquisition.",
       "Tableau mensuel avec commentaire de contexte.",
       "Écoute : support classé, 2 à 3 entretiens par mois, raisons de départ.",
       "Priorité à la rétention ; méthode impact × effort.",

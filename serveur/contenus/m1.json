@@ -49,7 +49,7 @@
       "id": "m1-l2",
       "titre": "Choisir un public précis",
       "duree": "10 min",
-      "intro": "« Les petites entreprises » n’est pas un public : c’est des millions de personnes aux besoins différents. Un public précis vous permet de parler leur langage, de les trouver et de leur proposer exactement ce qu’il faut.",
+      "intro": "« Les petites entreprises » n’est pas un public : ce sont des millions de personnes aux besoins différents. Un public précis vous permet de parler leur langage, de les trouver et de leur proposer exactement ce qu’il faut.",
       "sections": [
         {
           "titre": "Le bon niveau de précision",
@@ -170,9 +170,10 @@
       "Contactez 20 personnes pour obtenir 8 à 10 entretiens.",
       "Après chaque entretien, remplissez la grille du modèle.",
       "Faites le bilan : combien ont décrit le problème, à quelle fréquence, avec quel coût, avec quel outil actuel.",
-      "Proposez un engagement (test de maquette ou inscription) et comptez les réponses."
+      "Proposez un engagement (test de maquette ou inscription) et comptez les réponses.",
+      "Si vous continuez, résumez votre projet en une phrase : « Mon logiciel aide [public] à [résultat] »."
     ],
-    "livrable": "Un tableau de 8 à 10 entretiens et une décision écrite, justifiée par les chiffres de votre tableau.",
+    "livrable": "Un tableau de 8 à 10 entretiens, une décision écrite justifiée par les chiffres de votre tableau et, si vous continuez, votre phrase « Mon logiciel aide [public] à [résultat] ».",
     "criteres": [
       "Au moins 8 entretiens réalisés avec des personnes du public choisi (pas des amis hors cible).",
       "Aucune question du type « utiliseriez-vous… ? » dans vos notes.",
