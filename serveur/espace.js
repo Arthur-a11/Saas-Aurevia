@@ -8,7 +8,7 @@ import { incrementer } from "./stockage.js";
 import { envoyerEmail, emailConfigure } from "./email.js";
 import { validerCreationCompte, validerConnexion, validerAchat, TEXTES_CONSENTEMENT } from "./validation.js";
 import { cleEmail, hacherMotDePasse, verifierMotDePasse, ouvrirSession, fermerSession, compteConnecte } from "./comptes.js";
-import { modePaiement, verifierSignature, creerSessionPaiement, lireSessionPaiement } from "./stripe.js";
+import { modePaiement, verifierSignature, creerSessionPaiement, lireSessionPaiement, resilierAbonnement, finPeriode, abonnementDeFacture } from "./stripe.js";
 import { catalogueParDefaut, formuleVendable, pointsBloquants, droitsEffectifs, vueFormation, contenuLecon, trouverLecon, estLisible } from "./formation.js";
 import { raisonsBlocageReel, dateOuverture, finAcces, conditionsParDefaut } from "./ouverture.js";
 import { emailCommande, emailReinitialisation, emailBienvenue } from "./emails.js";
@@ -213,7 +213,7 @@ async function creerPaiement(requete, ctx) {
   const ref = reference("CMD", new Date(maintenant));
   const commande = {
     reference: ref, compte: compte.id, email: compte.email, formule: formule.id, montantCentimes: formule.montantCentimes, devise: formule.devise,
-    frequence: "paiement-unique", mode, statut: "en-attente", creeLe: new Date(maintenant).toISOString(),
+    frequence: conditionsDe(ctx).frequencePaiement.valeur === "abonnement-mensuel" ? "abonnement-mensuel" : "paiement-unique", mode, statut: "en-attente", creeLe: new Date(maintenant).toISOString(),
     conditions: { version: conditionsDe(ctx).versionConditions, dureeAcces: conditionsDe(ctx).dureeAcces.valeur, ouvertureSansRenonciation: conditionsDe(ctx).ouvertureSansRenonciation.valeur },
     accords: {
       version: TEXTES_CONSENTEMENT.version,
@@ -234,6 +234,7 @@ async function creerPaiement(requete, ctx) {
       urlSucces: `${base}/formation/?commande=${ref}`,
       urlAnnulation: `${base}/commande/?formule=${formule.id}&annulee=${ref}`,
       expireLe: Math.floor(maintenant / 1000) + 3600,
+      abonnement: commande.frequence === "abonnement-mensuel",
     });
     commande.stripeSession = session.id;
     await ctx.stockage.enregistrer("commandes", ref, commande);
@@ -274,9 +275,16 @@ async function confirmerPaiement(ctx, commande, session, source) {
   // Les droits d'abord : si la suite échoue, Stripe renverra la notification et rien ne sera perdu.
   await ctx.stockage.enregistrer("droits", commande.compte, dossier);
   if (session.payment_intent) await ctx.stockage.enregistrer("paiements", String(session.payment_intent), { commande: commande.reference });
+  if (session.customer) await ctx.stockage.enregistrer("clients-stripe", String(session.customer), { commande: commande.reference });
+  if (session.subscription) {
+    await ctx.stockage.enregistrer("abonnements", String(session.subscription), { commande: commande.reference });
+    dossier.achats[commande.reference].abonnement = String(session.subscription);
+    await ctx.stockage.enregistrer("droits", commande.compte, dossier);
+  }
   commande.statut = "payee";
   commande.payeeLe = iso(maintenant);
   commande.paiementStripe = session.payment_intent ?? null;
+  commande.abonnement = session.subscription ? String(session.subscription) : null;
   commande.accesLe = iso(accesLe);
   commande.finLe = finLe;
   commande.historique.push({ le: iso(maintenant), statut: "payee", source });
@@ -298,7 +306,9 @@ async function changerStatut(ctx, commande, statut, source) {
 
 /** Remboursement total : l'accès de la commande est retiré. Partiel : noté, accès conservé. */
 async function rembourser(ctx, charge) {
-  const lien = charge.payment_intent ? await ctx.stockage.lire("paiements", String(charge.payment_intent)) : null;
+  // Achat unique : lien par le paiement. Abonnement : lien par le client Stripe (les échéances n'ont pas de métadonnées).
+  const lien = (charge.payment_intent ? await ctx.stockage.lire("paiements", String(charge.payment_intent)) : null)
+    ?? (charge.customer ? await ctx.stockage.lire("clients-stripe", String(charge.customer)) : null);
   const ref = lien?.commande ?? charge.metadata?.commande;
   const commande = ref ? await ctx.stockage.lire("commandes", ref) : null;
   if (!commande) return "commande_inconnue";
@@ -322,6 +332,53 @@ async function rembourser(ctx, charge) {
   return "rembourse";
 }
 
+/** Commande et dossier liés à un abonnement Stripe (index écrit à la confirmation du paiement). */
+async function parAbonnement(ctx, idAbonnement) {
+  const lien = idAbonnement ? await ctx.stockage.lire("abonnements", String(idAbonnement)) : null;
+  const commande = lien ? await ctx.stockage.lire("commandes", lien.commande) : null;
+  const dossier = commande ? await ctx.stockage.lire("droits", commande.compte) : null;
+  return { commande, dossier, achat: dossier?.achats?.[commande?.reference] ?? null };
+}
+
+/**
+ * Vie de l'abonnement : résiliation programmée, impayé définitif, fin. L'accès est retiré seulement quand
+ * Stripe indique que l'abonnement est terminé (deleted / canceled) ou définitivement impayé (unpaid).
+ */
+async function evenementAbonnement(ctx, type, abo) {
+  const { commande, dossier, achat } = await parAbonnement(ctx, abo.id);
+  if (!commande || !achat) return "commande_inconnue";
+  const maintenant = iso(maintenantDe(ctx));
+  const fin = finPeriode(abo);
+  const termine = type === "customer.subscription.deleted" || ["canceled", "unpaid", "incomplete_expired"].includes(abo.status);
+  if (termine) {
+    if (achat.actif) {
+      Object.assign(achat, { actif: false, finLe: maintenant, raison: abo.status === "unpaid" ? "impaye" : "abonnement-termine" });
+      dossier.historique.push({ le: maintenant, action: "retrait", formule: commande.formule, commande: commande.reference, source: type });
+      await ctx.stockage.enregistrer("droits", commande.compte, dossier);
+    }
+    commande.statut = abo.status === "unpaid" ? "impaye" : "resilie";
+    commande.historique.push({ le: maintenant, statut: commande.statut, source: type });
+    await ctx.stockage.enregistrer("commandes", commande.reference, commande);
+    return commande.statut;
+  }
+  // Abonnement toujours en cours : on note une résiliation programmée (ou son annulation).
+  achat.finPrevueLe = abo.cancel_at_period_end && fin ? iso(fin * 1000) : null;
+  if (abo.status === "active" && !achat.actif && achat.raison === "impaye") { achat.actif = true; delete achat.raison; delete achat.finLe; }
+  await ctx.stockage.enregistrer("droits", commande.compte, dossier);
+  commande.historique.push({ le: maintenant, statut: `abonnement-${abo.status}`, finPrevueLe: achat.finPrevueLe, source: type });
+  await ctx.stockage.enregistrer("commandes", commande.reference, commande);
+  return achat.finPrevueLe ? "resiliation-programmee" : `abonnement-${abo.status}`;
+}
+
+/** Factures mensuelles : renouvellement payé ou échec de prélèvement (noté ; l'accès suit l'état de l'abonnement). */
+async function evenementFacture(ctx, type, facture) {
+  const { commande } = await parAbonnement(ctx, abonnementDeFacture(facture));
+  if (!commande) return "commande_inconnue";
+  commande.historique.push({ le: iso(maintenantDe(ctx)), statut: type === "invoice.paid" ? "echeance-payee" : "echeance-impayee", montant: facture.amount_paid ?? facture.amount_due ?? null, source: type });
+  await ctx.stockage.enregistrer("commandes", commande.reference, commande);
+  return type === "invoice.paid" ? "echeance-payee" : "echeance-impayee";
+}
+
 async function appliquerEvenement(ctx, ev) {
   const o = ev.data?.object || {};
   if (ev.type.startsWith("checkout.session.")) {
@@ -342,6 +399,8 @@ async function appliquerEvenement(ctx, ev) {
     }
   }
   if (ev.type === "charge.refunded") return rembourser(ctx, o);
+  if (ev.type.startsWith("customer.subscription.")) return evenementAbonnement(ctx, ev.type, o);
+  if (ev.type === "invoice.paid" || ev.type === "invoice.payment_failed") return evenementFacture(ctx, ev.type, o);
   return "ignore";
 }
 
@@ -390,6 +449,34 @@ async function statutPaiement(requete, ctx) {
   }
   const finale = await ctx.stockage.lire("commandes", ref);
   return json(200, { ok: true, reference: ref, statut: finale.statut, formule: finale.formule, accesLe: finale.accesLe ?? null, finLe: finale.finLe ?? null, emailConfirmation: finale.emailConfirmation ?? null });
+}
+
+// ================================================================ Résiliation de l'abonnement (en ligne, en quelques clics)
+async function resilier(requete, ctx) {
+  const c = await controlerEnvoi(requete, ctx);
+  if (c.reponse) return c.reponse;
+  const a = await exigerCompte(requete, ctx);
+  if (a.reponse) return a.reponse;
+  const ref = String(c.donnees.commande || "");
+  const commande = /^CMD-\d{8}-[A-Z0-9]{6}$/.test(ref) ? await ctx.stockage.lire("commandes", ref) : null;
+  if (!commande || commande.compte !== a.compte.id || !commande.abonnement) return json(404, { ok: false, code: "abonnement_inconnu" });
+  if (!modePaiement(ctx.env) || modePaiement(ctx.env) !== commande.mode) return json(503, { ok: false, code: "paiement_non_configure" });
+  const dossier = await ctx.stockage.lire("droits", commande.compte);
+  const achat = dossier?.achats?.[ref];
+  if (!achat?.actif) return json(409, { ok: false, code: "abonnement_termine" });
+  try {
+    const abo = await resilierAbonnement(ctx.env, ctx.fetchFn, commande.abonnement);
+    const fin = finPeriode(abo);
+    achat.finPrevueLe = fin ? iso(fin * 1000) : null;
+    await ctx.stockage.enregistrer("droits", commande.compte, dossier);
+    commande.resiliationDemandeeLe = iso(maintenantDe(ctx));
+    commande.historique.push({ le: commande.resiliationDemandeeLe, statut: "resiliation-demandee", finPrevueLe: achat.finPrevueLe, source: "client" });
+    await ctx.stockage.enregistrer("commandes", ref, commande);
+    return json(200, { ok: true, finPrevueLe: achat.finPrevueLe });
+  } catch (e) {
+    console.error("Résiliation : Stripe n'a pas répondu", e?.statut ?? e?.name);
+    return json(502, { ok: false, code: "resiliation_indisponible" });
+  }
 }
 
 // ================================================================ Espace « Ma formation »
@@ -498,6 +585,7 @@ export const ROUTES_ESPACE = {
   "/api/formation/lecon": formationLecon,
   "/api/formation/progression": formationProgression,
   "/api/formation/fichier": formationFichier,
+  "/api/abonnement/resilier": resilier,
 };
 
 export async function traiterEspace(requete, ctx) {

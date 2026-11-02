@@ -5,6 +5,7 @@ import programme from "../data/programme.json";
 import faq from "../data/faq.json";
 import { marches, site, totalIdees, donneesIdees, nombre } from "../lib/site.js";
 import { modulesParcours, ressourcesReelles, totaux } from "../lib/parcours.js";
+import { PAIEMENT, ABONNEMENT } from "../lib/offres.js";
 import formation from "../data/formation.json";
 
 const extrait = programme.modules[0];
@@ -40,7 +41,7 @@ const barres = Array.from({ length: 12 }, (_, i) => (i + 1) / 12);
           <li><strong>6</strong><span>modules progressifs</span></li>
           <li><strong>{totaux.lecons}</strong><span>leçons détaillées</span></li>
           <li><strong>{nf(totalIdees)}</strong><span>idées de SaaS</span></li>
-          <li><strong>{prixMin}</strong><span>paiement unique, dès</span></li>
+          <li><strong>{prixMin}</strong><span>{ABONNEMENT ? "par mois, dès" : "paiement unique, dès"}</span></li>
         </ul>
       </div>
 
@@ -114,8 +115,8 @@ const barres = Array.from({ length: 12 }, (_, i) => (i + 1) / 12);
       </div>
       <ol class="deroulement">
         <li><strong>Lisez le plan gratuit</strong><span>Le programme détaillé et les 1 500 idées sont en accès libre.</span></li>
-        <li><strong>Choisissez une formule</strong><span>Paiement unique. Les commandes en ligne ne sont pas encore ouvertes : l’inscription est gratuite et sans engagement.</span></li>
-        <li><strong>Suivez votre espace</strong><span>Leçons, exercices, fiches et checklists dans l’ordre, avec votre progression enregistrée.</span></li>
+        <li><strong>Choisissez une formule</strong><span>{ABONNEMENT ? "Abonnement mensuel, résiliable à tout moment." : "Paiement unique."} Les commandes en ligne ne sont pas encore ouvertes : l’inscription est gratuite et sans engagement.</span></li>
+        <li><strong>Suivez votre espace</strong><span>Leçons et fiches dans l’ordre (plus exercices, checklists et modèles avec Complet), avec votre progression enregistrée.</span></li>
         <li><strong>Avancez sur votre projet</strong><span>Chaque module se termine par un livrable : entretiens, fiche MVP, page de tarifs…</span></li>
       </ol>
     </div>
@@ -246,7 +247,7 @@ const barres = Array.from({ length: 12 }, (_, i) => (i + 1) / 12);
     <div class="wrap">
       <div class="titre-section">
         <p class="surtitre">Tarifs</p>
-        <h2 id="formules-accueil">Un seul paiement, pas d’abonnement</h2>
+        <h2 id="formules-accueil">{PAIEMENT.titreTarifs}</h2>
         <p>Choisissez la formule qui vous convient. Les éléments encore en préparation sont indiqués clairement.</p>
       </div>
       <ul class="tarifs">{site.formules.map((f) => <CarteTarif f={f} />)}</ul>

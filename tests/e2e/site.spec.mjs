@@ -364,7 +364,7 @@ test.describe("accueil : éléments de vente", () => {
     await page.goto("/tarifs/");
     const table = page.getByRole("table", { name: "Comparer les formules" });
     await expect(table).toBeVisible();
-    await expect(table.getByRole("row")).toHaveCount(7);   // en-tête + 6 lignes (dont l'espace « Ma formation »)
+    await expect(table.getByRole("row")).toHaveCount(9);   // en-tête + 8 droits (formation.json)
     await expect(table.getByText("En préparation").first()).toBeVisible();
     await expect(table.getByText("Modalités à définir")).toBeVisible();
   });

@@ -5,6 +5,7 @@
 import Base from "../layouts/Base.astro";
 import Case from "../components/Case.astro";
 import { site, mentionTaxes, contenuFormule, LIBELLE_STATUT } from "../lib/site.js";
+import { PAIEMENT, ABONNEMENT } from "../lib/offres.js";
 import { TEXTES_CONSENTEMENT as T } from "../../serveur/validation.js";
 import AC from "../components/ACompleter.astro";
 import conditions from "../data/conditions.json";
@@ -49,21 +50,21 @@ const duree = conditions.dureeAcces.valeur ? conditions.dureeAcces.options[condi
           {site.formules.map((f) => (
             <div class="choix-formule">
               <input type="radio" name="formule" id={`formule-${f.id}`} value={f.id} checked={f.id === "complet"} aria-describedby={`contenu-${f.id}`} />
-              <label class="choix-entete" for={`formule-${f.id}`}><strong>{f.nom}</strong><span class="mono">{f.prixAffiche}</span></label>
+              <label class="choix-entete" for={`formule-${f.id}`}><strong>{f.nom}</strong><span class="mono">{f.prixAffiche}{PAIEMENT.suffixe}</span></label>
               <ul class="liste-contenu" id={`contenu-${f.id}`}>
                 {contenuFormule(f).map((x) => <li>{x.texte}{LIBELLE_STATUT[x.statut] && <span class="statut">{LIBELLE_STATUT[x.statut]}</span>}</li>)}
               </ul>
               <p class="ferme-raison" data-raison={f.id} hidden></p>
             </div>
           ))}
-          <p class="note">Paiement unique, sans abonnement ni prélèvement. Prix : {mentionTaxes()}.</p>
+          <p class="note">{PAIEMENT.phrase} Prix : {mentionTaxes()}.</p>
         </fieldset>
 
         <div class="carte formulaire commande-accords">
           <div class="pleine avant-paiement">
             <h2 class="titre-carte">Avant de payer</h2>
             <ul>
-              <li><strong>Paiement unique</strong>, sans abonnement ni prélèvement.</li>
+              <li><strong>{ABONNEMENT ? "Abonnement mensuel" : "Paiement unique"}</strong> : {ABONNEMENT ? "prélevé chaque mois à la même date, résiliable en ligne à tout moment depuis « Ma formation » ; l’accès s’arrête à la fin du mois déjà payé." : "sans abonnement ni prélèvement."}</li>
               <li><strong>Ouverture de l’accès :</strong> si vous cochez la case d’accès immédiat, dès la confirmation du paiement. Sinon, {o.valeur === "immediate" ? "dès la confirmation du paiement également, et vous gardez votre droit de rétractation de 14 jours" : `${o.delaiJours} jours après le paiement, à la fin du délai de rétractation`}.</li>
               <li><strong>Durée d’accès :</strong> {duree ?? <AC label="durée d’accès à décider" />}.</li>
               <li><strong>Vendeur :</strong> {e.denomination ?? <AC label="nom de l’entreprise" />} ({e.formeJuridique ?? <AC label="forme juridique" />}), SIREN {e.siren ?? <AC label="SIREN" />}. Médiateur : {site.mediateur.nom ?? <AC label="médiateur de la consommation" />}.</li>
@@ -89,6 +90,8 @@ const duree = conditions.dureeAcces.valeur ? conditions.dureeAcces.options[condi
   import { api, el } from "../lib/espace-client";
   import { validerAchat } from "../../serveur/validation.js";
   import site from "../data/site.json";
+  import conditions from "../data/conditions.json";
+  const ABONNEMENT_CLIENT = conditions.frequencePaiement.valeur === "abonnement-mensuel";
 
   const params = new URLSearchParams(location.search);
   const choix = params.get("formule");
@@ -103,7 +106,7 @@ const duree = conditions.dureeAcces.valeur ? conditions.dureeAcces.options[condi
   }
   const majFormule = () => {
     $("bloc-service").hidden = formuleChoisie() !== "accompagne";
-    $("bouton-payer").textContent = `Payer ${prix(formuleChoisie())} sur la page sécurisée`;
+    $("bouton-payer").textContent = ABONNEMENT_CLIENT ? `S’abonner pour ${prix(formuleChoisie())} / mois` : `Payer ${prix(formuleChoisie())} sur la page sécurisée`;
   };
   form.addEventListener("change", majFormule);
   majFormule();

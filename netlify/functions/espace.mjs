@@ -6,4 +6,4 @@ import { lireEnv } from "../env.mjs";
 export default async (requete, contexte) =>
   traiterEspace(requete, { env: lireEnv().env, stockage: creerStockage("netlify"), ip: contexte.ip });
 
-export const config = { path: ["/api/compte/*", "/api/paiement/*", "/api/formation", "/api/formation/*"] };
+export const config = { path: ["/api/compte/*", "/api/paiement/*", "/api/formation", "/api/formation/*", "/api/abonnement/*"] };

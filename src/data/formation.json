@@ -1,88 +1,437 @@
 {
   "_lisezmoi": "SOURCE UNIQUE de la correspondance formules → droits → contenus. La page Tarifs, la commande, le serveur (paiement et accès) et l'espace client la lisent tous. Statuts : \"valide\" (relu et validé par Arthur, vendable), \"brouillon\" (rédigé, lisible dans l'espace, pas encore validé), \"en-preparation\" (n'existe pas encore), \"a-definir\" (modalités non décidées). Seul Arthur passe un élément en \"valide\". Les textes sont dans serveur/contenus/ (jamais dans les pages publiques).",
-
   "droits": {
-    "lecons": "Les 6 modules : leçons détaillées, exercices avec corrigé et checklists",
+    "lecons": "Les 6 modules : 19 leçons détaillées",
     "fiches": "Une fiche récapitulative par module",
     "videos": "Les cours en vidéo",
+    "exercices": "Un exercice avec corrigé par module",
+    "checklists": "Une checklist de fin de module",
     "modeles": "Un modèle à remplir par module",
     "communaute": "Une communauté pour s’entraider",
     "avis": "Mon avis personnel sur votre projet"
   },
-
-  "_acces": "Accès commun aux 6 modules pour les trois formules (demande d'Arthur, à conserver tant qu'il ne demande pas une autre répartition). Différences : modèles et communauté (Complet), avis personnel (Accompagné).",
+  "_acces": "Répartition décidée par Arthur le 2 novembre 2026 : Essentiel = leçons + fiches + vidéos ; Complet = + exercices corrigés, checklists, modèles (et la communauté, inchangée, en préparation) ; Accompagné = + avis personnel (à définir).",
   "acces": {
-    "essentiel": ["lecons", "fiches", "videos"],
-    "complet": ["lecons", "fiches", "videos", "modeles", "communaute"],
-    "accompagne": ["lecons", "fiches", "videos", "modeles", "communaute", "avis"]
+    "essentiel": [
+      "lecons",
+      "fiches",
+      "videos"
+    ],
+    "complet": [
+      "lecons",
+      "fiches",
+      "videos",
+      "exercices",
+      "checklists",
+      "modeles",
+      "communaute"
+    ],
+    "accompagne": [
+      "lecons",
+      "fiches",
+      "videos",
+      "exercices",
+      "checklists",
+      "modeles",
+      "communaute",
+      "avis"
+    ]
   },
-
   "modules": [
-    { "id": "m1", "programme": 0, "lecons": [
-      { "id": "m1-l1", "type": "lecon", "titre": "Partir d’un problème, pas d’une idée de logiciel", "droit": "lecons", "statut": "brouillon" },
-      { "id": "m1-l2", "type": "lecon", "titre": "Choisir un public précis", "droit": "lecons", "statut": "brouillon" },
-      { "id": "m1-l3", "type": "lecon", "titre": "Mener des entretiens de découverte", "droit": "lecons", "statut": "brouillon" },
-      { "id": "m1-l4", "type": "lecon", "titre": "Vérifier la demande avant de construire", "droit": "lecons", "statut": "brouillon" },
-      { "id": "m1-exercice", "type": "exercice", "titre": "Exercice : vos 10 entretiens et votre décision", "droit": "lecons", "statut": "brouillon" },
-      { "id": "m1-fiche", "type": "fiche", "titre": "Fiche récapitulative du module 1", "droit": "fiches", "statut": "brouillon" },
-      { "id": "m1-modele", "type": "modele", "titre": "Modèle : grille d’entretien de découverte", "droit": "modeles", "statut": "brouillon" },
-      { "id": "m1-checklist", "type": "checklist", "titre": "Checklist de fin de module 1", "droit": "lecons", "statut": "brouillon" },
-      { "id": "m1-video", "type": "video", "titre": "Vidéo du module 1", "droit": "videos", "statut": "en-preparation" }
-    ] },
-    { "id": "m2", "programme": 1, "lecons": [
-      { "id": "m2-l1", "type": "lecon", "titre": "Du problème à la promesse", "droit": "lecons", "statut": "brouillon" },
-      { "id": "m2-l2", "type": "lecon", "titre": "Réduire au strict nécessaire", "droit": "lecons", "statut": "brouillon" },
-      { "id": "m2-l3", "type": "lecon", "titre": "Tester une maquette avant de construire", "droit": "lecons", "statut": "brouillon" },
-      { "id": "m2-exercice", "type": "exercice", "titre": "Exercice : la fiche de votre MVP et un test de maquette", "droit": "lecons", "statut": "brouillon" },
-      { "id": "m2-fiche", "type": "fiche", "titre": "Fiche récapitulative du module 2", "droit": "fiches", "statut": "brouillon" },
-      { "id": "m2-modele", "type": "modele", "titre": "Modèle : fiche de cadrage du MVP", "droit": "modeles", "statut": "brouillon" },
-      { "id": "m2-checklist", "type": "checklist", "titre": "Checklist de fin de module 2", "droit": "lecons", "statut": "brouillon" },
-      { "id": "m2-video", "type": "video", "titre": "Vidéo du module 2", "droit": "videos", "statut": "en-preparation" }
-    ] },
-    { "id": "m3", "programme": 2, "lecons": [
-      { "id": "m3-l1", "type": "lecon", "titre": "Choisir ses outils : sans code, avec code, ou les deux", "droit": "lecons", "statut": "brouillon" },
-      { "id": "m3-l2", "type": "lecon", "titre": "Les briques indispensables et la sécurité de base", "droit": "lecons", "statut": "brouillon" },
-      { "id": "m3-l3", "type": "lecon", "titre": "Tester avec 5 utilisateurs et corriger", "droit": "lecons", "statut": "brouillon" },
-      { "id": "m3-exercice", "type": "exercice", "titre": "Exercice : votre plan de construction et votre test à 5", "droit": "lecons", "statut": "brouillon" },
-      { "id": "m3-fiche", "type": "fiche", "titre": "Fiche récapitulative du module 3", "droit": "fiches", "statut": "brouillon" },
-      { "id": "m3-modele", "type": "modele", "titre": "Modèle : plan de construction et suivi des tests", "droit": "modeles", "statut": "brouillon" },
-      { "id": "m3-checklist", "type": "checklist", "titre": "Checklist de fin de module 3", "droit": "lecons", "statut": "brouillon" },
-      { "id": "m3-video", "type": "video", "titre": "Vidéo du module 3", "droit": "videos", "statut": "en-preparation" }
-    ] },
-    { "id": "m4", "programme": 3, "lecons": [
-      { "id": "m4-l1", "type": "lecon", "titre": "Un prix fondé sur la valeur, pas sur vos coûts", "droit": "lecons", "statut": "brouillon" },
-      { "id": "m4-l2", "type": "lecon", "titre": "Construire des formules claires", "droit": "lecons", "statut": "brouillon" },
-      { "id": "m4-l3", "type": "lecon", "titre": "Calculer ses coûts et son seuil", "droit": "lecons", "statut": "brouillon" },
-      { "id": "m4-exercice", "type": "exercice", "titre": "Exercice : votre page de tarifs et votre calcul de seuil", "droit": "lecons", "statut": "brouillon" },
-      { "id": "m4-fiche", "type": "fiche", "titre": "Fiche récapitulative du module 4", "droit": "fiches", "statut": "brouillon" },
-      { "id": "m4-modele", "type": "modele", "titre": "Modèle : calcul de prix et grille de formules", "droit": "modeles", "statut": "brouillon" },
-      { "id": "m4-checklist", "type": "checklist", "titre": "Checklist de fin de module 4", "droit": "lecons", "statut": "brouillon" },
-      { "id": "m4-video", "type": "video", "titre": "Vidéo du module 4", "droit": "videos", "statut": "en-preparation" }
-    ] },
-    { "id": "m5", "programme": 4, "lecons": [
-      { "id": "m5-l1", "type": "lecon", "titre": "Votre liste des 50 premiers contacts", "droit": "lecons", "statut": "brouillon" },
-      { "id": "m5-l2", "type": "lecon", "titre": "Le message de contact et la démonstration", "droit": "lecons", "statut": "brouillon" },
-      { "id": "m5-l3", "type": "lecon", "titre": "Une page d’accueil honnête qui convainc", "droit": "lecons", "statut": "brouillon" },
-      { "id": "m5-exercice", "type": "exercice", "titre": "Exercice : 50 contacts, 10 démonstrations", "droit": "lecons", "statut": "brouillon" },
-      { "id": "m5-fiche", "type": "fiche", "titre": "Fiche récapitulative du module 5", "droit": "fiches", "statut": "brouillon" },
-      { "id": "m5-modele", "type": "modele", "titre": "Modèle : suivi des contacts et message type", "droit": "modeles", "statut": "brouillon" },
-      { "id": "m5-checklist", "type": "checklist", "titre": "Checklist de fin de module 5", "droit": "lecons", "statut": "brouillon" },
-      { "id": "m5-video", "type": "video", "titre": "Vidéo du module 5", "droit": "videos", "statut": "en-preparation" }
-    ] },
-    { "id": "m6", "programme": 5, "lecons": [
-      { "id": "m6-l1", "type": "lecon", "titre": "Les chiffres qui comptent", "droit": "lecons", "statut": "brouillon" },
-      { "id": "m6-l2", "type": "lecon", "titre": "Écouter les clients", "droit": "lecons", "statut": "brouillon" },
-      { "id": "m6-l3", "type": "lecon", "titre": "Prioriser, automatiser, se faire aider", "droit": "lecons", "statut": "brouillon" },
-      { "id": "m6-exercice", "type": "exercice", "titre": "Exercice : votre tableau de bord et votre plan sur 3 mois", "droit": "lecons", "statut": "brouillon" },
-      { "id": "m6-fiche", "type": "fiche", "titre": "Fiche récapitulative du module 6", "droit": "fiches", "statut": "brouillon" },
-      { "id": "m6-modele", "type": "modele", "titre": "Modèle : tableau de bord et plan d’amélioration", "droit": "modeles", "statut": "brouillon" },
-      { "id": "m6-checklist", "type": "checklist", "titre": "Checklist de fin de module 6", "droit": "lecons", "statut": "brouillon" },
-      { "id": "m6-video", "type": "video", "titre": "Vidéo du module 6", "droit": "videos", "statut": "en-preparation" }
-    ] }
+    {
+      "id": "m1",
+      "programme": 0,
+      "lecons": [
+        {
+          "id": "m1-l1",
+          "type": "lecon",
+          "titre": "Partir d’un problème, pas d’une idée de logiciel",
+          "droit": "lecons",
+          "statut": "brouillon"
+        },
+        {
+          "id": "m1-l2",
+          "type": "lecon",
+          "titre": "Choisir un public précis",
+          "droit": "lecons",
+          "statut": "brouillon"
+        },
+        {
+          "id": "m1-l3",
+          "type": "lecon",
+          "titre": "Mener des entretiens de découverte",
+          "droit": "lecons",
+          "statut": "brouillon"
+        },
+        {
+          "id": "m1-l4",
+          "type": "lecon",
+          "titre": "Vérifier la demande avant de construire",
+          "droit": "lecons",
+          "statut": "brouillon"
+        },
+        {
+          "id": "m1-exercice",
+          "type": "exercice",
+          "titre": "Exercice : vos 10 entretiens et votre décision",
+          "droit": "exercices",
+          "statut": "brouillon"
+        },
+        {
+          "id": "m1-fiche",
+          "type": "fiche",
+          "titre": "Fiche récapitulative du module 1",
+          "droit": "fiches",
+          "statut": "brouillon"
+        },
+        {
+          "id": "m1-modele",
+          "type": "modele",
+          "titre": "Modèle : grille d’entretien de découverte",
+          "droit": "modeles",
+          "statut": "brouillon"
+        },
+        {
+          "id": "m1-checklist",
+          "type": "checklist",
+          "titre": "Checklist de fin de module 1",
+          "droit": "checklists",
+          "statut": "brouillon"
+        },
+        {
+          "id": "m1-video",
+          "type": "video",
+          "titre": "Vidéo du module 1",
+          "droit": "videos",
+          "statut": "en-preparation"
+        }
+      ]
+    },
+    {
+      "id": "m2",
+      "programme": 1,
+      "lecons": [
+        {
+          "id": "m2-l1",
+          "type": "lecon",
+          "titre": "Du problème à la promesse",
+          "droit": "lecons",
+          "statut": "brouillon"
+        },
+        {
+          "id": "m2-l2",
+          "type": "lecon",
+          "titre": "Réduire au strict nécessaire",
+          "droit": "lecons",
+          "statut": "brouillon"
+        },
+        {
+          "id": "m2-l3",
+          "type": "lecon",
+          "titre": "Tester une maquette avant de construire",
+          "droit": "lecons",
+          "statut": "brouillon"
+        },
+        {
+          "id": "m2-exercice",
+          "type": "exercice",
+          "titre": "Exercice : la fiche de votre MVP et un test de maquette",
+          "droit": "exercices",
+          "statut": "brouillon"
+        },
+        {
+          "id": "m2-fiche",
+          "type": "fiche",
+          "titre": "Fiche récapitulative du module 2",
+          "droit": "fiches",
+          "statut": "brouillon"
+        },
+        {
+          "id": "m2-modele",
+          "type": "modele",
+          "titre": "Modèle : fiche de cadrage du MVP",
+          "droit": "modeles",
+          "statut": "brouillon"
+        },
+        {
+          "id": "m2-checklist",
+          "type": "checklist",
+          "titre": "Checklist de fin de module 2",
+          "droit": "checklists",
+          "statut": "brouillon"
+        },
+        {
+          "id": "m2-video",
+          "type": "video",
+          "titre": "Vidéo du module 2",
+          "droit": "videos",
+          "statut": "en-preparation"
+        }
+      ]
+    },
+    {
+      "id": "m3",
+      "programme": 2,
+      "lecons": [
+        {
+          "id": "m3-l1",
+          "type": "lecon",
+          "titre": "Choisir ses outils : sans code, avec code, ou les deux",
+          "droit": "lecons",
+          "statut": "brouillon"
+        },
+        {
+          "id": "m3-l2",
+          "type": "lecon",
+          "titre": "Les briques indispensables et la sécurité de base",
+          "droit": "lecons",
+          "statut": "brouillon"
+        },
+        {
+          "id": "m3-l3",
+          "type": "lecon",
+          "titre": "Tester avec 5 utilisateurs et corriger",
+          "droit": "lecons",
+          "statut": "brouillon"
+        },
+        {
+          "id": "m3-exercice",
+          "type": "exercice",
+          "titre": "Exercice : votre plan de construction et votre test à 5",
+          "droit": "exercices",
+          "statut": "brouillon"
+        },
+        {
+          "id": "m3-fiche",
+          "type": "fiche",
+          "titre": "Fiche récapitulative du module 3",
+          "droit": "fiches",
+          "statut": "brouillon"
+        },
+        {
+          "id": "m3-modele",
+          "type": "modele",
+          "titre": "Modèle : plan de construction et suivi des tests",
+          "droit": "modeles",
+          "statut": "brouillon"
+        },
+        {
+          "id": "m3-checklist",
+          "type": "checklist",
+          "titre": "Checklist de fin de module 3",
+          "droit": "checklists",
+          "statut": "brouillon"
+        },
+        {
+          "id": "m3-video",
+          "type": "video",
+          "titre": "Vidéo du module 3",
+          "droit": "videos",
+          "statut": "en-preparation"
+        }
+      ]
+    },
+    {
+      "id": "m4",
+      "programme": 3,
+      "lecons": [
+        {
+          "id": "m4-l1",
+          "type": "lecon",
+          "titre": "Un prix fondé sur la valeur, pas sur vos coûts",
+          "droit": "lecons",
+          "statut": "brouillon"
+        },
+        {
+          "id": "m4-l2",
+          "type": "lecon",
+          "titre": "Construire des formules claires",
+          "droit": "lecons",
+          "statut": "brouillon"
+        },
+        {
+          "id": "m4-l3",
+          "type": "lecon",
+          "titre": "Calculer ses coûts et son seuil",
+          "droit": "lecons",
+          "statut": "brouillon"
+        },
+        {
+          "id": "m4-exercice",
+          "type": "exercice",
+          "titre": "Exercice : votre page de tarifs et votre calcul de seuil",
+          "droit": "exercices",
+          "statut": "brouillon"
+        },
+        {
+          "id": "m4-fiche",
+          "type": "fiche",
+          "titre": "Fiche récapitulative du module 4",
+          "droit": "fiches",
+          "statut": "brouillon"
+        },
+        {
+          "id": "m4-modele",
+          "type": "modele",
+          "titre": "Modèle : calcul de prix et grille de formules",
+          "droit": "modeles",
+          "statut": "brouillon"
+        },
+        {
+          "id": "m4-checklist",
+          "type": "checklist",
+          "titre": "Checklist de fin de module 4",
+          "droit": "checklists",
+          "statut": "brouillon"
+        },
+        {
+          "id": "m4-video",
+          "type": "video",
+          "titre": "Vidéo du module 4",
+          "droit": "videos",
+          "statut": "en-preparation"
+        }
+      ]
+    },
+    {
+      "id": "m5",
+      "programme": 4,
+      "lecons": [
+        {
+          "id": "m5-l1",
+          "type": "lecon",
+          "titre": "Votre liste des 50 premiers contacts",
+          "droit": "lecons",
+          "statut": "brouillon"
+        },
+        {
+          "id": "m5-l2",
+          "type": "lecon",
+          "titre": "Le message de contact et la démonstration",
+          "droit": "lecons",
+          "statut": "brouillon"
+        },
+        {
+          "id": "m5-l3",
+          "type": "lecon",
+          "titre": "Une page d’accueil honnête qui convainc",
+          "droit": "lecons",
+          "statut": "brouillon"
+        },
+        {
+          "id": "m5-exercice",
+          "type": "exercice",
+          "titre": "Exercice : 50 contacts, 10 démonstrations",
+          "droit": "exercices",
+          "statut": "brouillon"
+        },
+        {
+          "id": "m5-fiche",
+          "type": "fiche",
+          "titre": "Fiche récapitulative du module 5",
+          "droit": "fiches",
+          "statut": "brouillon"
+        },
+        {
+          "id": "m5-modele",
+          "type": "modele",
+          "titre": "Modèle : suivi des contacts et message type",
+          "droit": "modeles",
+          "statut": "brouillon"
+        },
+        {
+          "id": "m5-checklist",
+          "type": "checklist",
+          "titre": "Checklist de fin de module 5",
+          "droit": "checklists",
+          "statut": "brouillon"
+        },
+        {
+          "id": "m5-video",
+          "type": "video",
+          "titre": "Vidéo du module 5",
+          "droit": "videos",
+          "statut": "en-preparation"
+        }
+      ]
+    },
+    {
+      "id": "m6",
+      "programme": 5,
+      "lecons": [
+        {
+          "id": "m6-l1",
+          "type": "lecon",
+          "titre": "Les chiffres qui comptent",
+          "droit": "lecons",
+          "statut": "brouillon"
+        },
+        {
+          "id": "m6-l2",
+          "type": "lecon",
+          "titre": "Écouter les clients",
+          "droit": "lecons",
+          "statut": "brouillon"
+        },
+        {
+          "id": "m6-l3",
+          "type": "lecon",
+          "titre": "Prioriser, automatiser, se faire aider",
+          "droit": "lecons",
+          "statut": "brouillon"
+        },
+        {
+          "id": "m6-exercice",
+          "type": "exercice",
+          "titre": "Exercice : votre tableau de bord et votre plan sur 3 mois",
+          "droit": "exercices",
+          "statut": "brouillon"
+        },
+        {
+          "id": "m6-fiche",
+          "type": "fiche",
+          "titre": "Fiche récapitulative du module 6",
+          "droit": "fiches",
+          "statut": "brouillon"
+        },
+        {
+          "id": "m6-modele",
+          "type": "modele",
+          "titre": "Modèle : tableau de bord et plan d’amélioration",
+          "droit": "modeles",
+          "statut": "brouillon"
+        },
+        {
+          "id": "m6-checklist",
+          "type": "checklist",
+          "titre": "Checklist de fin de module 6",
+          "droit": "checklists",
+          "statut": "brouillon"
+        },
+        {
+          "id": "m6-video",
+          "type": "video",
+          "titre": "Vidéo du module 6",
+          "droit": "videos",
+          "statut": "en-preparation"
+        }
+      ]
+    }
   ],
-
   "ressources": [
-    { "id": "communaute", "titre": "Communauté d’entraide", "droit": "communaute", "statut": "en-preparation", "precision": "Aucune communauté n’est créée pour l’instant." },
-    { "id": "avis", "titre": "Avis personnel sur votre projet", "droit": "avis", "statut": "a-definir", "precision": "Format, durée, délai et limites à définir (voir conditions.json)." }
+    {
+      "id": "communaute",
+      "titre": "Communauté d’entraide",
+      "droit": "communaute",
+      "statut": "en-preparation",
+      "precision": "Aucune communauté n’est créée pour l’instant."
+    },
+    {
+      "id": "avis",
+      "titre": "Avis personnel sur votre projet",
+      "droit": "avis",
+      "statut": "a-definir",
+      "precision": "Format, durée, délai et limites à définir (voir conditions.json)."
+    }
   ]
 }

@@ -33,7 +33,8 @@ export const totaux = { lecons: compter("lecon"), exercices: compter("exercice")
 export const ressourcesReelles = [
   { groupe: "gratuit", texte: "Le plan détaillé des 6 modules, avec le livrable de chaque étape", etat: "Disponible" },
   { groupe: "gratuit", texte: "1 500 idées de SaaS dans 15 marchés, avec recherche et favoris", etat: "Disponible" },
-  { groupe: "payant", texte: `${totaux.lecons} leçons détaillées, ${totaux.exercices} exercices avec corrigé et ${totaux.checklists} checklists`, etat: LIBELLE_STATUT_OFFRE[statutDroit("lecons")] || "Disponible" },
+  { groupe: "payant", texte: `${totaux.lecons} leçons détaillées (toutes les formules)`, etat: LIBELLE_STATUT_OFFRE[statutDroit("lecons")] || "Disponible" },
+  { groupe: "payant", texte: `${totaux.exercices} exercices avec corrigé et ${totaux.checklists} checklists (Complet et Accompagné)`, etat: LIBELLE_STATUT_OFFRE[statutDroit("exercices")] || "Disponible" },
   { groupe: "payant", texte: `${totaux.fiches} fiches récapitulatives`, etat: LIBELLE_STATUT_OFFRE[statutDroit("fiches")] || "Disponible" },
   { groupe: "payant", texte: `${totaux.modeles} modèles à remplir (Complet et Accompagné)`, etat: LIBELLE_STATUT_OFFRE[statutDroit("modeles")] || "Disponible" },
   { groupe: "payant", texte: "Les cours en vidéo", etat: LIBELLE_STATUT_OFFRE[statutDroit("videos")] || "Disponible" },

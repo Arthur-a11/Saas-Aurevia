@@ -43,8 +43,8 @@ export function emailCommande(commande, { accesLe, finLe, baseUrl, cfg = conditi
     texte: [
       "Bonjour,",
       "",
-      `Votre paiement de ${f?.prixAffiche} (${mentionTaxes()}) pour la formule ${f?.nom} est confirmé.`,
-      `Référence : ${commande.reference}. Paiement unique, sans abonnement.${commande.mode === "test" ? " [MODE TEST : aucun paiement réel]" : ""}`,
+      `Votre paiement de ${f?.prixAffiche}${commande.frequence === "abonnement-mensuel" ? " (premier mois)" : ""} (${mentionTaxes()}) pour la formule ${f?.nom} est confirmé.`,
+      `Référence : ${commande.reference}. ${commande.frequence === "abonnement-mensuel" ? "Abonnement mensuel : prélevé chaque mois, résiliable à tout moment depuis votre espace « Ma formation » (l’accès dure jusqu’à la fin du mois payé)." : "Paiement unique, sans abonnement."}${commande.mode === "test" ? " [MODE TEST : aucun paiement réel]" : ""}`,
       "",
       ouvertMaintenant
         ? `Votre accès est ouvert depuis le ${dateFr(accesLe)} dans votre espace « Ma formation » : ${lien(baseUrl, "/formation/")}`

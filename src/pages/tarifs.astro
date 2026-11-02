@@ -3,7 +3,7 @@ import Base from "../layouts/Base.astro";
 import CarteTarif from "../components/CarteTarif.astro";
 import { site, mentionTaxes } from "../lib/site.js";
 const ouvert = site.paiement.actif;
-import { comparatif, LIBELLE_STATUT_OFFRE } from "../lib/offres.js";
+import { comparatif, LIBELLE_STATUT_OFFRE, PAIEMENT, ABONNEMENT } from "../lib/offres.js";
 import conditions from "../data/conditions.json";
 import ACompleter from "../components/ACompleter.astro";
 // Lignes du comparatif : calculées depuis src/data/formation.json (source unique), statuts réels.
@@ -17,12 +17,12 @@ const diffAcc = ajoutsDe("accompagne", "complet");
 const duree = conditions.dureeAcces.valeur ? conditions.dureeAcces.options[conditions.dureeAcces.valeur] : null;
 ---
 <Base titre="Tarifs" courant="/tarifs/"
-  description="Les trois formules AUREVIA SAAS : Essentiel 14,90 €, Complet 24,90 €, Accompagné 54,90 €. Un seul paiement, sans abonnement.">
+  description="Les trois formules AUREVIA SAAS : Essentiel 14,90 €, Complet 24,90 €, Accompagné 54,90 € par mois, résiliables à tout moment.">
   <section class="entete-page">
     <div class="wrap">
       <p class="surtitre">Tarifs</p>
       <h1>Choisissez votre formule</h1>
-      <p class="chapeau">Un seul paiement. Pas d’abonnement.</p>
+      <p class="chapeau">{PAIEMENT.phrase}</p>
       {!ouvert && (
         <div class="encadre" id="avis-commandes">
           <p><strong>Les commandes en ligne ne sont pas encore ouvertes.</strong> Vous pouvez vous inscrire dès maintenant, sans paiement : je vous recontacte par e-mail pour la suite.</p>
@@ -39,7 +39,7 @@ const duree = conditions.dureeAcces.valeur ? conditions.dureeAcces.options[condi
       <div class="encadre differences" id="differences">
         <h2 class="titre-carte">Les différences réelles, aujourd’hui</h2>
         <ul>
-          <li><strong>Les 6 modules sont communs aux trois formules</strong> (leçons, exercices, checklists, fiches).</li>
+          <li><strong>Les 6 modules sont communs aux trois formules</strong> (19 leçons et 6 fiches récapitulatives).</li>
           <li><strong>Complet</strong> ajoute : {diffComplet.map((x) => `${x.texte.toLowerCase()} (${existe(x) ? "rédigé, en relecture" : x.statut === "a-definir" ? "à définir" : "n’existe pas encore"})`).join(" ; ")}.</li>
           <li><strong>Accompagné</strong> ajoute : {diffAcc.map((x) => `${x.texte.toLowerCase()} (${existe(x) ? "rédigé, en relecture" : x.statut === "a-definir" ? "format, durée, délai et limites encore à définir : rien n’est promis" : "n’existe pas encore"})`).join(" ; ")}.</li>
         </ul>
@@ -67,11 +67,11 @@ const duree = conditions.dureeAcces.valeur ? conditions.dureeAcces.options[condi
           </tbody>
         </table>
       </div>
-      <p class="note" style="margin-top:0.75rem">Prix : {mentionTaxes()}. Paiement unique pour chaque formule. Durée d’accès : {duree ?? <ACompleter label="durée d’accès à décider (à vie ou 12 mois)" />}.</p>
+      <p class="note" style="margin-top:0.75rem">Prix : {mentionTaxes()}. {PAIEMENT.phrase} Durée d’accès : {duree ?? <ACompleter label="durée d’accès à décider (à vie ou 12 mois)" />}.</p>
       <p class="note">« Rédigé, en relecture » : le contenu est écrit mais pas encore validé. « En préparation » : le contenu n’existe pas encore.</p>
 
       <ul class="engagements">
-        <li><strong>Un seul paiement</strong><span>Pas d’abonnement, pas de prélèvement caché.</span></li>
+        <li><strong>{ABONNEMENT ? "Résiliable à tout moment" : "Un seul paiement"}</strong><span>{ABONNEMENT ? "Résiliation en ligne depuis votre espace, en quelques clics. L’accès dure jusqu’à la fin du mois déjà payé." : "Pas d’abonnement, pas de prélèvement caché."}</span></li>
         <li><strong>14 jours pour changer d’avis</strong><span>Droit de rétractation pour les consommateurs, sauf renoncement exprès à l’accès immédiat. <a href="/retractation/">Détails</a></span></li>
         <li><strong>Transparence</strong><span>Ce qui n’est pas encore prêt est indiqué « En préparation ». Aucun résultat n’est garanti.</span></li>
       </ul>

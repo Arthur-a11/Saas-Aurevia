@@ -1,20 +1,22 @@
 {
   "_lisezmoi": "Conditions commerciales et juridiques À DÉCIDER par Arthur. Une valeur null = pas encore décidée : le serveur refuse alors toute vente RÉELLE (le mode test reste possible). Ne jamais remplir à la place d'Arthur.",
-
-  "versionConditions": "brouillon-2026-11-01",
-
+  "versionConditions": "brouillon-2026-11-02",
   "frequencePaiement": {
-    "valeur": "achat-unique",
-    "confirmeeParArthur": false,
-    "_note": "Le site annonce « Un seul paiement. Pas d'abonnement. » et Stripe est appelé en mode paiement unique. Aucun prélèvement récurrent n'existe. À confirmer."
+    "valeur": "abonnement-mensuel",
+    "confirmeeParArthur": true,
+    "resiliation": "en-ligne-a-tout-moment",
+    "effetResiliation": "fin-de-periode-payee",
+    "_note": "Décidé par Arthur le 2 novembre 2026 : abonnement mensuel (14,90 / 24,90 / 54,90 € par mois), accès tant que l'abonnement est actif, résiliation en ligne à tout moment. Effet de la résiliation : à la fin du mois déjà payé (choix technique par défaut, à confirmer)."
   },
-
   "dureeAcces": {
-    "valeur": null,
-    "options": { "a-vie": "Accès sans limite de durée (tant que le service existe)", "12-mois": "Accès pendant 12 mois à compter de l’ouverture" },
-    "_note": "Non décidé. Tant que null : l'espace affiche « Durée d'accès : à définir » et aucune date de fin n'est appliquée en mode test."
+    "valeur": "abonnement",
+    "options": {
+      "abonnement": "Tant que l’abonnement est actif",
+      "a-vie": "Accès sans limite de durée (tant que le service existe)",
+      "12-mois": "Accès pendant 12 mois à compter de l’ouverture"
+    },
+    "_note": "Décidé par Arthur le 2 novembre 2026 : l'accès dure tant que l'abonnement est actif."
   },
-
   "ouvertureSansRenonciation": {
     "valeur": "differee",
     "delaiJours": 14,
@@ -23,9 +25,9 @@
       "differee": "Accès ouvert à la fin du délai de rétractation de 14 jours"
     },
     "validee": false,
-    "_note": "Choix COMMERCIAL, pas une obligation légale (voir docs/juridique-acces.md). Valeur actuelle = comportement existant, conservé en attendant la décision d'Arthur et l'avis d'un juriste."
+    "_note": "Arthur a choisi « différée » (14 jours) le 2 novembre 2026. Reste à valider par un juriste (validee=false), notamment avec l'abonnement : le premier mois est payé avant l'ouverture.",
+    "choisieParArthur": true
   },
-
   "accompagnement": {
     "format": null,
     "duree": null,
@@ -34,13 +36,11 @@
     "partDuPrix": null,
     "_note": "Formule Accompagné : rien n'est promis tant que ces cinq points ne sont pas définis."
   },
-
   "juridique": {
     "reglesVerifieesSourcesOfficielles": false,
     "cgvRelues": false,
     "_note": "Légifrance et EUR-Lex n'étaient pas accessibles depuis l'environnement de travail : règles à vérifier par un juriste. Ventes réelles bloquées tant que ces deux valeurs sont false."
   },
-
   "contenusValides": false,
   "_contenusValides": "Passe à true quand Arthur a relu la formation ET passé les éléments vendus en \"valide\" dans formation.json (le serveur vérifie aussi chaque élément)."
 }

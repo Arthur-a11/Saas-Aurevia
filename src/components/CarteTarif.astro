@@ -4,7 +4,7 @@
 // Le bouton mène à l'inscription sans paiement ; il ne mène à la commande que si le SERVEUR indique
 // que la vente de cette formule est ouverte (paiement configuré).
 import { site, mentionTaxes, LIBELLE_STATUT } from "../lib/site.js";
-import { contenuOffre } from "../lib/offres.js";
+import { contenuOffre, PAIEMENT } from "../lib/offres.js";
 import conditions from "../data/conditions.json";
 interface Props { f: (typeof site.formules)[number] }
 const { f } = Astro.props;
@@ -19,8 +19,8 @@ const duree = conditions.dureeAcces.valeur ? conditions.dureeAcces.options[condi
 <li class={`carte tarif${f.recommandee ? " recommandee" : ""}`}>
   <div class="haut">{f.recommandee && <span class="badge">Notre recommandation</span>}</div>
   <h3>{f.nom}</h3>
-  <p class="montant">{f.prixAffiche}<span class="taxes">{mentionTaxes()}</span></p>
-  <p class="frequence">Paiement unique · sans abonnement</p>
+  <p class="montant">{f.prixAffiche}<span class="par-mois">{PAIEMENT.suffixe}</span><span class="taxes">{mentionTaxes()}</span></p>
+  <p class="frequence">{PAIEMENT.court}</p>
   <p class="obtenez">{precedente ? `Tout ${precedente.nom === "Essentiel" ? "l’Essentiel" : `le ${precedente.nom}`}, plus` : "Ce que vous obtenez"}</p>
   <ul>
     {(precedente ? ajouts : socle).map((x) => (
@@ -30,7 +30,7 @@ const duree = conditions.dureeAcces.valeur ? conditions.dureeAcces.options[condi
   <p class="acces-tarif">Accès : {duree ?? "durée à définir"}</p>
   <a class={`btn${f.recommandee ? "" : " alt"}`} data-formule={f.id}
      href={`/inscription/?formule=${f.id}`}
-     aria-label={`Choisir la formule ${f.nom} (${f.prixAffiche})`}>
+     aria-label={`Choisir la formule ${f.nom} (${f.prixAffiche}${PAIEMENT.suffixe})`}>
     Choisir
   </a>
 </li>

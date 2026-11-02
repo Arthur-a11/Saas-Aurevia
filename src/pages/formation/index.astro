@@ -101,6 +101,39 @@ import Base from "../../layouts/Base.astro";
       etat, actions);
   }
 
+  /**
+   * Résiliation de l'abonnement en ligne : un bouton, une confirmation, c'est fait.
+   * L'accès reste ouvert jusqu'à la fin du mois déjà payé (le serveur et Stripe en décident).
+   */
+  function zoneResiliation(f: any) {
+    const zone = el("div", { class: "resiliation" });
+    if (f.finPrevueLe) {
+      zone.append(el("span", { class: "etiquette attente" }, `Résilié : accès jusqu’au ${dateFr(f.finPrevueLe)}`));
+      return zone;
+    }
+    const ouvrir = el("button", { type: "button", class: "btn petit alt" }, "Résilier mon abonnement");
+    const confirmer = el("button", { type: "button", class: "btn petit" }, "Confirmer la résiliation");
+    const annuler = el("button", { type: "button", class: "btn petit alt" }, "Garder mon abonnement");
+    const texte = el("p", { class: "note", role: "status" });
+    const etape2 = el("div", { class: "resiliation-confirmation", hidden: true },
+      el("p", {}, "Votre abonnement s’arrêtera à la fin du mois déjà payé. Aucun nouveau prélèvement ne sera fait. Vous gardez l’accès jusqu’à cette date."), confirmer, annuler);
+    ouvrir.addEventListener("click", () => { etape2.hidden = false; ouvrir.hidden = true; confirmer.focus(); });
+    annuler.addEventListener("click", () => { etape2.hidden = true; ouvrir.hidden = false; ouvrir.focus(); });
+    confirmer.addEventListener("click", async () => {
+      confirmer.disabled = true;
+      const r = await api("/api/abonnement/resilier", { commande: f.commande });
+      confirmer.disabled = false;
+      if (r.data?.ok) {
+        zone.replaceChildren(el("span", { class: "etiquette attente" }, r.data.finPrevueLe ? `Résilié : accès jusqu’au ${dateFr(r.data.finPrevueLe)}` : "Résiliation enregistrée"));
+        zone.append(el("p", { class: "note", role: "status" }, "Résiliation enregistrée. Aucun nouveau prélèvement ne sera fait."));
+      } else {
+        texte.textContent = "La résiliation n’a pas pu être enregistrée. Rien n’a changé : réessayez dans quelques minutes ou écrivez-nous.";
+      }
+    });
+    zone.append(ouvrir, etape2, texte);
+    return zone;
+  }
+
   function afficher(d: any) {
     espace.replaceChildren();
     const aDesDroits = d.modules.some((m: any) => m.lecons.some((l: any) => l.acces !== "non-inclus"));
@@ -109,9 +142,10 @@ import Base from "../../layouts/Base.astro";
     const tableau = el("div", { class: "carte tableau-formation" }, el("h2", { class: "titre-carte" }, `Bonjour ${d.prenom}`));
     if (d.formules.length) {
       tableau.append(el("ul", { class: "formules-detenues" }, ...d.formules.map((f: any) => el("li", {},
-        el("strong", {}, `Formule ${f.nom}`), ` · achetée le ${dateFr(f.depuis)}`,
+        el("strong", {}, `Formule ${f.nom}`), f.abonnement ? ` · abonnement mensuel depuis le ${dateFr(f.depuis)}` : ` · achetée le ${dateFr(f.depuis)}`,
         f.termine ? el("span", { class: "etiquette verrou" }, `Accès terminé le ${dateFr(f.finLe)}`)
-          : f.ouvert ? "" : el("span", { class: "etiquette attente" }, `Accès le ${dateFr(f.accesLe)}`)))));
+          : f.ouvert ? "" : el("span", { class: "etiquette attente" }, `Accès le ${dateFr(f.accesLe)}`),
+        f.abonnement ? zoneResiliation(f) : ""))));
       tableau.append(el("p", { class: "note" }, `Durée d’accès : ${d.dureeAcces ?? "à définir (pas encore décidée)"}.`));
     } else {
       tableau.append(el("p", {}, "Vous n’avez pas encore de formule. Choisissez-en une pour ouvrir vos modules."), el("p", {}, el("a", { class: "btn", href: "/tarifs/" }, "Voir les formules")));

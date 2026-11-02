@@ -254,3 +254,10 @@
 .lecon-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem 1rem; margin: 1.5rem 0; }
 .lecon-actions .note { margin: 0; }
 .lecon-navigation { display: flex; justify-content: space-between; gap: 0.75rem; flex-wrap: wrap; padding-top: 1rem; border-top: 1px solid var(--line); }
+
+/* Résiliation de l'abonnement */
+.formules-detenues li { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem 0.6rem; }
+.resiliation { flex-basis: 100%; display: grid; gap: 0.5rem; justify-items: start; margin-top: 0.3rem; }
+.resiliation-confirmation { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; padding: 0.75rem 1rem; border: 1px solid var(--line-forte); border-radius: var(--rayon-petit); background: var(--bg-2); }
+.resiliation-confirmation p { flex-basis: 100%; margin: 0; }
+.tarif .montant .par-mois { font: 600 1rem var(--police-texte); color: var(--muted); margin-left: 0.25rem; }

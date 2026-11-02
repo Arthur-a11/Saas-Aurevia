@@ -38,7 +38,7 @@ export function droitsEffectifs(dossier, maintenant = Date.now(), catalogue = fo
     if (!a.actif) continue;
     const ouvert = Date.parse(a.accesLe) <= maintenant;
     const termine = a.finLe ? Date.parse(a.finLe) <= maintenant : false;
-    formules.push({ commande, formule: a.formule, nom: site.formules.find((f) => f.id === a.formule)?.nom ?? a.formule, depuis: a.depuis, accesLe: a.accesLe, finLe: a.finLe ?? null, ouvert, termine });
+    formules.push({ commande, formule: a.formule, nom: site.formules.find((f) => f.id === a.formule)?.nom ?? a.formule, depuis: a.depuis, accesLe: a.accesLe, finLe: a.finLe ?? null, ouvert, termine, abonnement: Boolean(a.abonnement), finPrevueLe: a.finPrevueLe ?? null });
     if (ouvert && !termine) for (const d of catalogue.acces[a.formule] || []) droits.add(d);
   }
   return { droits, formules };

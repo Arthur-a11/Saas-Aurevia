@@ -13,7 +13,8 @@ import site from "../../src/data/site.json" with { type: "json" };
 const SECRET = "whsec_test_unitaire";
 const ENV_TEST = { STRIPE_SECRET_KEY: "sk_test_unitaire", STRIPE_WEBHOOK_SECRET: SECRET };
 const PRIX = { essentiel: 1490, complet: 2490, accompagne: 5490 };
-const ATTENDU = { essentiel: 37, complet: 43, accompagne: 43 };
+// Répartition décidée par Arthur (2 nov.) : Essentiel = 19 leçons + 6 fiches ; Complet et Accompagné = + 6 exercices, 6 checklists, 6 modèles.
+const ATTENDU = { essentiel: 25, complet: 43, accompagne: 43 };
 
 /** Faux Stripe : enregistre les appels et garde les sessions créées (aucun appel réseau). */
 function fauxStripe() {
@@ -33,6 +34,11 @@ function fauxStripe() {
       };
       sessions.set(id, s);
       return new Response(JSON.stringify(s), { status: 200 });
+    }
+    const sub = u.pathname.match(/^\/v1\/subscriptions\/(.+)$/);
+    if (init.method === "POST" && sub) {
+      const fin = Math.floor(Date.parse("2026-12-02T10:00:00Z") / 1000);
+      return new Response(JSON.stringify({ id: sub[1], object: "subscription", status: "active", cancel_at_period_end: true, cancel_at: fin }), { status: 200 });
     }
     const m = u.pathname.match(/^\/v1\/checkout\/sessions\/(.+)$/);
     if (init.method === "GET" && m && sessions.has(m[1])) return new Response(JSON.stringify(sessions.get(m[1])), { status: 200 });
@@ -64,7 +70,12 @@ function banc(env = ENV_TEST, extra = {}) {
   };
   const acheter = async (cookie, formule, accords = { cgv: true, accesImmediat: true }) =>
     appel("/api/paiement/session", { methode: "POST", cookie, corps: { formule, ...accords } });
-  const payer = (sessionId) => { const s = stripe.sessions.get(sessionId); s.status = "complete"; s.payment_status = "paid"; return s; };
+  const payer = (sessionId) => {
+    const s = stripe.sessions.get(sessionId); s.status = "complete"; s.payment_status = "paid";
+    s.customer = `cus_${s.id}`;
+    if (s.mode === "subscription") { s.subscription = `sub_${s.id}`; s.payment_intent = null; }
+    return s;
+  };
   return { ctx, appel, compte, notifier, acheter, payer, stripe, avancer: (ms) => { horloge += ms; } };
 }
 
@@ -157,7 +168,7 @@ test("mode réel : ventes fermées tant que paiement.actif = false et que des co
   const etat = await b.appel("/api/paiement/etat");
   assert.equal(etat.data.mode, "reel");
   assert.ok(etat.data.ventes.essentiel.raisons.includes("ventes_fermees"));
-  for (const code of ["contenus_non_valides", "information_legale_manquante", "cgv_non_relues", "duree_acces_non_definie", "confirmation_email_impossible", "regles_non_verifiees"]) {
+  for (const code of ["contenus_non_valides", "information_legale_manquante", "cgv_non_relues", "ouverture_non_validee", "confirmation_email_impossible", "regles_non_verifiees"]) {
     assert.ok(etat.data.ventes.essentiel.raisons.includes(code), code);
   }
   assert.ok(etat.data.ventes.accompagne.raisons.includes("accompagnement_non_defini"));
@@ -166,7 +177,7 @@ test("mode réel : ventes fermées tant que paiement.actif = false et que des co
   assert.equal(b.stripe.appels.length, 0);
 });
 
-test("achat : connexion obligatoire, CGV obligatoires, montant fixé par le serveur (paiement unique)", async () => {
+test("achat : connexion obligatoire, CGV obligatoires, montant fixé par le serveur (abonnement mensuel décidé par Arthur)", async () => {
   const b = banc();
   assert.equal((await b.acheter(undefined, "complet")).statut, 401);
   const c = await b.compte();
@@ -177,7 +188,9 @@ test("achat : connexion obligatoire, CGV obligatoires, montant fixé par le serv
   assert.match(r.data.url, /^https:\/\/checkout\.stripe\.com\//);
   const corps = new URLSearchParams(b.stripe.appels[0].init.body);
   assert.equal(corps.get("line_items[0][price_data][unit_amount]"), "2490");
-  assert.equal(corps.get("mode"), "payment");
+  assert.equal(corps.get("mode"), "subscription");
+  assert.equal(corps.get("line_items[0][price_data][recurring][interval]"), "month");
+  assert.equal(corps.get("subscription_data[metadata][commande]"), r.data.reference);
   assert.match(corps.get("success_url"), /\/formation\/\?commande=CMD-/);
   assert.equal(b.stripe.appels[0].init.headers["Idempotency-Key"], `session-${r.data.reference}`);
   assert.equal(b.stripe.appels[0].init.headers.Authorization, "Bearer sk_test_unitaire");
@@ -294,9 +307,9 @@ test("remboursement total : l'accès est retiré ; partiel : accès conservé", 
   const achat = await b.acheter(c, "complet");
   const s = b.payer(sessionDe(b, achat.data.reference).id);
   await b.notifier({ id: "evt_ok", type: "checkout.session.completed", data: { object: s } });
-  await b.notifier({ id: "evt_rp", type: "charge.refunded", data: { object: { payment_intent: s.payment_intent, refunded: false, amount_refunded: 500 } } });
+  await b.notifier({ id: "evt_rp", type: "charge.refunded", data: { object: { payment_intent: s.payment_intent, customer: s.customer, refunded: false, amount_refunded: 500 } } });
   assert.equal(ouvertes((await b.appel("/api/formation", { cookie: c })).data).length, ATTENDU.complet);
-  await b.notifier({ id: "evt_rt", type: "charge.refunded", data: { object: { payment_intent: s.payment_intent, refunded: true, amount_refunded: 2490 } } });
+  await b.notifier({ id: "evt_rt", type: "charge.refunded", data: { object: { payment_intent: s.payment_intent, customer: s.customer, refunded: true, amount_refunded: 2490 } } });
   assert.deepEqual(ouvertes((await b.appel("/api/formation", { cookie: c })).data), []);
   assert.equal((await b.ctx.stockage.lire("commandes", achat.data.reference)).statut, "rembourse");
 });
@@ -443,7 +456,7 @@ for (const [ouverture, accepte, attendu] of [["differee", false, "differe"], ["d
   });
 }
 
-test("durée d'accès : 12 mois → l'accès se ferme après un an ; non décidée → aucune date de fin, affichée « à définir »", async () => {
+test("durée d'accès : 12 mois → l'accès se ferme après un an ; abonnement (décision d'Arthur) → aucune date de fin fixe, accès tant que l'abonnement est actif", async () => {
   const cfg = structuredClone(conditionsParDefaut);
   cfg.dureeAcces.valeur = "12-mois";
   const b = banc(ENV_TEST, { conditions: cfg });
@@ -466,7 +479,7 @@ test("durée d'accès : 12 mois → l'accès se ferme après un an ; non décid�
   await b2.notifier({ id: "evt_sansduree", type: "checkout.session.completed", data: { object: b2.payer(sessionDe(b2, a2.data.reference).id) } });
   const v2 = await b2.appel("/api/formation", { cookie: c2 });
   assert.equal(v2.data.formules[0].finLe, null);
-  assert.equal(v2.data.dureeAcces, null);
+  assert.equal(v2.data.dureeAcces, "Tant que l’abonnement est actif");
 });
 
 // ---------------------------------------------------------------- E-mails
@@ -498,7 +511,8 @@ test("e-mail de commande : accepté par Brevo → « accepte » ; contient date 
   assert.equal(st.data.emailConfirmation, "accepte");
   const mail = b.brevo.envois.find((m) => m.subject.includes(achat.data.reference));
   assert.match(mail.textContent, /Votre accès est ouvert depuis le/);
-  assert.match(mail.textContent, /Durée d’accès : durée d’accès \[à compléter\]/);
+  assert.match(mail.textContent, /Durée d’accès : Tant que l’abonnement est actif/);
+  assert.match(mail.textContent, /Abonnement mensuel : prélevé chaque mois, résiliable à tout moment/);
   assert.match(mail.textContent, /Je demande à accéder aux contenus numériques dès maintenant.* : oui/);
   assert.match(mail.textContent, /SIREN : \[à compléter\]/);
   assert.match(mail.textContent, /MODE TEST/);
@@ -595,4 +609,69 @@ test("SITE_URL mal tapée (parenthèse, espace) : ignorée, les liens des e-mail
   const mail = b.brevo.envois.find((m) => m.subject.includes("Réinitialisation"));
   assert.match(mail.textContent, /http:\/\/localhost\/compte\/nouveau-mot-de-passe\/#jeton=[\w-]+/);
   assert.doesNotMatch(mail.textContent, /\)\/compte/);
+});
+
+// ---------------------------------------------------------------- Abonnement mensuel (décision d'Arthur)
+async function abonne(b, formule = "complet") {
+  const c = await b.compte();
+  const achat = await b.acheter(c, formule);
+  const s = b.payer(sessionDe(b, achat.data.reference).id);
+  await b.notifier({ id: `evt_abo_${formule}`, type: "checkout.session.completed", data: { object: s } });
+  return { c, ref: achat.data.reference, s };
+}
+const evAbo = (id, type, abo) => ({ id, type, data: { object: { object: "subscription", ...abo } } });
+
+test("abonnement : paiement du premier mois → accès ouvert et abonnement enregistré dans le compte", async () => {
+  const b = banc();
+  const { c, ref, s } = await abonne(b);
+  assert.match(s.subscription, /^sub_/);
+  const v = await b.appel("/api/formation", { cookie: c });
+  assert.equal(ouvertes(v.data).length, ATTENDU.complet);
+  assert.equal(v.data.formules[0].abonnement, true);
+  assert.equal((await b.ctx.stockage.lire("commandes", ref)).frequence, "abonnement-mensuel");
+});
+
+test("résiliation en ligne : accès conservé jusqu'à la fin du mois payé, puis retiré à la fin de l'abonnement", async () => {
+  const b = banc();
+  const { c, ref, s } = await abonne(b);
+  const r = await b.appel("/api/abonnement/resilier", { methode: "POST", cookie: c, corps: { commande: ref } });
+  assert.equal(r.statut, 200);
+  assert.equal(r.data.finPrevueLe, "2026-12-02T10:00:00.000Z");
+  const pendant = await b.appel("/api/formation", { cookie: c });
+  assert.equal(ouvertes(pendant.data).length, ATTENDU.complet, "accès conservé jusqu'à la fin du mois payé");
+  assert.equal(pendant.data.formules[0].finPrevueLe, "2026-12-02T10:00:00.000Z");
+  const fin = await b.notifier(evAbo("evt_fin", "customer.subscription.deleted", { id: s.subscription, status: "canceled" }));
+  assert.equal(fin.data.resultat, "resilie");
+  assert.deepEqual(ouvertes((await b.appel("/api/formation", { cookie: c })).data), []);
+  assert.equal((await b.ctx.stockage.lire("commandes", ref)).statut, "resilie");
+});
+
+test("résiliation : refusée pour la commande d'une autre personne ou une référence inventée", async () => {
+  const b = banc();
+  const { ref } = await abonne(b);
+  const autre = await b.compte("autre@exemple.fr");
+  assert.equal((await b.appel("/api/abonnement/resilier", { methode: "POST", cookie: autre, corps: { commande: ref } })).statut, 404);
+  assert.equal((await b.appel("/api/abonnement/resilier", { methode: "POST", cookie: autre, corps: { commande: "CMD-20261102-AAAAAA" } })).statut, 404);
+  assert.equal((await b.appel("/api/abonnement/resilier", { methode: "POST", corps: { commande: ref } })).statut, 401);
+});
+
+test("impayé définitif (unpaid) : accès retiré ; abonnement redevenu actif : accès rendu", async () => {
+  const b = banc();
+  const { c, s } = await abonne(b, "essentiel");
+  assert.equal((await b.notifier(evAbo("evt_unpaid", "customer.subscription.updated", { id: s.subscription, status: "unpaid" }))).data.resultat, "impaye");
+  assert.deepEqual(ouvertes((await b.appel("/api/formation", { cookie: c })).data), []);
+  await b.notifier(evAbo("evt_actif", "customer.subscription.updated", { id: s.subscription, status: "active", cancel_at_period_end: false }));
+  assert.equal(ouvertes((await b.appel("/api/formation", { cookie: c })).data).length, ATTENDU.essentiel);
+});
+
+test("échéances : renouvellement payé et échec de prélèvement notés dans l'historique, sans couper l'accès", async () => {
+  const b = banc();
+  const { c, ref, s } = await abonne(b);
+  const payee = await b.notifier({ id: "evt_inv_ok", type: "invoice.paid", data: { object: { object: "invoice", amount_paid: 2490, parent: { subscription_details: { subscription: s.subscription } } } } });
+  assert.equal(payee.data.resultat, "echeance-payee");
+  const echec = await b.notifier({ id: "evt_inv_ko", type: "invoice.payment_failed", data: { object: { object: "invoice", amount_due: 2490, subscription: s.subscription } } });
+  assert.equal(echec.data.resultat, "echeance-impayee");
+  assert.equal(ouvertes((await b.appel("/api/formation", { cookie: c })).data).length, ATTENDU.complet, "Stripe relance : l'accès suit l'état de l'abonnement");
+  const h = (await b.ctx.stockage.lire("commandes", ref)).historique.map((x) => x.statut);
+  assert.ok(h.includes("echeance-payee") && h.includes("echeance-impayee"));
 });

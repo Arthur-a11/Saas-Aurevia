@@ -49,6 +49,7 @@ L'état complet et les décisions à prendre sont dans **`docs/etat-et-decisions
 3. Ouvrez **Développeurs > Webhooks > Ajouter un point de terminaison** :
    - adresse : `https://VOTRE-SITE/api/paiement/webhook` ;
    - événements : `checkout.session.completed`, `checkout.session.async_payment_succeeded`, `checkout.session.async_payment_failed`, `checkout.session.expired` et `charge.refunded`.
+   - **Pour l'abonnement mensuel, ajoute aussi :** `customer.subscription.updated`, `customer.subscription.deleted`, `invoice.paid` et `invoice.payment_failed`.
 
    Copiez ensuite le « secret de signature » (`whsec_…`).
 4. Sur Netlify, ouvrez **Project configuration > Environment variables**. Ajoutez `STRIPE_SECRET_KEY` et `STRIPE_WEBHOOK_SECRET`, puis redéployez.

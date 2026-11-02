@@ -5,11 +5,12 @@ import { site } from "../lib/site.js";
 import formation from "../data/formation.json";
 import { LIBELLE_STATUT_OFFRE, statutDroit } from "../lib/offres.js";
 import { modulesParcours } from "../lib/parcours.js";
+import { PAIEMENT } from "../lib/offres.js";
 const compter = (type) => formation.modules.flatMap((m) => m.lecons).filter((l) => l.type === type).length;
 const payant = [
   [`${compter("lecon")} leçons détaillées, avec des exemples`, "lecons"],
-  [`${compter("exercice")} exercices pratiques avec critères de réussite et exemple de corrigé`, "lecons"],
-  [`${compter("checklist")} checklists de fin de module`, "lecons"],
+  [`${compter("exercice")} exercices pratiques avec critères de réussite et exemple de corrigé (Complet et Accompagné)`, "exercices"],
+  [`${compter("checklist")} checklists de fin de module (Complet et Accompagné)`, "checklists"],
   [`${compter("fiche")} fiches récapitulatives`, "fiches"],
   [`${compter("modele")} modèles à remplir (formules Complet et Accompagné)`, "modeles"],
   ["Les cours en vidéo", "videos"],
@@ -60,10 +61,10 @@ const payant = [
             <p class="module-sous-titre">Ressources du module</p>
             <ul class="ressources-puces">
               <li><span class="etiquette-gratuit">Gratuit</span> Plan du module et livrable</li>
-              <li><span class="etiquette-brouillon">{LIBELLE_STATUT_OFFRE[m.exercice.statut]}</span> Exercice avec corrigé</li>
+              <li><span class="etiquette-brouillon">{LIBELLE_STATUT_OFFRE[m.exercice.statut]}</span> Exercice avec corrigé (Complet, Accompagné)</li>
               <li><span class="etiquette-brouillon">{LIBELLE_STATUT_OFFRE[m.fiche.statut]}</span> Fiche récapitulative</li>
               <li><span class="etiquette-brouillon">{LIBELLE_STATUT_OFFRE[m.modele.statut]}</span> Modèle à remplir (Complet, Accompagné)</li>
-              <li><span class="etiquette-brouillon">{LIBELLE_STATUT_OFFRE[m.checklist.statut]}</span> Checklist de fin de module</li>
+              <li><span class="etiquette-brouillon">{LIBELLE_STATUT_OFFRE[m.checklist.statut]}</span> Checklist de fin de module (Complet, Accompagné)</li>
               <li><span class="etiquette-prep">{LIBELLE_STATUT_OFFRE[m.video.statut]}</span> Vidéo</li>
             </ul>
           </div>
@@ -108,7 +109,7 @@ const payant = [
   <section class="finale" aria-labelledby="pret">
     <div class="wrap">
       <h2 id="pret">Prêt à suivre la formation ?</h2>
-      <p class="sous-titre">À partir de {site.formules[0].prixAffiche}, en un seul paiement.</p>
+      <p class="sous-titre">À partir de {site.formules[0].prixAffiche}{PAIEMENT.suffixe}. {PAIEMENT.court}.</p>
       <div class="cta"><a class="btn" href="/inscription/">Je m’inscris</a></div>
     </div>
   </section>

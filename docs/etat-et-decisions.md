@@ -24,34 +24,29 @@ Site de test séparé : **https://aurevia-saas-test.netlify.app**. C'est le proj
 | Vrais Stripe (mode test) et Brevo | **Testés le 2 nov. sur le site de test** (voir ci-dessus) | Non testés en vrai : paiement refusé et notification en double (simulateurs uniquement) |
 | `SITE_URL` | Contrôlée par le serveur : une adresse mal tapée est ignorée, ce qui évite les liens d'e-mail cassés (`/api/etat` indique `siteUrlValide`) | Test serveur dédié |
 
-## 2. Les décisions qui t'attendent (une seule liste)
+## 2. Décisions
 
-1. **Différences entre les offres.** Aujourd'hui :
-   - les 3 formules donnent les 6 modules (leçons, exercices, checklists, fiches) et les vidéos (encore à tourner) ;
-   - Complet ajoute les modèles et la communauté (qui n'existe pas encore) ;
-   - Accompagné ajoute ton avis (non défini).
+### Prises par Arthur le 2 novembre 2026 (appliquées dans le code)
 
-   La seule différence qui existe vraiment est **les 6 modèles** (+10 € pour Complet). Proposition à valider (rien n'est modifié sans ton accord) :
-   - Essentiel 14,90 € : leçons + fiches ;
-   - Complet 24,90 € : + exercices corrigés + modèles + checklists ;
-   - Accompagné 54,90 € : + une relecture écrite de ta part (voir le point 4).
-   Ou bien garder l'accès commun et retirer la communauté tant qu'elle n'existe pas.
-2. **Durée d'accès** : à vie (« tant que le service existe ») ou 12 mois ?
-3. **Achat unique** (affiché aujourd'hui, aucun abonnement créé) : à confirmer.
-4. **Accompagnement**. Il faut préciser :
-   - le format (par exemple un retour écrit sur ta fiche MVP et ta page de tarifs) ;
-   - la durée (par exemple une relecture) ;
-   - le délai (par exemple 7 jours ouvrés) ;
-   - les limites (par exemple un seul projet, pas de garantie de résultat) ;
-   - la part du prix qui correspond au service.
-5. **Accès sans renonciation** : différé de 14 jours (actuel) ou immédiat en gardant le droit de rétractation ? À décider avec un juriste (voir `docs/juridique-acces.md`).
-6. **Informations d'entreprise** à fournir :
-   - forme juridique, nom, adresse du siège, SIREN, immatriculation (RCS ou RNE), directeur de la publication ;
-   - régime de TVA (franchise ou TVA facturée) ;
-   - médiateur de la consommation (nom, site, adresse) et son contrat ;
-   - hébergeur (Netlify : adresse et contact à confirmer) ;
-   - adresse e-mail professionnelle pour le contact et l'expédition. Aujourd'hui, le site affiche ton adresse Gmail personnelle comme contact ; une adresse sur ton domaine est préférable.
-7. **Relecture** : la formation par toi, les CGV et les règles de rétractation par un juriste.
+- **Répartition des formules :**
+  - Essentiel : 19 leçons, 6 fiches et les vidéos (encore à tourner) ;
+  - Complet : en plus, exercices corrigés, checklists et modèles. La communauté reste dans Complet, toujours « en préparation » ;
+  - Accompagné : en plus, l'avis personnel (à définir).
+- **Paiement :** abonnement mensuel à 14,90 / 24,90 / 54,90 € par mois, résiliable en ligne à tout moment depuis « Ma formation ». La résiliation prend effet à la fin du mois déjà payé (choix technique par défaut, à confirmer).
+- **Durée d'accès :** tant que l'abonnement est actif.
+- **Accès sans renonciation :** différé de 14 jours. Ce choix reste **à valider par un juriste**, en particulier avec l'abonnement, puisque le premier mois est payé avant l'ouverture.
+
+### Encore à décider ou à fournir
+
+1. **Accompagnement** : format, durée, délai, limites et part du prix.
+2. **Informations d'entreprise** :
+   - identité (forme, nom, adresse, SIREN, RCS ou RNE, directeur de la publication) ;
+   - régime de TVA ;
+   - médiateur de la consommation ;
+   - coordonnées de l'hébergeur ;
+   - adresse e-mail professionnelle.
+3. **Relecture** : la formation par toi ; les CGV par un juriste, notamment l'article « abonnement, renouvellement et résiliation », l'information avant renouvellement et les remboursements.
+4. **Stripe :** ajouter 4 événements à la destination webhook (voir `docs/paiement-et-acces.md`).
 
 Quand une décision est prise, je mets à jour `src/data/conditions.json`, `src/data/site.json` ou `src/data/formation.json`. Le serveur lève ensuite le blocage correspondant.
 

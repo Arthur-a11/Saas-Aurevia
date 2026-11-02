@@ -12,6 +12,7 @@ const port = Number(process.env.PORT_STRIPE || 4398);
 const site = process.env.SITE || "http://localhost:4397";
 const secret = process.env.STRIPE_WEBHOOK_SECRET || "whsec_simule";
 const sessions = new Map();
+const abonnements = new Map();
 let compteur = 0;
 
 const lireCorps = async (req) => { const m = []; for await (const x of req) m.push(x); return Buffer.concat(m).toString(); };
@@ -39,7 +40,7 @@ http.createServer(async (req, res) => {
     const s = {
       id, object: "checkout.session", status: "open", payment_status: "unpaid", url: `http://localhost:${port}/c/pay/${id}`,
       amount_total: Number(p.get("line_items[0][price_data][unit_amount]")), currency: p.get("line_items[0][price_data][currency]"),
-      client_reference_id: p.get("client_reference_id"), payment_intent: null, mode: p.get("mode"),
+      client_reference_id: p.get("client_reference_id"), payment_intent: null, mode: p.get("mode"), subscription: null,
       metadata: { commande: p.get("metadata[commande]"), formule: p.get("metadata[formule]"), compte: p.get("metadata[compte]") },
       success_url: p.get("success_url"), cancel_url: p.get("cancel_url"),
     };
@@ -59,7 +60,8 @@ http.createServer(async (req, res) => {
     const action = pagePaiement[2];
     if (!action) return envoyer(res, 200, page(s), "text/html; charset=utf-8");
     if (action.startsWith("payer")) {
-      Object.assign(s, { status: "complete", payment_status: "paid", payment_intent: `pi_${s.id}` });
+      Object.assign(s, { status: "complete", payment_status: "paid", payment_intent: s.mode === "subscription" ? null : `pi_${s.id}`, customer: `cus_${s.id}` });
+      if (s.mode === "subscription") { s.subscription = `sub_${s.id}`; abonnements.set(s.subscription, { id: s.subscription, object: "subscription", status: "active", cancel_at_period_end: false, cancel_at: null, items: { data: [{ current_period_end: Math.floor(Date.now() / 1000) + 30 * 86400 }] }, metadata: s.metadata }); }
       if (action === "payer") await notifier("checkout.session.completed", s);
       if (action === "payer-deux-fois") { const id = `evt_simule_${++compteur}`; await notifier("checkout.session.completed", s, id); await notifier("checkout.session.completed", s, id); }
       res.writeHead(303, { Location: s.success_url }); return res.end();
@@ -71,12 +73,30 @@ http.createServer(async (req, res) => {
     }
     if (action === "annuler") { res.writeHead(303, { Location: s.cancel_url }); return res.end(); }
   }
+  // Résiliation d'abonnement (comme l'API Stripe : fin de période)
+  const resil = url.pathname.match(/^\/v1\/subscriptions\/([\w-]+)$/);
+  if (resil && req.method === "POST") {
+    if (!auth.startsWith("Bearer sk_test_")) return envoyer(res, 401, { error: { code: "cle_invalide" } });
+    const a = abonnements.get(resil[1]);
+    if (!a) return envoyer(res, 404, { error: { code: "resource_missing" } });
+    Object.assign(a, { cancel_at_period_end: true, cancel_at: a.items.data[0].current_period_end });
+    await notifier("customer.subscription.updated", a);
+    return envoyer(res, 200, a);
+  }
+  // Fin d'abonnement déclenchée par un test (fin de période atteinte) : POST /test/terminer/:sessionId
+  const term = url.pathname.match(/^\/test\/terminer\/([\w-]+)$/);
+  if (term && req.method === "POST") {
+    const s = sessions.get(term[1]); const a = s?.subscription ? abonnements.get(s.subscription) : null;
+    if (!a) return envoyer(res, 404, { ok: false });
+    a.status = "canceled";
+    return envoyer(res, 200, { ok: true, statut: await notifier("customer.subscription.deleted", a) });
+  }
   // Remboursement déclenché par un test : POST /test/rembourser/:id
   const remb = url.pathname.match(/^\/test\/rembourser\/([\w-]+)$/);
   if (remb && req.method === "POST") {
     const s = sessions.get(remb[1]);
-    if (!s?.payment_intent) return envoyer(res, 404, { ok: false });
-    return envoyer(res, 200, { ok: true, statut: await notifier("charge.refunded", { payment_intent: s.payment_intent, refunded: true, amount_refunded: s.amount_total }) });
+    if (!s?.customer) return envoyer(res, 404, { ok: false });
+    return envoyer(res, 200, { ok: true, statut: await notifier("charge.refunded", { payment_intent: s.payment_intent, customer: s.customer, refunded: true, amount_refunded: s.amount_total }) });
   }
   if (url.pathname === "/") return envoyer(res, 200, "Simulateur Stripe local", "text/plain; charset=utf-8");
   envoyer(res, 404, { error: { code: "inconnu" } });

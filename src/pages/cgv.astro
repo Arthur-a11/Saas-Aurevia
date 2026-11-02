@@ -4,7 +4,8 @@ import AC from "../components/ACompleter.astro";
 import BrouillonLegal from "../components/BrouillonLegal.astro";
 import { site, mentionTaxes } from "../lib/site.js";
 import { contenuOffre } from "../lib/offres.js";
-const prestataire = site.paiement.prestataire === "paypal-me" ? "PayPal" : null;
+const prestataire = site.paiement.prestataire === "stripe" ? "Stripe" : site.paiement.prestataire === "paypal-me" ? "PayPal" : null;
+import { ABONNEMENT } from "../lib/offres.js";
 ---
 <Base titre="Conditions générales de vente" description="Conditions générales de vente des formations en ligne AUREVIA SAAS (brouillon à faire relire).">
   <section class="legal entete-page">
@@ -29,17 +30,21 @@ const prestataire = site.paiement.prestataire === "paypal-me" ? "PayPal" : null;
       <p>Le contenu de chaque formule est celui affiché au moment de la commande. Une ressource indiquée « en préparation » n’est pas vendue avant d’être disponible.</p>
 
       <h2>4. Prix</h2>
-      <p>Les prix sont indiqués en euros. Mention fiscale : <AC valeur={site.regimeTva ? mentionTaxes() : null} label="« TTC » ou « TVA non applicable, art. 293 B du CGI », selon le régime fiscal" />. Le paiement est unique, sans abonnement. Le prix applicable est celui affiché au moment de la commande.</p>
+      <p>Les prix sont indiqués en euros. Mention fiscale : <AC valeur={site.regimeTva ? mentionTaxes() : null} label="« TTC » ou « TVA non applicable, art. 293 B du CGI », selon le régime fiscal" />. {ABONNEMENT ? "Les formules sont vendues sous forme d’abonnement mensuel : le prix indiqué est un prix par mois." : "Le paiement est unique, sans abonnement."} Le prix applicable est celui affiché au moment de la commande.</p>
 
       <h2>5. Commande</h2>
-      <p>La commande se déroule ainsi : choix de la formule, saisie des coordonnées, acceptation des présentes conditions, choix concernant l’exécution immédiate (article 8), puis paiement. Le contrat est conclu à la réception du paiement par l’exploitant.</p>
+      <p>La commande se déroule ainsi : choix de la formule, connexion ou création d’un compte, acceptation des présentes conditions, choix concernant l’exécution immédiate (article 8), puis paiement sur la page sécurisée du prestataire de paiement. Le contrat est conclu à la confirmation du paiement par le prestataire.</p>
       <p>Après la commande, l’exploitant envoie au client, par e-mail (support durable), une confirmation reprenant les caractéristiques de la formule, le prix, les présentes conditions et, le cas échéant, l’accord exprès et le renoncement mentionnés à l’article 8.</p>
 
       <h2>6. Paiement</h2>
-      <p>Le paiement s’effectue via <AC valeur={prestataire} label="prestataire de paiement" />. Les données bancaires sont traitées par le prestataire de paiement et ne sont pas conservées par l’exploitant. Le paiement n’est pas vérifié automatiquement : l’exploitant confirme la commande par e-mail après l’avoir vérifié.</p>
+      <p>Le paiement s’effectue via <AC valeur={prestataire} label="prestataire de paiement" />. Les données bancaires sont traitées par le prestataire de paiement et ne sont pas conservées par l’exploitant. La confirmation du paiement est transmise automatiquement par le prestataire au site, qui ouvre alors l’accès dans l’espace « Ma formation ».</p>
+      {ABONNEMENT && (<>
+        <h2>6 bis. Abonnement, renouvellement et résiliation</h2>
+        <p>L’abonnement est mensuel et se renouvelle automatiquement chaque mois, à la date anniversaire de la souscription, jusqu’à sa résiliation. Le client peut le résilier à tout moment, en ligne, depuis son espace « Ma formation » (bouton « Résilier mon abonnement »). La résiliation prend effet à la fin du mois déjà payé : aucun nouveau prélèvement n’est effectué et l’accès reste ouvert jusqu’à cette date. En cas d’échec de prélèvement non régularisé, l’accès peut être suspendu. Modalités d’information avant renouvellement et de remboursement éventuel : <AC valeur={null} label="à préciser et à faire valider par un juriste" />.</p>
+      </>)}
 
       <h2>7. Accès aux contenus</h2>
-      <p>L’accès est donné par voie électronique dans un délai de <AC champ="delaiAcces" label="délai d’accès après paiement" />, sous réserve de l’article 8. L’accès est personnel et non transférable. Il est interdit de partager ses accès ou de revendre les contenus.</p>
+      <p>L’accès est donné par voie électronique, dans l’espace « Ma formation », dès la confirmation du paiement, sous réserve de l’article 8{ABONNEMENT ? " ; il dure tant que l’abonnement est actif" : ""}. L’accès est personnel et non transférable. Il est interdit de partager ses accès ou de revendre les contenus.</p>
 
       <h2>8. Droit de rétractation</h2>
       <p><strong>Principe.</strong> Le client consommateur dispose d’un délai de 14 jours à compter de la conclusion du contrat pour se rétracter, sans avoir à donner de motif.</p>

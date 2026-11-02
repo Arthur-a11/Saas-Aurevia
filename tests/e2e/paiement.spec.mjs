@@ -7,7 +7,8 @@ import { PORT_PAIEMENT, PORT_STRIPE, PORT_BREVO } from "../../playwright.config.
 const SITE = `http://localhost:${PORT_PAIEMENT}`;
 const STRIPE = `http://localhost:${PORT_STRIPE}`;
 const BREVO = `http://localhost:${PORT_BREVO}`;
-const OUVERTES = { essentiel: 37, complet: 43, accompagne: 43 };
+// Répartition décidée par Arthur (2 nov.) : Essentiel = 19 leçons + 6 fiches ; Complet et Accompagné = + exercices, checklists, modèles.
+const OUVERTES = { essentiel: 25, complet: 43, accompagne: 43 };
 const MDP = "phrase-de-test-solide";
 const NOMS = { essentiel: "Essentiel", complet: "Complet", accompagne: "Accompagné" };
 const PRIX = { essentiel: "14,90 €", complet: "24,90 €", accompagne: "54,90 €" };
@@ -36,13 +37,13 @@ async function creerCompte(page, email = unique(), suite = "") {
 async function allerAuPaiement(page, formule, { accesImmediat = true } = {}) {
   await page.goto(`${SITE}/tarifs/`);
   await expect(page.locator("#avis-commandes")).toBeHidden();
-  await page.getByRole("link", { name: `Choisir la formule ${NOMS[formule]} (${PRIX[formule]})` }).click();
+  await page.getByRole("link", { name: `Choisir la formule ${NOMS[formule]} (${PRIX[formule]} / mois)` }).click();
   await expect(page).toHaveURL(new RegExp(`/commande/\\?formule=${formule}$`));
   await expect(page.getByText("Mode test :")).toBeVisible();
   await expect(page.locator(`#formule-${formule}`)).toBeChecked();
   await page.getByLabel(/J’ai lu et j’accepte les conditions générales de vente/).check();
   if (accesImmediat) await page.getByLabel(/Je demande à accéder aux contenus numériques dès maintenant/).check();
-  await page.getByRole("button", { name: `Payer ${PRIX[formule]} sur la page sécurisée` }).click();
+  await page.getByRole("button", { name: `S’abonner pour ${PRIX[formule]} / mois` }).click();
   await page.waitForURL(/localhost:4398\/c\/pay\//);
   await expect(page.getByText(`Montant : ${PRIX[formule]}`)).toBeVisible();
   return page.url().split("/").pop();
@@ -73,7 +74,7 @@ for (const formule of ["essentiel", "complet", "accompagne"]) {
     const avis = page.locator(".ressources-espace li", { hasText: "Avis personnel" });
     await expect(communaute).toContainText(formule === "essentiel" ? "Non inclus dans votre formule" : "En préparation");
     await expect(avis).toContainText(formule === "accompagne" ? "Modalités à définir" : "Non inclus dans votre formule");
-    await expect(page.getByText("Durée d’accès : à définir (pas encore décidée).")).toBeVisible();
+    await expect(page.getByText("Durée d’accès : Tant que l’abonnement est actif.")).toBeVisible();   // décision d'Arthur (2 nov.)
 
     await page.getByRole("link", { name: "Commencer ma formation" }).click();
     await expect(page.locator("h1")).toHaveText("Partir d’un problème, pas d’une idée de logiciel");
@@ -261,9 +262,10 @@ test("mot de passe oublié : adresse inconnue → même message, aucun e-mail en
 test("avant de payer : ouverture, durée d’accès, vendeur « à compléter », aucune case précochée", async ({ page }) => {
   await creerCompte(page, unique(), "/commande/?formule=essentiel");
   const bloc = page.locator(".avant-paiement");
-  await expect(bloc).toContainText("Paiement unique");
+  await expect(bloc).toContainText("Abonnement mensuel");
+  await expect(bloc).toContainText("résiliable en ligne à tout moment");
   await expect(bloc).toContainText("14 jours après le paiement");
-  await expect(bloc).toContainText("durée d’accès à décider — à compléter");
+  await expect(bloc).toContainText("Tant que l’abonnement est actif");
   await expect(bloc).toContainText("SIREN — à compléter");
   for (const c of await page.locator("#form-commande input[type=checkbox]").all()) await expect(c).not.toBeChecked();
 });
@@ -305,4 +307,21 @@ test("commande : étapes visibles, l’étape actuelle est signalée", async ({ 
   await creerCompte(page, unique(), "/commande/?formule=complet");
   await expect(page.locator('#etapes-commande li[aria-current="step"]')).toHaveText("Conditions");
   await expect(page.locator('#etapes-commande li[data-etat="fait"]')).toHaveCount(2);
+});
+
+test("abonnement : résiliation en ligne en deux clics, accès gardé jusqu’à la fin du mois, puis retiré", async ({ page }) => {
+  await creerCompte(page);
+  const session = await allerAuPaiement(page, "complet");
+  await page.getByRole("button", { name: "Payer (succès)" }).click();
+  await expect(page.getByText("Paiement confirmé")).toBeVisible();
+  await expect(page.getByText(/abonnement mensuel depuis le/)).toBeVisible();
+  await page.getByRole("button", { name: "Résilier mon abonnement" }).click();
+  await expect(page.getByText(/s’arrêtera à la fin du mois déjà payé/)).toBeVisible();
+  await page.getByRole("button", { name: "Confirmer la résiliation" }).click();
+  await expect(page.getByText(/Résilié : accès jusqu’au/)).toBeVisible();
+  await expect(page.locator(".lecon.ouverte")).toHaveCount(OUVERTES.complet);   // accès conservé jusqu'à la fin du mois
+  const fin = await page.request.post(`${STRIPE}/test/terminer/${session}`);
+  expect((await fin.json()).statut).toBe(200);
+  await page.goto(`${SITE}/formation/`);
+  await expect(page.locator(".lecon.ouverte")).toHaveCount(0);
 });

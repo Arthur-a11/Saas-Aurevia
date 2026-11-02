@@ -5,6 +5,9 @@ import site from "../data/site.json" with { type: "json" };
 import programme from "../data/programme.json" with { type: "json" };
 import faq from "../data/faq.json" with { type: "json" };
 import marchesData from "../data/marches.json" with { type: "json" };
+import conditions from "../data/conditions.json" with { type: "json" };
+const ABONNEMENT = conditions.frequencePaiement.valeur === "abonnement-mensuel";
+const PAR_MOIS = ABONNEMENT ? " par mois" : "";
 
 const norm = (s) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[’']/g, " ");
 
@@ -16,17 +19,17 @@ function mentionTaxes() {
 
 function formuleCitee(q) {
   const f = site.formules.find((x) => q.includes(norm(x.nom)) || q.includes(x.id.slice(0, 8)));
-  return f ? `La formule ${f.nom} coûte ${f.prixAffiche}${mentionTaxes()}. ` : "";
+  return f ? `La formule ${f.nom} coûte ${f.prixAffiche}${PAR_MOIS}${mentionTaxes()}. ` : "";
 }
 
 const listePrix = () =>
-  site.formules.map((f) => `${f.nom} : ${f.prixAffiche}`).join(", ");
+  site.formules.map((f) => `${f.nom} : ${f.prixAffiche}${PAR_MOIS}`).join(", ");
 
 export const REPONSES = {
   prix: (q = "") => ({
     texte:
       formuleCitee(q) +
-      `Trois formules, en paiement unique, sans abonnement : ${listePrix()}${mentionTaxes()}. ` +
+      (ABONNEMENT ? `Trois formules en abonnement mensuel, résiliable à tout moment : ${listePrix()}${mentionTaxes()}. ` : `Trois formules, en paiement unique, sans abonnement : ${listePrix()}${mentionTaxes()}. `) +
       (site.regimeTva ? "" : "La mention de TVA (TTC ou TVA non applicable) est en cours de confirmation. ") +
       "Certaines ressources des formules sont encore en préparation : c’est indiqué sur la page Tarifs.",
     liens: [{ href: "/tarifs/", label: "Voir les tarifs" }],
