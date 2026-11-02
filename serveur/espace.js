@@ -3,7 +3,7 @@
 // (notification signée par Stripe, ou lecture directe de la session chez Stripe avec la clé secrète).
 // Une redirection, un paramètre d'adresse ou une valeur du navigateur ne débloquent jamais rien.
 import site from "../src/data/site.json" with { type: "json" };
-import { json, lireJson, origineAutorisee, empreinteIp, reference, methodeNonAutorisee } from "./http.js";
+import { json, lireJson, origineAutorisee, empreinteIp, reference, methodeNonAutorisee, adresseSite } from "./http.js";
 import { incrementer } from "./stockage.js";
 import { envoyerEmail, emailConfigure } from "./email.js";
 import { validerCreationCompte, validerConnexion, validerAchat, TEXTES_CONSENTEMENT } from "./validation.js";
@@ -20,7 +20,7 @@ const entier = (v, defaut) => (Number.isFinite(Number(v)) && Number(v) > 0 ? Mat
 const maintenantDe = (ctx) => ctx.maintenant?.() ?? Date.now();
 const catalogueDe = (ctx) => ctx.catalogue ?? catalogueParDefaut;
 const conditionsDe = (ctx) => ctx.conditions ?? conditionsParDefaut;
-const baseDe = (ctx, requete) => (ctx.env.SITE_URL || new URL(requete.url).origin).replace(/\/$/, "");
+const baseDe = (ctx, requete) => adresseSite(ctx.env) ?? new URL(requete.url).origin;
 const REINIT_MINUTES = 30;
 const avecCookie = (reponse, cookie) => { reponse.headers.append("Set-Cookie", cookie); return reponse; };
 const MOT_DE_PASSE_FACTICE = { algo: "scrypt", N: 16384, r: 8, p: 1, sel: "AAAAAAAAAAAAAAAAAAAAAA==", hash: "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=" };
@@ -281,7 +281,7 @@ async function confirmerPaiement(ctx, commande, session, source) {
   commande.finLe = finLe;
   commande.historique.push({ le: iso(maintenant), statut: "payee", source });
   await ctx.stockage.enregistrer("commandes", commande.reference, commande);
-  const e = emailCommande(commande, { accesLe: iso(accesLe), finLe, baseUrl: ctx.env.SITE_URL, cfg });
+  const e = emailCommande(commande, { accesLe: iso(accesLe), finLe, baseUrl: adresseSite(ctx.env), cfg });
   commande.emailConfirmation = await envoyerEmail(ctx.env, { a: commande.email, ...e }, ctx.fetchFn);
   commande.historique.push({ le: iso(maintenantDe(ctx)), email: commande.emailConfirmation });
   await ctx.stockage.enregistrer("commandes", commande.reference, commande);

@@ -2,7 +2,7 @@
 // Chaque fonction reçoit une Request standard et un contexte { env, stockage, ip, maintenant, fetchFn, clientAnthropic }.
 import Anthropic from "@anthropic-ai/sdk";
 import site from "../src/data/site.json" with { type: "json" };
-import { json, lireJson, origineAutorisee, empreinteIp, empreinte, reference, methodeNonAutorisee } from "./http.js";
+import { json, lireJson, origineAutorisee, empreinteIp, empreinte, reference, methodeNonAutorisee, adresseSite } from "./http.js";
 import { incrementer } from "./stockage.js";
 import { envoyerEmail, emailConfigure } from "./email.js";
 import { validerInscription, validerRetractation, estRobot, TEXTES_CONSENTEMENT } from "./validation.js";
@@ -235,6 +235,7 @@ export async function traiterEtat(requete, ctx) {
       emails: emailConfigure(env),
       assistantIA: env.ASSISTANT_IA === "active" && Boolean(env.ANTHROPIC_API_KEY),
       siteUrl: Boolean(env.SITE_URL),
+      siteUrlValide: Boolean(adresseSite(env)),   // false si SITE_URL est mal tapée
       paiementActif: Boolean(site.paiement.actif),
       paiementStripe: modePaiement(env),   // "test", "reel" ou null : jamais la clé elle-même
     },

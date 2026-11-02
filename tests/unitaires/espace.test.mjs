@@ -580,3 +580,19 @@ test("création de compte : e-mail de bienvenue « accepte » si Brevo accepte, 
   assert.equal(r.statut, 201);
   assert.equal(r.data.email, "echec");
 });
+
+test("SITE_URL mal tapée (parenthèse, espace) : ignorée, les liens des e-mails restent corrects", async () => {
+  const { adresseSite } = await import("../../serveur/http.js");
+  assert.equal(adresseSite({ SITE_URL: "https://aurevia-saas-test.netlify.app" }), "https://aurevia-saas-test.netlify.app");
+  assert.equal(adresseSite({ SITE_URL: " https://aurevia-saas-test.netlify.app/ " }), "https://aurevia-saas-test.netlify.app");
+  for (const faux of ["https://aurevia-saas-test.netlify.app)", "aurevia-saas-test.netlify.app", "https://exemple fr", "", undefined]) {
+    assert.equal(adresseSite({ SITE_URL: faux }), null, String(faux));
+  }
+  const b = bancEmails(201);
+  b.ctx.env.SITE_URL = "https://aurevia-saas-test.netlify.app)";
+  await b.compte();
+  await b.appel("/api/compte/mot-de-passe-oublie", { methode: "POST", corps: { email: "lea@exemple.fr" } });
+  const mail = b.brevo.envois.find((m) => m.subject.includes("Réinitialisation"));
+  assert.match(mail.textContent, /http:\/\/localhost\/compte\/nouveau-mot-de-passe\/#jeton=[\w-]+/);
+  assert.doesNotMatch(mail.textContent, /\)\/compte/);
+});

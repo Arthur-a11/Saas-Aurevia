@@ -4,6 +4,7 @@
 import site from "../src/data/site.json" with { type: "json" };
 import conditions from "../src/data/conditions.json" with { type: "json" };
 import { emailConfigure } from "./email.js";
+import { adresseSite } from "./http.js";
 import { pointsBloquants, catalogueParDefaut } from "./formation.js";
 
 /** Informations d'entreprise obligatoires (chemin dans site.json → libellé). */
@@ -31,7 +32,7 @@ export function raisonsBlocageReel(idFormule, env = {}, { cfg = conditions, conf
   const ajouter = (code, libelle) => r.push({ code, libelle });
   if (!config.paiement.actif) ajouter("ventes_fermees", "Ventes non activées par Arthur (site.json > paiement.actif).");
   if (!emailConfigure(env)) ajouter("confirmation_email_impossible", "E-mails (Brevo) non connectés : la confirmation sur support durable est impossible.");
-  if (!env.SITE_URL) ajouter("adresse_site_inconnue", "Adresse publique du site (SITE_URL) non renseignée.");
+  if (!adresseSite(env)) ajouter("adresse_site_inconnue", "Adresse publique du site (SITE_URL) absente ou mal tapée.");
   for (const [chemin, libelle] of INFOS_LEGALES) if (valeur(config, chemin) == null) ajouter("information_legale_manquante", `${libelle} : à fournir.`);
   if (!cfg.juridique.cgvRelues) ajouter("cgv_non_relues", "CGV et textes légaux non relus par un juriste.");
   if (!cfg.juridique.reglesVerifieesSourcesOfficielles) ajouter("regles_non_verifiees", "Règles de rétractation non vérifiées sur les sources officielles.");
