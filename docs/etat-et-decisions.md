@@ -1,6 +1,8 @@
 # AUREVIA SAAS : état et décisions avant l'ouverture des ventes
 
-Mis à jour le 1er novembre 2026, sur la branche `espace-formation`. **Le site public n'est pas modifié.**
+Mis à jour le 2 novembre 2026, sur la branche `refonte-visuelle`. **Le site public n'est pas modifié.**
+
+Site de test séparé : **https://aurevia-saas-test.netlify.app**. C'est le projet Netlify `aurevia-saas-test`, qui publie la branche `refonte-visuelle`. Ses données sont séparées de celles du site public, il est en mode test Stripe, et ses ventes réelles sont bloquées.
 
 ## 1. Ce qui fonctionne, ce qui reste à connecter, ce qui attend ta validation
 
@@ -13,13 +15,14 @@ Mis à jour le 1er novembre 2026, sur la branche `espace-formation`. **Le site p
 | Correspondance formules → contenus → droits | Fonctionne, avec une source unique (`src/data/formation.json`) pour les tarifs, la commande, le serveur et l'espace client | Tests serveur et navigateur |
 | Protection des contenus payants | Fonctionne : textes uniquement sur le serveur, après contrôle des droits | Tests : sans compte, mauvaise formule, adresse falsifiée ; aucun texte payant dans les pages publiques |
 | Comptes, connexion, progression | Fonctionnent | Tests serveur et navigateur (ordinateur et mobile) |
-| Mot de passe oublié | Prêt, mais **bloqué tant que Brevo n'est pas connecté** (message honnête) | Brevo **simulé** : jeton à usage unique, valable 30 min, même réponse pour une adresse inconnue |
-| E-mails (inscription, compte, commande, réinitialisation, rétractation) | Prêts, **Brevo à connecter**. Le site distingue « accepté par Brevo », « échec » et « non configuré ». Il n'écrit jamais « reçu ». | Brevo **simulé**, panne comprise |
-| Paiement Stripe (mode test) | Prêt, **Stripe à connecter** (clés de test) | Stripe **simulé** : 3 formules, refus, annulation, notification en retard ou en double, remboursement, montant falsifié |
+| Mot de passe oublié | **Fonctionne sur le site de test** | Brevo **réel** (2 nov.) : e-mail reçu, nouveau mot de passe enregistré, connexion réussie. Brevo simulé : usage unique, expiration de 30 min, même réponse pour une adresse inconnue |
+| E-mails (inscription, compte, commande, réinitialisation, rétractation) | **Brevo connecté sur le site de test** (offre gratuite, clé restreinte aux e-mails transactionnels). Expéditeur : adresse Gmail, à remplacer par une adresse sur ton domaine avant les ventes. | Brevo **réel** : e-mail de réinitialisation reçu. Brevo simulé : panne comprise |
+| Paiement Stripe (mode test) | **Fonctionne sur le site de test** | Stripe **réel en mode test** (2 nov.) : paiement avec la carte 4242, puis formule Complet ouverte ; leçons, téléchargement et progression OK ; accès conservé après reconnexion ; rachat refusé ; remboursement total, puis accès retiré par notification. Stripe simulé : refus, annulation, notification en double, montant falsifié |
 | Ouverture immédiate ou différée, durée d'accès | Prêtes, réglables dans `src/data/conditions.json` | Tests des deux options et de « 12 mois » |
 | Blocage des ventes réelles | **Actif côté serveur** : aucun paiement réel ne peut être créé (22 conditions contrôlées, 23 pour Accompagné) | Tests : refus même si les ventes sont forcées à « actives » |
 | Informations légales | **À fournir** (liste ci-dessous). Les emplacements « à compléter » sont prêts : tarifs, commande, e-mail de confirmation, CGV. | Test : « à compléter » affiché |
-| Vrais Stripe et Brevo, même en mode test | **Non testés** : aucun compte connecté | — |
+| Vrais Stripe (mode test) et Brevo | **Testés le 2 nov. sur le site de test** (voir ci-dessus) | Non testés en vrai : paiement refusé et notification en double (simulateurs uniquement) |
+| `SITE_URL` | Contrôlée par le serveur : une adresse mal tapée est ignorée, ce qui évite les liens d'e-mail cassés (`/api/etat` indique `siteUrlValide`) | Test serveur dédié |
 
 ## 2. Les décisions qui t'attendent (une seule liste)
 
@@ -55,6 +58,8 @@ Quand une décision est prise, je mets à jour `src/data/conditions.json`, `src/
 ## 3. Variables à saisir dans Netlify (Project configuration > Environment variables)
 
 Ne colle jamais ces valeurs dans une conversation. Saisis-les seulement dans Netlify, sur un site **de test** (pas sur le site public), puis redéploie.
+
+**État au 2 novembre 2026 :** les 6 variables sont en place sur `aurevia-saas-test`. Les trois clés (Stripe et Brevo) sont marquées secrètes : avec l'offre gratuite de Netlify, il faut choisir « Different value for each deploy context » et saisir la valeur dans « Production ».
 
 | Variable | Où la trouver | Exemple de forme |
 |---|---|---|
