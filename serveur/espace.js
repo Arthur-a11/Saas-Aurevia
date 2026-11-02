@@ -224,8 +224,7 @@ async function creerPaiement(requete, ctx) {
     historique: [{ le: new Date(maintenant).toISOString(), statut: "en-attente", source: "creation" }],
   };
   await ctx.stockage.enregistrer("commandes", ref, commande);
-  dossier.commandes = [...(dossier.commandes || []), ref].slice(-50);
-  await ctx.stockage.enregistrer("droits", compte.id, dossier);
+  await majDroits(ctx, compte.id, (d) => { d.commandes = [...(d.commandes || []), ref].slice(-50); });
 
   const base = baseDe(ctx, requete);
   try {
@@ -236,13 +235,13 @@ async function creerPaiement(requete, ctx) {
       expireLe: Math.floor(maintenant / 1000) + 3600,
       abonnement: commande.frequence === "abonnement-mensuel",
     });
-    commande.stripeSession = session.id;
-    await ctx.stockage.enregistrer("commandes", ref, commande);
+    await majCommande(ctx, ref, (c) => { c.stripeSession = session.id; });
     return json(201, { ok: true, reference: ref, url: session.url, mode });
   } catch (e) {
-    commande.statut = "erreur-creation";
-    commande.historique.push({ le: new Date().toISOString(), statut: "erreur-creation", source: `stripe-${e?.statut ?? "reseau"}` });
-    await ctx.stockage.enregistrer("commandes", ref, commande);
+    await majCommande(ctx, ref, (c) => {
+      c.statut = "erreur-creation";
+      c.historique.push({ le: new Date().toISOString(), statut: "erreur-creation", source: `stripe-${e?.statut ?? "reseau"}` });
+    });
     console.error("Paiement : création de la session impossible", e?.statut ?? e?.name);
     return json(502, { ok: false, code: "paiement_indisponible", reference: ref });
   }
@@ -250,58 +249,72 @@ async function creerPaiement(requete, ctx) {
 
 const iso = (ms) => new Date(ms).toISOString();
 
-/** Ouvre les droits d'une commande payée. Sans effet si déjà fait (notifications répétées). */
+/**
+ * Mises à jour SÛRES des commandes et des droits : Stripe envoie souvent plusieurs notifications en même
+ * temps (paiement, facture, abonnement). Chaque mise à jour relit la donnée et n'écrit que si personne ne l'a
+ * modifiée entre-temps (voir stockage.modifier). La fonction reçoit la donnée à modifier ; retourner false = ne rien changer.
+ */
+const majCommande = (ctx, ref, f) => ctx.stockage.modifier("commandes", ref, (c) => (c && f(c) !== false ? c : undefined));
+const majDroits = (ctx, compte, f) => ctx.stockage.modifier("droits", compte, (d) => {
+  const x = d || { compte, achats: {}, commandes: [], historique: [] };
+  return f(x) !== false ? x : undefined;
+});
+
+/** Ouvre les droits d'une commande payée. Sans effet si déjà fait (notifications répétées ou simultanées). */
 async function confirmerPaiement(ctx, commande, session, source) {
   const maintenant = maintenantDe(ctx);
+  const ref = commande.reference;
   const conforme = session.amount_total === commande.montantCentimes && session.currency === commande.devise
-    && (session.metadata?.commande ?? session.client_reference_id) === commande.reference
+    && (session.metadata?.commande ?? session.client_reference_id) === ref
     && (!commande.stripeSession || session.id === commande.stripeSession)
     && session.payment_status === "paid";
   if (!conforme) {
-    if (commande.statut !== "payee") {
-      commande.statut = "anomalie";
-      commande.historique.push({ le: iso(maintenant), statut: "anomalie", source });
-      await ctx.stockage.enregistrer("commandes", commande.reference, commande);
-    }
+    await majCommande(ctx, ref, (c) => {
+      if (c.statut === "payee") return false;
+      c.statut = "anomalie";
+      c.historique.push({ le: iso(maintenant), statut: "anomalie", source });
+    });
     return "anomalie";
   }
-  const dossier = (await ctx.stockage.lire("droits", commande.compte)) || { compte: commande.compte, achats: {}, commandes: [commande.reference], historique: [] };
-  if (dossier.achats[commande.reference]) return "deja-traitee";
   const cfg = conditionsDe(ctx);
   const accesLe = dateOuverture(maintenant, commande.accords.accesImmediat.accepte, cfg);
   const finLe = finAcces(accesLe, cfg);
-  dossier.achats[commande.reference] = { formule: commande.formule, actif: true, depuis: iso(maintenant), accesLe: iso(accesLe), finLe };
-  dossier.historique.push({ le: iso(maintenant), action: "ouverture", formule: commande.formule, commande: commande.reference, source });
+  let cree = false;
   // Les droits d'abord : si la suite échoue, Stripe renverra la notification et rien ne sera perdu.
-  await ctx.stockage.enregistrer("droits", commande.compte, dossier);
-  if (session.payment_intent) await ctx.stockage.enregistrer("paiements", String(session.payment_intent), { commande: commande.reference });
-  if (session.customer) await ctx.stockage.enregistrer("clients-stripe", String(session.customer), { commande: commande.reference });
-  if (session.subscription) {
-    await ctx.stockage.enregistrer("abonnements", String(session.subscription), { commande: commande.reference });
-    dossier.achats[commande.reference].abonnement = String(session.subscription);
-    await ctx.stockage.enregistrer("droits", commande.compte, dossier);
-  }
-  commande.statut = "payee";
-  commande.payeeLe = iso(maintenant);
-  commande.paiementStripe = session.payment_intent ?? null;
-  commande.abonnement = session.subscription ? String(session.subscription) : null;
-  commande.accesLe = iso(accesLe);
-  commande.finLe = finLe;
-  commande.historique.push({ le: iso(maintenant), statut: "payee", source });
-  await ctx.stockage.enregistrer("commandes", commande.reference, commande);
-  const e = emailCommande(commande, { accesLe: iso(accesLe), finLe, baseUrl: adresseSite(ctx.env), cfg });
-  commande.emailConfirmation = await envoyerEmail(ctx.env, { a: commande.email, ...e }, ctx.fetchFn);
-  commande.historique.push({ le: iso(maintenantDe(ctx)), email: commande.emailConfirmation });
-  await ctx.stockage.enregistrer("commandes", commande.reference, commande);
+  await majDroits(ctx, commande.compte, (d) => {
+    cree = false;
+    if (d.achats[ref]) return false;
+    d.achats[ref] = { formule: commande.formule, actif: true, depuis: iso(maintenant), accesLe: iso(accesLe), finLe, ...(session.subscription ? { abonnement: String(session.subscription) } : {}) };
+    d.historique.push({ le: iso(maintenant), action: "ouverture", formule: commande.formule, commande: ref, source });
+    cree = true;
+  });
+  if (session.payment_intent) await ctx.stockage.enregistrer("paiements", String(session.payment_intent), { commande: ref });
+  if (session.customer) await ctx.stockage.enregistrer("clients-stripe", String(session.customer), { commande: ref });
+  if (session.subscription) await ctx.stockage.enregistrer("abonnements", String(session.subscription), { commande: ref });
+  if (!cree) return "deja-traitee";
+  const payee = await majCommande(ctx, ref, (c) => {
+    Object.assign(c, { statut: "payee", payeeLe: iso(maintenant), paiementStripe: session.payment_intent ?? null, abonnement: session.subscription ? String(session.subscription) : null, accesLe: iso(accesLe), finLe });
+    c.historique.push({ le: iso(maintenant), statut: "payee", source });
+  });
+  const e = emailCommande(payee, { accesLe: iso(accesLe), finLe, baseUrl: adresseSite(ctx.env), cfg });
+  const statutEmail = await envoyerEmail(ctx.env, { a: payee.email, ...e }, ctx.fetchFn);
+  await majCommande(ctx, ref, (c) => {
+    c.emailConfirmation = statutEmail;
+    c.historique.push({ le: iso(maintenantDe(ctx)), email: statutEmail });
+  });
   return "payee";
 }
 
 async function changerStatut(ctx, commande, statut, source) {
-  if (["payee", "rembourse"].includes(commande.statut)) return "ignore";
-  commande.statut = statut;
-  commande.historique.push({ le: iso(maintenantDe(ctx)), statut, source });
-  await ctx.stockage.enregistrer("commandes", commande.reference, commande);
-  return statut;
+  let change = false;
+  await majCommande(ctx, commande.reference, (c) => {
+    change = false;
+    if (["payee", "rembourse", "resilie", "impaye"].includes(c.statut)) return false;
+    c.statut = statut;
+    c.historique.push({ le: iso(maintenantDe(ctx)), statut, source });
+    change = true;
+  });
+  return change ? statut : "ignore";
 }
 
 /** Remboursement total : l'accès de la commande est retiré. Partiel : noté, accès conservé. */
@@ -314,30 +327,29 @@ async function rembourser(ctx, charge) {
   if (!commande) return "commande_inconnue";
   const maintenant = iso(maintenantDe(ctx));
   if (!charge.refunded) {
-    commande.historique.push({ le: maintenant, statut: "remboursement-partiel", montant: charge.amount_refunded, source: "stripe" });
-    await ctx.stockage.enregistrer("commandes", ref, commande);
+    await majCommande(ctx, ref, (c) => { c.historique.push({ le: maintenant, statut: "remboursement-partiel", montant: charge.amount_refunded, source: "stripe" }); });
     return "remboursement-partiel";
   }
-  const dossier = await ctx.stockage.lire("droits", commande.compte);
-  if (dossier?.achats?.[ref]?.actif) {
-    dossier.achats[ref].actif = false;
-    dossier.achats[ref].finLe = maintenant;
-    dossier.achats[ref].raison = "rembourse";
-    dossier.historique.push({ le: maintenant, action: "retrait", formule: commande.formule, commande: ref, source: "remboursement" });
-    await ctx.stockage.enregistrer("droits", commande.compte, dossier);
-  }
-  commande.statut = "rembourse";
-  commande.historique.push({ le: maintenant, statut: "rembourse", source: "stripe" });
-  await ctx.stockage.enregistrer("commandes", ref, commande);
+  await majDroits(ctx, commande.compte, (d) => {
+    const a = d.achats[ref];
+    if (!a?.actif) return false;
+    Object.assign(a, { actif: false, finLe: maintenant, raison: "rembourse" });
+    d.historique.push({ le: maintenant, action: "retrait", formule: commande.formule, commande: ref, source: "remboursement" });
+  });
+  await majCommande(ctx, ref, (c) => {
+    c.statut = "rembourse";
+    c.historique.push({ le: maintenant, statut: "rembourse", source: "stripe" });
+  });
   return "rembourse";
 }
 
-/** Commande et dossier liés à un abonnement Stripe (index écrit à la confirmation du paiement). */
-async function parAbonnement(ctx, idAbonnement) {
+/** Commande liée à un abonnement Stripe : index écrit à la confirmation, sinon les métadonnées de l'abonnement. */
+async function parAbonnement(ctx, idAbonnement, meta) {
   const lien = idAbonnement ? await ctx.stockage.lire("abonnements", String(idAbonnement)) : null;
-  const commande = lien ? await ctx.stockage.lire("commandes", lien.commande) : null;
+  const ref = lien?.commande ?? meta?.commande ?? null;
+  const commande = ref ? await ctx.stockage.lire("commandes", ref) : null;
   const dossier = commande ? await ctx.stockage.lire("droits", commande.compte) : null;
-  return { commande, dossier, achat: dossier?.achats?.[commande?.reference] ?? null };
+  return { commande, achat: dossier?.achats?.[commande?.reference] ?? null };
 }
 
 /**
@@ -345,38 +357,45 @@ async function parAbonnement(ctx, idAbonnement) {
  * Stripe indique que l'abonnement est terminé (deleted / canceled) ou définitivement impayé (unpaid).
  */
 async function evenementAbonnement(ctx, type, abo) {
-  const { commande, dossier, achat } = await parAbonnement(ctx, abo.id);
+  const { commande, achat } = await parAbonnement(ctx, abo.id, abo.metadata);
   if (!commande || !achat) return "commande_inconnue";
+  const ref = commande.reference;
   const maintenant = iso(maintenantDe(ctx));
   const fin = finPeriode(abo);
   const termine = type === "customer.subscription.deleted" || ["canceled", "unpaid", "incomplete_expired"].includes(abo.status);
   if (termine) {
-    if (achat.actif) {
-      Object.assign(achat, { actif: false, finLe: maintenant, raison: abo.status === "unpaid" ? "impaye" : "abonnement-termine" });
-      dossier.historique.push({ le: maintenant, action: "retrait", formule: commande.formule, commande: commande.reference, source: type });
-      await ctx.stockage.enregistrer("droits", commande.compte, dossier);
-    }
-    commande.statut = abo.status === "unpaid" ? "impaye" : "resilie";
-    commande.historique.push({ le: maintenant, statut: commande.statut, source: type });
-    await ctx.stockage.enregistrer("commandes", commande.reference, commande);
-    return commande.statut;
+    const statut = abo.status === "unpaid" ? "impaye" : "resilie";
+    await majDroits(ctx, commande.compte, (d) => {
+      const a = d.achats[ref];
+      if (!a?.actif) return false;
+      Object.assign(a, { actif: false, finLe: maintenant, raison: abo.status === "unpaid" ? "impaye" : "abonnement-termine" });
+      d.historique.push({ le: maintenant, action: "retrait", formule: commande.formule, commande: ref, source: type });
+    });
+    await majCommande(ctx, ref, (c) => { c.statut = statut; c.historique.push({ le: maintenant, statut, source: type }); });
+    return statut;
   }
-  // Abonnement toujours en cours : on note une résiliation programmée (ou son annulation).
-  achat.finPrevueLe = abo.cancel_at_period_end && fin ? iso(fin * 1000) : null;
-  if (abo.status === "active" && !achat.actif && achat.raison === "impaye") { achat.actif = true; delete achat.raison; delete achat.finLe; }
-  await ctx.stockage.enregistrer("droits", commande.compte, dossier);
-  commande.historique.push({ le: maintenant, statut: `abonnement-${abo.status}`, finPrevueLe: achat.finPrevueLe, source: type });
-  await ctx.stockage.enregistrer("commandes", commande.reference, commande);
-  return achat.finPrevueLe ? "resiliation-programmee" : `abonnement-${abo.status}`;
+  // Abonnement toujours en cours : on note une résiliation programmée (ou son annulation), ou la fin d'un impayé.
+  const finPrevueLe = abo.cancel_at_period_end && fin ? iso(fin * 1000) : null;
+  await majDroits(ctx, commande.compte, (d) => {
+    const a = d.achats[ref];
+    if (!a) return false;
+    a.finPrevueLe = finPrevueLe;
+    if (abo.status === "active" && !a.actif && a.raison === "impaye") { a.actif = true; delete a.raison; delete a.finLe; }
+  });
+  await majCommande(ctx, ref, (c) => {
+    if (abo.status === "active" && c.statut === "impaye") c.statut = "payee";
+    c.historique.push({ le: maintenant, statut: `abonnement-${abo.status}`, finPrevueLe, source: type });
+  });
+  return finPrevueLe ? "resiliation-programmee" : `abonnement-${abo.status}`;
 }
 
 /** Factures mensuelles : renouvellement payé ou échec de prélèvement (noté ; l'accès suit l'état de l'abonnement). */
 async function evenementFacture(ctx, type, facture) {
-  const { commande } = await parAbonnement(ctx, abonnementDeFacture(facture));
+  const { commande } = await parAbonnement(ctx, abonnementDeFacture(facture), facture?.parent?.subscription_details?.metadata);
   if (!commande) return "commande_inconnue";
-  commande.historique.push({ le: iso(maintenantDe(ctx)), statut: type === "invoice.paid" ? "echeance-payee" : "echeance-impayee", montant: facture.amount_paid ?? facture.amount_due ?? null, source: type });
-  await ctx.stockage.enregistrer("commandes", commande.reference, commande);
-  return type === "invoice.paid" ? "echeance-payee" : "echeance-impayee";
+  const statut = type === "invoice.paid" ? "echeance-payee" : "echeance-impayee";
+  await majCommande(ctx, commande.reference, (c) => { c.historique.push({ le: iso(maintenantDe(ctx)), statut, montant: facture.amount_paid ?? facture.amount_due ?? null, source: type }); });
+  return statut;
 }
 
 async function appliquerEvenement(ctx, ev) {
@@ -467,11 +486,14 @@ async function resilier(requete, ctx) {
   try {
     const abo = await resilierAbonnement(ctx.env, ctx.fetchFn, commande.abonnement);
     const fin = finPeriode(abo);
-    achat.finPrevueLe = fin ? iso(fin * 1000) : null;
-    await ctx.stockage.enregistrer("droits", commande.compte, dossier);
-    commande.resiliationDemandeeLe = iso(maintenantDe(ctx));
-    commande.historique.push({ le: commande.resiliationDemandeeLe, statut: "resiliation-demandee", finPrevueLe: achat.finPrevueLe, source: "client" });
-    await ctx.stockage.enregistrer("commandes", ref, commande);
+    const finPrevueLe = fin ? iso(fin * 1000) : null;
+    await majDroits(ctx, commande.compte, (d) => { if (!d.achats[ref]) return false; d.achats[ref].finPrevueLe = finPrevueLe; });
+    const le = iso(maintenantDe(ctx));
+    await majCommande(ctx, ref, (c) => {
+      c.resiliationDemandeeLe = le;
+      c.historique.push({ le, statut: "resiliation-demandee", finPrevueLe, source: "client" });
+    });
+    achat.finPrevueLe = finPrevueLe;
     return json(200, { ok: true, finPrevueLe: achat.finPrevueLe });
   } catch (e) {
     console.error("Résiliation : Stripe n'a pas répondu", e?.statut ?? e?.name);

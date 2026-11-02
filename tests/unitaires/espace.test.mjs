@@ -675,3 +675,47 @@ test("échéances : renouvellement payé et échec de prélèvement notés dans 
   const h = (await b.ctx.stockage.lire("commandes", ref)).historique.map((x) => x.statut);
   assert.ok(h.includes("echeance-payee") && h.includes("echeance-impayee"));
 });
+
+/** Faux magasin Netlify Blobs : ETag, écritures conditionnelles, et délais aléatoires pour croiser les traitements. */
+function fauxBlobs() {
+  const donnees = new Map();
+  let version = 0;
+  const pause = () => new Promise((ok) => setTimeout(ok, Math.random() * 8));
+  return ({ name }) => ({
+    async get(id) { await pause(); const v = donnees.get(`${name}/${id}`); return v ? structuredClone(v.data) : null; },
+    async getWithMetadata(id) { await pause(); const v = donnees.get(`${name}/${id}`); return v ? { data: structuredClone(v.data), etag: v.etag } : null; },
+    async setJSON(id, data, opts = {}) {
+      await pause();
+      const cle = `${name}/${id}`; const actuel = donnees.get(cle);
+      if (opts.onlyIfNew && actuel) return { modified: false };
+      if (opts.onlyIfMatch && actuel?.etag !== opts.onlyIfMatch) return { modified: false };
+      donnees.set(cle, { data: structuredClone(data), etag: `"${++version}"` });
+      return { modified: true };
+    },
+  });
+}
+
+test("notifications Stripe simultanées (abonnement) : aucune information perdue (e-mail, abonnement, échéance)", async () => {
+  for (let tour = 0; tour < 5; tour++) {
+    const b = bancEmails(201, { stockage: creerStockage("netlify", { getStore: fauxBlobs() }) });
+    const c = await b.compte();
+    const achat = await b.acheter(c, "complet");
+    const ref = achat.data.reference;
+    const s = b.payer(sessionDe(b, ref).id);
+    const abo = { id: s.subscription, status: "active", cancel_at_period_end: false, metadata: { commande: ref }, items: { data: [{ current_period_end: Math.floor(Date.parse("2026-12-02T10:00:00Z") / 1000) }] } };
+    const r = await Promise.all([
+      b.notifier({ id: `evt_cs_${tour}`, type: "checkout.session.completed", data: { object: s } }),
+      b.notifier({ id: `evt_cs_${tour}`, type: "checkout.session.completed", data: { object: s } }),
+      b.notifier(evAbo(`evt_upd_${tour}`, "customer.subscription.updated", abo)),
+      b.notifier({ id: `evt_inv_${tour}`, type: "invoice.paid", data: { object: { object: "invoice", amount_paid: 2490, parent: { subscription_details: { subscription: s.subscription, metadata: { commande: ref } } } } } }),
+    ]);
+    assert.ok(r.every((x) => x.statut === 200), `tour ${tour} : ${r.map((x) => x.statut)}`);
+    const cmd = await b.ctx.stockage.lire("commandes", ref);
+    assert.equal(cmd.statut, "payee", `tour ${tour}`);
+    assert.equal(cmd.emailConfirmation, "accepte", `tour ${tour} : état de l'e-mail perdu`);
+    const droits = await b.ctx.stockage.lire("droits", (await b.appel("/api/formation", { cookie: c })).data.compte ?? cmd.compte);
+    assert.equal(Object.keys(droits.achats).length, 1, `tour ${tour} : un seul achat`);
+    assert.equal(b.brevo.envois.filter((m) => m.subject.includes(ref)).length, 1, `tour ${tour} : un seul e-mail de commande`);
+    assert.equal(ouvertes((await b.appel("/api/formation", { cookie: c })).data).length, ATTENDU.complet);
+  }
+});

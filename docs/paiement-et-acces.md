@@ -37,6 +37,7 @@ L'état complet et les décisions à prendre sont dans **`docs/etat-et-decisions
 | Prix | Fixés par le serveur (`site.json`). Un prix envoyé par le navigateur est ignoré. |
 | Notifications | Signature HMAC vérifiée, refus au-delà de 5 minutes (contre le rejeu). Une notification du mode test ne touche pas un site en mode réel. |
 | Doublons | Chaque notification n'est traitée qu'une fois, et un achat n'est ouvert qu'une fois par commande. Une formule déjà détenue ne peut pas être rachetée. |
+| Notifications simultanées | Stripe envoie souvent plusieurs notifications en même temps (paiement, facture, abonnement). Les commandes et les droits sont mis à jour par `stockage.modifier` : relecture, puis écriture seulement si personne n'a écrit entre-temps (ETag Netlify Blobs), sinon nouvel essai. Aucune information n'est écrasée et l'e-mail n'est envoyé qu'une fois (test « notifications Stripe simultanées »). |
 | Paiement en attente, refusé, annulé ou expiré | La commande est notée, aucun droit n'est ouvert. |
 | Remboursement | S'il est total, l'accès de la commande est retiré. S'il est partiel, il est noté et l'accès est conservé. |
 | Contenus | Les leçons arrivent par `/api/formation/lecon`, après vérification des droits. Les fichiers (fiches, modèles) arrivent par `/api/formation/fichier` depuis le magasin Blobs `fichiers-formation`, jamais depuis une adresse publique. |
