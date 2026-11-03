@@ -1,6 +1,7 @@
 ---
 import Base from "../layouts/Base.astro";
 import faq from "../data/faq.json";
+import { insecables } from "../lib/site.js";
 ---
 <Base titre="Questions fréquentes" courant="/questions/"
   description="Les réponses aux questions fréquentes sur la formation AUREVIA SAAS : niveau requis, temps nécessaire, ressources, idées de SaaS.">
@@ -14,7 +15,7 @@ import faq from "../data/faq.json";
     <div class="wrap">
       {faq.map((q) => (
         <details>
-          <summary><h2>{q.question}</h2></summary>
+          <summary><h2>{insecables(q.question)}</h2></summary>
           <p>{q.reponse}</p>
         </details>
       ))}

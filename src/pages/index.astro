@@ -3,7 +3,7 @@ import Base from "../layouts/Base.astro";
 import CarteTarif from "../components/CarteTarif.astro";
 import programme from "../data/programme.json";
 import faq from "../data/faq.json";
-import { marches, site, totalIdees, donneesIdees, nombre } from "../lib/site.js";
+import { marches, site, totalIdees, donneesIdees, nombre, insecables } from "../lib/site.js";
 import { modulesParcours, ressourcesReelles, totaux } from "../lib/parcours.js";
 import { PAIEMENT, ABONNEMENT } from "../lib/offres.js";
 import formation from "../data/formation.json";
@@ -41,7 +41,7 @@ const barres = Array.from({ length: 12 }, (_, i) => (i + 1) / 12);
           <li><strong>6</strong><span>modules progressifs</span></li>
           <li><strong>{totaux.lecons}</strong><span>leçons détaillées</span></li>
           <li><strong>{nf(totalIdees)}</strong><span>idées de SaaS</span></li>
-          <li><strong>{prixMin}</strong><span>{ABONNEMENT ? "par mois, dès" : "paiement unique, dès"}</span></li>
+          <li><strong>{prixMin}</strong><span>{ABONNEMENT ? "par mois" : "paiement unique"}, formule {site.formules[0].nom}</span></li>
         </ul>
       </div>
 
@@ -151,7 +151,7 @@ const barres = Array.from({ length: 12 }, (_, i) => (i + 1) / 12);
     <div class="wrap extrait">
       <div>
         <p class="surtitre">Extrait gratuit</p>
-        <h2 id="extrait-titre">Module 1 : {extrait.titre}</h2>
+        <h2 id="extrait-titre">Module 1&nbsp;: {extrait.titre}</h2>
         <p class="chapeau">{extrait.resume}</p>
         <p class="note">Cet extrait reprend le plan gratuit du module. Les leçons détaillées, l’exercice corrigé, la fiche et le modèle sont réservés à la formation.</p>
       </div>
@@ -167,7 +167,7 @@ const barres = Array.from({ length: 12 }, (_, i) => (i + 1) / 12);
     <div class="wrap labo">
       <div>
         <p class="surtitre">Laboratoire d’idées</p>
-        <h2 id="labo-titre">Pas encore d’idée ? Tirez-en une.</h2>
+        <h2 id="labo-titre">Pas encore d’idée&nbsp;? Tirez-en une.</h2>
         <p class="sous-titre" style="margin-bottom:0">{nf(totalIdees)} idées de SaaS, réparties dans {marches.length} marchés et 300 niches. Choisissez un marché ou laissez faire le hasard.</p>
         <div class="labo-actions">
           <label for="labo-marche">Marché
@@ -196,6 +196,7 @@ const barres = Array.from({ length: 12 }, (_, i) => (i + 1) / 12);
         <h2 id="sim-section">Comprendre le revenu récurrent</h2>
         <p>Un calcul simple à partir de vos propres hypothèses. Ce n’est ni une promesse ni une prévision.</p>
       </div>
+      <div class="sim-grille">
       <section class="hud neon simulateur" aria-labelledby="sim-titre">
         <div class="hud-tete">
           <h2 id="sim-titre">Simulateur de revenu récurrent</h2>
@@ -227,6 +228,17 @@ const barres = Array.from({ length: 12 }, (_, i) => (i + 1) / 12);
         </div>
         <p class="note" style="margin:0">Simulation indicative : clients ajoutés progressivement sur 12 mois, avant charges et impôts. Aucun résultat n’est garanti.</p>
       </section>
+      <aside class="carte sim-lecture" aria-labelledby="sim-lecture-titre">
+        <h3 id="sim-lecture-titre">Comment lire ce calcul</h3>
+        <ul>
+          <li><strong>Par mois = prix × nombre de clients.</strong> C’est le « revenu mensuel récurrent », que vous apprendrez à suivre au module 6.</li>
+          <li><strong>Ce n’est pas un bénéfice.</strong> Il faut encore retirer les frais de paiement, les outils, les cotisations et les impôts.</li>
+          <li><strong>Personne ne part, ici.</strong> En réalité, des clients résilient chaque mois : c’est le taux de départ, à surveiller dès le début.</li>
+          <li><strong>Trouver les clients est le vrai travail.</strong> Le simulateur ne dit pas combien de temps il faut pour y arriver.</li>
+        </ul>
+        <p class="note">Le module 4 vous apprend à calculer le nombre de clients qu’il vous faut pour couvrir vos coûts.</p>
+      </aside>
+      </div>
     </div>
   </section>
 
@@ -263,7 +275,7 @@ const barres = Array.from({ length: 12 }, (_, i) => (i + 1) / 12);
       </div>
       {faq.slice(0, 3).map((q) => (
         <details>
-          <summary><h3>{q.question}</h3></summary>
+          <summary><h3>{insecables(q.question)}</h3></summary>
           <p>{q.reponse}</p>
         </details>
       ))}
@@ -274,7 +286,7 @@ const barres = Array.from({ length: 12 }, (_, i) => (i + 1) / 12);
   <section class="finale" aria-labelledby="finale">
     <div class="wrap">
       <p class="surtitre" style="justify-content:center">Prochaine étape</p>
-      <h2 id="finale">Prochaine étape : réservez votre place</h2>
+      <h2 id="finale">Prochaine étape&nbsp;: réservez votre place</h2>
       <p class="sous-titre">Les commandes en ligne ne sont pas encore ouvertes. Inscrivez-vous en deux minutes, sans paiement : vous serez prévenu(e) par e-mail.</p>
       <div class="cta"><a class="btn grand" href="/inscription/">Je m’inscris gratuitement</a><a class="btn alt grand" href="/tarifs/">Voir les tarifs</a></div>
     </div>

@@ -261,3 +261,12 @@
 .resiliation-confirmation { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; padding: 0.75rem 1rem; border: 1px solid var(--line-forte); border-radius: var(--rayon-petit); background: var(--bg-2); }
 .resiliation-confirmation p { flex-basis: 100%; margin: 0; }
 .tarif .montant .par-mois { font: 600 1rem var(--police-texte); color: var(--muted); margin-left: 0.25rem; }
+
+/* Simulateur de l'accueil : explication à côté sur grand écran, dessous sur téléphone. */
+.sim-grille { display: grid; gap: var(--espace-cartes); align-items: start; }
+.sim-grille .simulateur { max-width: none; }
+.sim-lecture h3 { margin: 0 0 0.75rem; font-size: 1.15rem; }
+.sim-lecture ul { margin: 0; padding-left: 1.1rem; display: grid; gap: 0.75rem; color: var(--muted); }
+.sim-lecture strong { color: var(--ink); }
+.sim-lecture .note { margin: 1rem 0 0; }
+@media (min-width: 900px) { .sim-grille { grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); } }

@@ -35,3 +35,6 @@ export const totalIdees = marches.reduce((t, m) => t + m.niches.reduce((u, n) =>
 
 /** Nombre au format français, avec une espace insécable classique (la fine U+202F manque dans certaines polices). */
 export const nombre = (n) => new Intl.NumberFormat("fr-FR").format(n).replace(/ /g, " ");
+
+/** Typographie française : espace insécable classique avant ? ! : ; » et après «, pour qu'un signe ne parte jamais seul à la ligne. */
+export const insecables = (t) => String(t).replace(/ ([?!:;»])/g, " $1").replace(/« /g, "« ");
