@@ -52,6 +52,11 @@
     .chat-ouvrir .orb { width: 1.1rem; height: 1.1rem; }
     .chat-libelle { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
   }
+  /* Sur ordinateur : libellé visible en haut de page, puis bulle ronde dès qu'on fait défiler
+     (pour ne pas cacher les prix ou les cartes). Le libellé revient au survol et au focus clavier. */
+  .chat-ouvrir.compact:not(:hover):not(:focus-visible) { width: 3.25rem; height: 3.25rem; padding: 0; justify-content: center; }
+  .chat-ouvrir.compact:not(:hover):not(:focus-visible) .orb { width: 1.1rem; height: 1.1rem; }
+  .chat-ouvrir.compact:not(:hover):not(:focus-visible) .chat-libelle { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
   .chat-panneau { width: min(390px, calc(100vw - 2rem)); max-height: min(78vh, 640px); display: flex; flex-direction: column; gap: 0.75rem;
     padding: 1rem; color: #eaf2ff; background: var(--chat-bg); border: 1px solid rgba(61, 220, 132, 0.4); border-radius: 22px;
     box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45); }
@@ -100,6 +105,9 @@
     else ouvrirBtn.focus();
   }
   ouvrirBtn.addEventListener("click", () => ouvrir(true));
+  const compacter = () => ouvrirBtn.classList.toggle("compact", window.scrollY > 240);
+  compacter();
+  window.addEventListener("scroll", compacter, { passive: true });
   document.getElementById("chat-fermer")!.addEventListener("click", () => ouvrir(false));
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape" && !panneau.hidden) { e.preventDefault(); ouvrir(false); }

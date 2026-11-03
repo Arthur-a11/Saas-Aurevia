@@ -70,7 +70,23 @@ Toute la formation se lit dans `docs/formation/relecture.md`. Quand vous l'avez 
 
 **Les vidéos n'existent pas encore.** Les scripts sont prêts (`docs/formation/scripts-videos.md`). Les vidéos restent « en préparation » sur le site jusqu'à ce que vous les tourniez.
 
-## 5. Dossier pour le juriste
+## 5. Publier la nouvelle version sur le site officiel (mis de côté le 3 novembre)
+
+Arthur a demandé que le site de test devienne le site officiel. C'est prêt, mais en attente pour deux raisons :
+
+- **Crédits Netlify épuisés** : les mises en ligne sont en pause (bandeau rouge sur Netlify). Elles reprennent au prochain cycle de facturation, ou plus tôt avec une offre payante (choix d'Arthur).
+- Arthur préfère publier en même temps que les informations d'entreprise (SIREN, etc.).
+
+Déjà vérifié : `SEL_EMPREINTE` existe sur le projet officiel `aurevia-saas`, donc les comptes y seront protégés.
+
+Le jour venu, Claude :
+1. pose une étiquette de sauvegarde sur la version officielle actuelle ;
+2. publie la branche `refonte-visuelle` sur `main` (le site officiel suit `main`) ;
+3. vérifie le site officiel avec Arthur, page par page.
+
+Les paiements restent fermés : aucune clé Stripe n'est ajoutée au site officiel. À décider ce jour-là : régler `SITE_URL` (pour que Google indexe le site) et, si Arthur le souhaite, les e-mails Brevo, qui servent aussi au mot de passe oublié.
+
+## 6. Dossier pour le juriste
 
 Montrez-lui les pages CGV, Mentions légales, Confidentialité et Rétractation du site de test (https://aurevia-saas-test.netlify.app), ainsi que ces questions.
 
