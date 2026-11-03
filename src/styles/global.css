@@ -307,3 +307,10 @@ html:not(.js) .sans-js-masque { display: none !important; }
 /* Grilles d'idées : cartes assez larges pour l'étiquette et les deux boutons sur une ligne. */
 .idee > .num { white-space: nowrap; }
 .niche .grille-idees, .explo-resultats { grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr)); }
+/* Grand écran : les 5 idées d'une niche sur une seule ligne, boutons sous la description. */
+@media (min-width: 1200px) {
+  .niche .grille-idees { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+  .niche .idee { grid-template-rows: auto auto 1fr auto; }
+  .niche .idee > p { align-self: start; }
+  .niche .idee > .idee-actions { grid-column: 1 / -1; grid-row: auto; margin-top: 0.4rem; justify-content: flex-start; align-self: end; }
+}
