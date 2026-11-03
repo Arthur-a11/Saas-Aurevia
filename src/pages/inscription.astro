@@ -4,7 +4,8 @@ import Champ from "../components/Champ.astro";
 import Case from "../components/Case.astro";
 import PiegeRobots from "../components/PiegeRobots.astro";
 import { site } from "../lib/site.js";
-const options = site.formules.map((f) => ({ valeur: f.id, label: `${f.nom} – ${f.prixAffiche}` }));
+import { PAIEMENT } from "../lib/offres.js";
+const options = site.formules.map((f) => ({ valeur: f.id, label: `${f.nom} – ${f.prixAffiche}${PAIEMENT.suffixe}` }));
 ---
 <Base titre="Inscription" courant="/inscription/"
   description="Inscrivez-vous à la formation AUREVIA SAAS en deux minutes. L’inscription n’engage à aucun paiement.">

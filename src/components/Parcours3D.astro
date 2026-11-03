@@ -1,0 +1,252 @@
+---
+// Scène 3D de l'accueil : le parcours de la formation, de l'idée aux premiers abonnés.
+// - Six plateformes en spirale (les 6 modules), reliées par un chemin lumineux, jusqu'au « SaaS lancé ».
+// - Animation jouée UNE fois (environ 6 s), puis la scène ne bouge plus que si la souris bouge (aucune boucle).
+// - « Réduire les animations » : scène affichée directement dans son état final, sans mouvement.
+// - Sans WebGL ou sans JavaScript : la liste des 6 étapes reste affichée à la place (repli lisible).
+// - La liste reste toujours lisible par les lecteurs d'écran ; le dessin 3D est décoratif (aria-hidden).
+import programme from "../data/programme.json";
+const etapes = programme.modules.map((m, i) => ({ num: String(i + 1).padStart(2, "0"), titre: m.titre }));
+---
+<figure class="parcours3d" aria-labelledby="p3d-legende" data-etat="repli">
+  <div class="p3d-scene" aria-hidden="true">
+    <canvas class="p3d-canvas"></canvas>
+    <div class="p3d-etiquettes">
+      {etapes.map((e) => <span class="p3d-etiquette"><b>{e.num}</b><span class="p3d-t">{e.titre}</span></span>)}
+      <span class="p3d-etiquette p3d-but"><b>★</b><span class="p3d-t">Vos premiers abonnés</span></span>
+    </div>
+  </div>
+  <ol class="p3d-repli">
+    {etapes.map((e) => <li><b>{e.num}</b> {e.titre}</li>)}
+    <li class="p3d-repli-but"><b>★</b> Objectif : vos premiers abonnés</li>
+  </ol>
+  <figcaption id="p3d-legende">
+    <span>Le parcours de la formation : 6 étapes, de l’idée à vos premiers abonnés.</span>
+    <button type="button" class="p3d-rejouer" hidden>Rejouer l’animation</button>
+  </figcaption>
+</figure>
+
+<style is:global>
+  .parcours3d { position: relative; margin: 0; display: grid; gap: 0.6rem; }
+  .p3d-scene { position: relative; aspect-ratio: 1 / 1; max-height: 560px; width: 100%; display: none; }
+  .parcours3d[data-etat="3d"] .p3d-scene { display: block; }
+  .p3d-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+  .p3d-etiquettes { position: absolute; inset: 0; pointer-events: none; }
+  .p3d-etiquette { position: absolute; left: 0; top: 0; transform: translate(-50%, -50%); white-space: nowrap;
+    display: inline-flex; align-items: center; gap: 0.45rem; padding: 0.3rem 0.7rem 0.3rem 0.35rem;
+    font: 600 0.8rem/1.2 var(--police-texte); color: var(--ink);
+    background: rgba(7, 21, 33, 0.82); border: 1px solid rgba(46, 196, 182, 0.45); border-radius: 999px;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.35); opacity: 0; visibility: hidden; }
+  .p3d-etiquette b { font: 700 0.72rem/1 var(--police-mono); color: #04211e; background: var(--brand); border-radius: 999px; padding: 0.22rem 0.42rem; }
+  .p3d-etiquette.p3d-but { border-color: rgba(232, 185, 92, 0.7); font-weight: 700; }
+  .p3d-etiquette.p3d-but b { background: var(--gold); }
+  /* Repli (sans 3D) : escalier simple des 6 étapes */
+  .p3d-repli { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.5rem; }
+  .p3d-repli li { display: flex; align-items: center; gap: 0.6rem; padding: 0.65rem 0.9rem; border: 1px solid var(--line-forte);
+    border-radius: 14px; background: var(--surface); }
+  .p3d-repli li:nth-child(n) { margin-left: calc((var(--i, 0)) * 0.9rem); }
+  .p3d-repli b { font: 700 0.78rem var(--police-mono); color: var(--brand); }
+  .p3d-repli-but { border-color: rgba(232, 185, 92, 0.6) !important; }
+  .p3d-repli-but b { color: var(--gold); }
+  /* Avec la 3D : la liste reste pour les lecteurs d'écran, masquée à l'écran */
+  .parcours3d[data-etat="3d"] .p3d-repli { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .parcours3d figcaption { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.5rem 1rem; color: var(--muted); font-size: 0.85rem; }
+  .p3d-rejouer { font: 600 0.82rem var(--police-texte); color: var(--ink); background: transparent; border: 1px solid var(--line-forte);
+    border-radius: 999px; padding: 0.4rem 0.9rem; min-height: 36px; cursor: pointer; }
+  .p3d-rejouer:hover { border-color: var(--brand); }
+  .p3d-rejouer[hidden] { display: none; }
+  @media (max-width: 900px) { .p3d-scene { aspect-ratio: 1 / 1; max-height: 480px; } .p3d-etiquette { font-size: 0.72rem; } }
+  /* Petit écran : seulement les numéros, pour ne pas cacher les plateformes */
+  @media (max-width: 560px) { .p3d-etiquette:not(.p3d-but) { padding: 0.18rem; gap: 0; } .p3d-etiquette:not(.p3d-but) .p3d-t { display: none; } }
+</style>
+
+<script>
+  const figure = document.querySelector(".parcours3d") as HTMLElement | null;
+  const webglPossible = (() => {
+    try { const c = document.createElement("canvas"); return Boolean(c.getContext("webgl2") || c.getContext("webgl")); } catch { return false; }
+  })();
+  if (figure) {
+    figure.querySelectorAll(".p3d-repli li").forEach((li, i) => (li as HTMLElement).style.setProperty("--i", String(i)));
+  }
+
+  if (figure && webglPossible) {
+    // Chargement de la 3D seulement quand la scène est (presque) visible.
+    const obs = new IntersectionObserver((entrees) => {
+      if (entrees.some((e) => e.isIntersecting)) { obs.disconnect(); demarrer(figure).catch(() => { figure.dataset.etat = "repli"; }); }
+    }, { rootMargin: "200px" });
+    obs.observe(figure);
+  }
+
+  async function demarrer(fig: HTMLElement) {
+    const THREE = await import("three");
+    const canvas = fig.querySelector(".p3d-canvas") as HTMLCanvasElement;
+    const scene3d = fig.querySelector(".p3d-scene") as HTMLElement;
+    const etiquettes = [...fig.querySelectorAll<HTMLElement>(".p3d-etiquette")];
+    const bouton = fig.querySelector(".p3d-rejouer") as HTMLButtonElement;
+    const reduit = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    fig.dataset.etat = "3d";
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: "low-power" });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+    const scene = new THREE.Scene();
+    scene.fog = new THREE.Fog(0x071521, 9, 20);
+    const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 60);
+
+    const TURQUOISE = 0x2ec4b6, CYAN = 0x22d3ee, OR = 0xe8b95c;
+    scene.add(new THREE.AmbientLight(0x9fdcff, 0.55));
+    const lumHaut = new THREE.PointLight(OR, 30, 14); lumHaut.position.set(0, 6.2, 0); scene.add(lumHaut);
+    const lumBas = new THREE.PointLight(TURQUOISE, 26, 14); lumBas.position.set(2.5, 1.2, 3); scene.add(lumBas);
+
+    // Sol : grille fine qui s'efface au loin
+    const grille = new THREE.GridHelper(22, 44, 0x1f8f86, 0x123047);
+    (grille.material as THREE.Material).transparent = true; (grille.material as THREE.Material).opacity = 0.35;
+    grille.position.y = -0.6; scene.add(grille);
+
+    // Champ d'étoiles (fixe)
+    const nb = 380, pos = new Float32Array(nb * 3);
+    for (let i = 0; i < nb; i++) {
+      const r = 7 + Math.random() * 9, a = Math.random() * Math.PI * 2;
+      pos[i * 3] = Math.cos(a) * r; pos[i * 3 + 1] = -0.5 + Math.random() * 10; pos[i * 3 + 2] = Math.sin(a) * r;
+    }
+    const geoEtoiles = new THREE.BufferGeometry(); geoEtoiles.setAttribute("position", new THREE.BufferAttribute(pos, 3));
+    scene.add(new THREE.Points(geoEtoiles, new THREE.PointsMaterial({ color: 0x9fe8de, size: 0.04, transparent: true, opacity: 0.7 })));
+
+    // Axe central lumineux
+    const axe = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 6.6, 12), new THREE.MeshBasicMaterial({ color: TURQUOISE, transparent: true, opacity: 0.35 }));
+    axe.position.y = 2.7; scene.add(axe);
+
+    // Six plateformes hexagonales en spirale (les modules)
+    const N = 6, RAYON = 2.15, PAS = 0.86;
+    const centres: InstanceType<typeof THREE.Vector3>[] = [];
+    const plateformes: { mat: InstanceType<typeof THREE.MeshStandardMaterial>; bord: InstanceType<typeof THREE.LineBasicMaterial> }[] = [];
+    for (let i = 0; i < N; i++) {
+      const a = i * (Math.PI * 2 / N) * 0.9 + Math.PI * 0.15;
+      const c = new THREE.Vector3(Math.cos(a) * RAYON, i * PAS, Math.sin(a) * RAYON);
+      centres.push(c);
+      const geo = new THREE.CylinderGeometry(0.78, 0.78, 0.14, 6);
+      const mat = new THREE.MeshStandardMaterial({ color: 0x0f2638, emissive: TURQUOISE, emissiveIntensity: 0.05, metalness: 0.4, roughness: 0.35, transparent: true, opacity: 0.92 });
+      const plat = new THREE.Mesh(geo, mat); plat.position.copy(c); scene.add(plat);
+      const bord = new THREE.LineBasicMaterial({ color: CYAN, transparent: true, opacity: 0.25 });
+      const aretes = new THREE.LineSegments(new THREE.EdgesGeometry(geo), bord); aretes.position.copy(c); scene.add(aretes);
+      plateformes.push({ mat, bord });
+    }
+
+    // Le but : un « noyau » doré au sommet (le SaaS lancé, avec ses abonnés)
+    const SOMMET = new THREE.Vector3(0, N * PAS + 0.55, 0);
+    const noyauMat = new THREE.MeshStandardMaterial({ color: 0x3a2a08, emissive: OR, emissiveIntensity: 0.15, metalness: 0.6, roughness: 0.25 });
+    const noyau = new THREE.Mesh(new THREE.IcosahedronGeometry(0.42, 1), noyauMat); noyau.position.copy(SOMMET); scene.add(noyau);
+    const cageMat = new THREE.MeshBasicMaterial({ color: OR, wireframe: true, transparent: true, opacity: 0.0 });
+    const cage = new THREE.Mesh(new THREE.IcosahedronGeometry(0.7, 1), cageMat); cage.position.copy(SOMMET); scene.add(cage);
+    const anneauMat = new THREE.MeshBasicMaterial({ color: OR, transparent: true, opacity: 0.0 });
+    const anneau = new THREE.Mesh(new THREE.TorusGeometry(1.05, 0.018, 8, 80), anneauMat);
+    anneau.position.copy(SOMMET); anneau.rotation.x = Math.PI / 2.4; scene.add(anneau);
+
+    // Chemin lumineux : du sol jusqu'au sommet, en passant par chaque plateforme
+    const points = [new THREE.Vector3(centres[0].x * 1.5, -0.55, centres[0].z * 1.5), ...centres.map((c) => c.clone().setY(c.y + 0.12)), SOMMET.clone()];
+    const courbe = new THREE.CatmullRomCurve3(points, false, "catmullrom", 0.4);
+    const geoChemin = new THREE.TubeGeometry(courbe, 260, 0.04, 8, false);
+    const totalIndex = geoChemin.index ? geoChemin.index.count : 0;
+    const chemin = new THREE.Mesh(geoChemin, new THREE.MeshBasicMaterial({ color: CYAN }));
+    scene.add(chemin);
+    // Point de lumière qui avance sur le chemin pendant l'animation
+    const comete = new THREE.Mesh(new THREE.SphereGeometry(0.09, 16, 16), new THREE.MeshBasicMaterial({ color: 0xffffff }));
+    scene.add(comete);
+
+    // Caméra : tourne et monte pendant l'animation
+    const cible = new THREE.Vector3(0, 2.2, 0);
+    let recul = 1;
+    const souris = { x: 0, y: 0, vx: 0, vy: 0 };
+    function placerCamera(p: number) {
+      const angle = -0.9 + p * 1.05 + souris.vx * 0.25;
+      const hauteur = 2.2 + p * 2.4 - souris.vy * 0.8;
+      const dist = (10.6 - p * 1.2) * recul;
+      camera.position.set(Math.cos(angle) * dist, hauteur, Math.sin(angle) * dist);
+      camera.lookAt(cible.x, cible.y + p * 0.6, cible.z);
+    }
+
+    const lisse = (x: number) => x * x * (3 - 2 * x);
+    // Étiquette visible ou cachée d'un coup (jamais à moitié transparente : contraste toujours suffisant).
+    const montrer = (el: HTMLElement, oui: boolean) => { el.style.opacity = oui ? "1" : "0"; el.style.visibility = oui ? "visible" : "hidden"; };
+    function appliquer(p: number) {
+      // p : avancement de 0 à 1
+      if (totalIndex) geoChemin.setDrawRange(0, Math.floor((totalIndex * Math.min(1, p * 1.08)) / 3) * 3);
+      const pt = courbe.getPointAt(Math.max(0, Math.min(1, p * 1.08)));
+      comete.position.copy(pt); comete.visible = p < 0.93;
+      plateformes.forEach((pl, i) => {
+        const allume = lisse(Math.max(0, Math.min(1, (p * 1.08 - (i + 0.5) / (N + 1)) * 6)));
+        pl.mat.emissiveIntensity = 0.05 + allume * 0.55;
+        pl.bord.opacity = 0.25 + allume * 0.75;
+        montrer(etiquettes[i], allume > 0.5);
+      });
+      const fin = lisse(Math.max(0, Math.min(1, (p - 0.86) / 0.14)));
+      noyauMat.emissiveIntensity = 0.15 + fin * 1.4;
+      cageMat.opacity = fin * 0.55; anneauMat.opacity = fin * 0.8;
+      cage.rotation.y = p * 2.2; anneau.rotation.z = p * 1.6;
+      montrer(etiquettes[N], fin > 0.5);
+      placerCamera(reduit ? 1 : p);
+    }
+
+    const projete = new THREE.Vector3();
+    function placerEtiquettes() {
+      const l = scene3d.clientWidth, h = scene3d.clientHeight;
+      [...centres, SOMMET].forEach((c, i) => {
+        projete.copy(c); projete.y += i === N ? 0.95 : 0.42; projete.project(camera);
+        etiquettes[i].style.transform = `translate(-50%, -50%) translate(${((projete.x + 1) / 2) * l}px, ${((1 - projete.y) / 2) * h}px)`;
+      });
+    }
+
+    function redimensionner() {
+      const l = scene3d.clientWidth, h = scene3d.clientHeight;
+      if (!l || !h) return;
+      renderer.setSize(l, h, false);
+      camera.aspect = l / h;
+      camera.fov = l < 520 ? 50 : 42;
+      recul = l < 520 ? 0.98 : 1.16;
+      camera.updateProjectionMatrix();
+    }
+
+    let progression = reduit ? 1 : 0;
+    function dessiner() { appliquer(progression); renderer.render(scene, camera); placerEtiquettes(); }
+
+    // Animation unique
+    let raf = 0;
+    function jouer() {
+      if (reduit) { progression = 1; dessiner(); return; }
+      cancelAnimationFrame(raf);
+      bouton.hidden = true;
+      const debut = performance.now(), DUREE = 6000;
+      const pas = (t: number) => {
+        progression = Math.max(0, Math.min(1, (t - debut) / DUREE));
+        dessiner();
+        if (progression < 1) raf = requestAnimationFrame(pas);
+        else bouton.hidden = false;
+      };
+      raf = requestAnimationFrame(pas);
+    }
+
+    // Parallaxe à la souris (seulement quand la souris bouge, s'arrête dès qu'elle est immobile)
+    let rafSouris = 0;
+    function suivreSouris() {
+      souris.vx += (souris.x - souris.vx) * 0.12; souris.vy += (souris.y - souris.vy) * 0.12;
+      dessiner();
+      if (Math.abs(souris.x - souris.vx) + Math.abs(souris.y - souris.vy) > 0.002) rafSouris = requestAnimationFrame(suivreSouris);
+      else rafSouris = 0;
+    }
+    if (!reduit) {
+      scene3d.closest(".heros")?.addEventListener("pointermove", (e) => {
+        const ev = e as PointerEvent;
+        if (ev.pointerType !== "mouse") return;
+        souris.x = (ev.clientX / window.innerWidth) * 2 - 1;
+        souris.y = (ev.clientY / window.innerHeight) * 2 - 1;
+        if (!rafSouris && progression >= 1) rafSouris = requestAnimationFrame(suivreSouris);
+      });
+    }
+
+    new ResizeObserver(() => { redimensionner(); dessiner(); }).observe(scene3d);
+    bouton.addEventListener("click", jouer);
+    redimensionner();
+    jouer();
+  }
+</script>

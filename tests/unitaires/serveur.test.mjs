@@ -52,6 +52,7 @@ test("inscription : e-mail « accepte » (accepté par Brevo, pas « reçu ») s
   const d = await (await traiterInscription(req("/api/inscription", INSCRIPTION), ctx)).json();
   assert.equal(d.emailConfirmation, "accepte");
   assert.equal(appels[0][1].to[0].email, "marie@exemple.fr");
+  assert.match(appels[0][1].textContent, /Formule qui vous intéresse : .+ \(\d+,\d+ € \/ mois\)/, "prix mensuel indiqué (abonnement)");
 
   const ctxEchec = ctxBase({ env: { BREVO_API_KEY: "x", EMAIL_EXPEDITEUR: "c@e.fr" }, fetchFn: async () => new Response("", { status: 500 }) });
   const d2 = await (await traiterInscription(req("/api/inscription", INSCRIPTION), ctxEchec)).json();

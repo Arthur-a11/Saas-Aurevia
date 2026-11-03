@@ -8,13 +8,14 @@ import { envoyerEmail, emailConfigure } from "./email.js";
 import { validerInscription, validerRetractation, estRobot, TEXTES_CONSENTEMENT } from "./validation.js";
 import { contexteAssistant } from "./contexte-assistant.js";
 import { modePaiement } from "./stripe.js";
+import { PAIEMENT } from "../src/lib/offres.js";
 
 const HEURE = 3_600_000;
 const DELAI_MIN_MS = 1_500;
 const JOUR = 24 * HEURE;
 const entier = (v, defaut) => (Number.isFinite(Number(v)) && Number(v) > 0 ? Math.floor(Number(v)) : defaut);
 const nomFormule = (id) => site.formules.find((f) => f.id === id)?.nom ?? id;
-const prixFormule = (id) => site.formules.find((f) => f.id === id)?.prixAffiche ?? "";
+const prixFormule = (id) => { const p = site.formules.find((f) => f.id === id)?.prixAffiche; return p ? p + PAIEMENT.suffixe : ""; };
 
 /** Contrôles communs : méthode, origine, stockage, corps JSON, robots, limite par IP. */
 async function preparer(requete, ctx, { limiteParHeure = 10, cleLimite }) {

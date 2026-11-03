@@ -324,6 +324,31 @@ test.describe("refonte : identité et accueil", () => {
     expect(c.bouton).toBe("rgb(4, 33, 30)");
   });
 
+  test("accueil 3D : parcours en 6 étapes lisible sans la 3D, scène affichée sans erreur, animation jouée une seule fois", async ({ page }) => {
+    const erreurs = [];
+    page.on("pageerror", (e) => erreurs.push(e.message));
+    await page.goto("/");
+    const fig = page.locator(".parcours3d");
+    // Liste accessible toujours présente (repli sans WebGL, et texte pour les lecteurs d'écran)
+    await expect(fig.locator(".p3d-repli li")).toHaveCount(7);
+    await expect(fig.locator(".p3d-repli")).toContainText("Trouver une bonne idée");
+    await expect(fig.locator(".p3d-scene")).toHaveAttribute("aria-hidden", "true");
+    await expect(fig).toHaveAttribute("data-etat", "3d", { timeout: 15000 });
+    // Fin de l'animation unique : bouton « Rejouer » proposé, toutes les étapes visibles
+    await expect(fig.getByRole("button", { name: "Rejouer l’animation" })).toBeVisible({ timeout: 15000 });
+    expect(await fig.locator(".p3d-etiquette").evaluateAll((els) => els.every((e) => e.style.opacity === "1"))).toBe(true);
+    expect(erreurs).toEqual([]);
+  });
+
+  test("accueil 3D : « réduire les animations » → état final immédiat, sans bouton Rejouer", async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.goto("/");
+    const fig = page.locator(".parcours3d");
+    await expect(fig).toHaveAttribute("data-etat", "3d", { timeout: 15000 });
+    await expect.poll(() => fig.locator(".p3d-etiquette").evaluateAll((els) => els.every((e) => e.style.opacity === "1")), { timeout: 5000 }).toBe(true);
+    await expect(fig.getByRole("button", { name: "Rejouer l’animation" })).toBeHidden();
+  });
+
   for (const url of ["/", "/programme/", "/tarifs/"]) {
     test(`${url} : aucune animation en boucle ni halo animé`, async ({ page }) => {
       await page.goto(url);

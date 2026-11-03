@@ -1,6 +1,7 @@
 ---
 import Base from "../layouts/Base.astro";
 import CarteTarif from "../components/CarteTarif.astro";
+import Parcours3D from "../components/Parcours3D.astro";
 import programme from "../data/programme.json";
 import faq from "../data/faq.json";
 import { marches, site, totalIdees, donneesIdees, nombre, insecables } from "../lib/site.js";
@@ -45,19 +46,18 @@ const barres = Array.from({ length: 12 }, (_, i) => (i + 1) / 12);
         </ul>
       </div>
 
-      <figure class="apercu-espace" aria-labelledby="apercu-legende">
-        <div class="apercu-barre" aria-hidden="true"><span></span><span></span><span></span><em>Ma formation</em></div>
-        <div class="apercu-corps">
-          <p class="apercu-module"><span class="num-module">01</span> {apercu.titre}</p>
-          <div class="apercu-progression"><span style="width:0%"></span></div>
-          <ul>
-            {apercu.elements.map((l) => <li><span class="apercu-type">{l.type}</span>{l.titre}</li>)}
-          </ul>
-        </div>
-        <figcaption id="apercu-legende">Aperçu de l’espace « Ma formation » : vrais titres du module 1, sans le contenu des leçons (réservé aux personnes inscrites).</figcaption>
-      </figure>
+      <Parcours3D />
     </div>
   </div>
+
+  <section class="garanties-bande" aria-label="Nos engagements">
+    <ul class="wrap garanties">
+      <li><span aria-hidden="true">↺</span>{ABONNEMENT ? "Résiliable en ligne à tout moment" : "Paiement unique, sans abonnement"}</li>
+      <li><span aria-hidden="true">◎</span>Plan des 6 modules en accès libre</li>
+      <li><span aria-hidden="true">✦</span>{nf(totalIdees)} idées de SaaS gratuites</li>
+      <li><span aria-hidden="true">✓</span>Rien d’annoncé qui n’existe pas</li>
+    </ul>
+  </section>
 
   <section aria-labelledby="pour-qui">
     <div class="wrap">
@@ -113,12 +113,25 @@ const barres = Array.from({ length: 12 }, (_, i) => (i + 1) / 12);
         <p class="surtitre">Comment ça se passe</p>
         <h2 id="deroulement">Un parcours simple, à votre rythme</h2>
       </div>
-      <ol class="deroulement">
+<div class="deroulement-grille">
+            <ol class="deroulement">
         <li><strong>Lisez le plan gratuit</strong><span>Le programme détaillé et les 1 500 idées sont en accès libre.</span></li>
         <li><strong>Choisissez une formule</strong><span>{ABONNEMENT ? "Abonnement mensuel, résiliable à tout moment." : "Paiement unique."} Les commandes en ligne ne sont pas encore ouvertes : l’inscription est gratuite et sans engagement.</span></li>
         <li><strong>Suivez votre espace</strong><span>Leçons et fiches dans l’ordre (plus exercices, checklists et modèles avec Complet), avec votre progression enregistrée.</span></li>
         <li><strong>Avancez sur votre projet</strong><span>Chaque module se termine par un livrable : entretiens, fiche MVP, page de tarifs…</span></li>
       </ol>
+      <figure class="apercu-espace" aria-labelledby="apercu-legende">
+        <div class="apercu-barre" aria-hidden="true"><span></span><span></span><span></span><em>Ma formation</em></div>
+        <div class="apercu-corps">
+          <p class="apercu-module"><span class="num-module">01</span> {apercu.titre}</p>
+          <div class="apercu-progression"><span style="width:0%"></span></div>
+          <ul>
+            {apercu.elements.map((l) => <li><span class="apercu-type">{l.type}</span>{l.titre}</li>)}
+          </ul>
+        </div>
+        <figcaption id="apercu-legende">Aperçu de l’espace « Ma formation » : vrais titres du module 1, sans le contenu des leçons (réservé aux personnes inscrites).</figcaption>
+      </figure>
+      </div>
     </div>
   </section>
 
