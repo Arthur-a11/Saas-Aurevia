@@ -1,7 +1,9 @@
 ---
 // Scène 3D de l'accueil : le parcours de la formation, de l'idée aux premiers abonnés.
 // - Six plateformes en spirale (les 6 modules), reliées par un chemin lumineux, jusqu'au « SaaS lancé ».
-// - Animation jouée UNE fois (environ 6 s), puis la scène ne bouge plus que si la souris bouge (aucune boucle).
+// - Version « 4DX » : chrome réaliste (reflets), caméra embarquée qui suit la comète, impacts à chaque étape,
+//   onde de choc à l'arrivée. Animation jouée UNE fois (environ 8 s), puis la caméra ne bouge que si la personne
+//   fait défiler la page, bouge la souris ou incline son téléphone (aucune boucle).
 // - « Réduire les animations » : scène affichée directement dans son état final, sans mouvement.
 // - Sans WebGL ou sans JavaScript : la liste des 6 étapes reste affichée à la place (repli lisible).
 // - La liste reste toujours lisible par les lecteurs d'écran ; le dessin 3D est décoratif (aria-hidden).
@@ -30,14 +32,16 @@ const etapes = programme.modules.map((m, i) => ({ num: String(i + 1).padStart(2,
   .parcours3d { position: relative; margin: 0; display: grid; gap: 0.6rem; }
   .p3d-scene { position: relative; aspect-ratio: 1 / 1; max-height: 560px; width: 100%; display: none; }
   .parcours3d[data-etat="3d"] .p3d-scene { display: block; }
-  .p3d-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+  .p3d-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block;
+    /* bords de la scène fondus dans la page : aucun cadre visible */
+    -webkit-mask-image: radial-gradient(ellipse 72% 68% at 50% 46%, #000 62%, transparent 100%); mask-image: radial-gradient(ellipse 72% 68% at 50% 46%, #000 62%, transparent 100%); }
   .p3d-etiquettes { position: absolute; inset: 0; pointer-events: none; }
   .p3d-etiquette { position: absolute; left: 0; top: 0; transform: translate(-50%, -50%); white-space: nowrap;
     display: inline-flex; align-items: center; gap: 0.45rem; padding: 0.3rem 0.7rem 0.3rem 0.35rem;
     font: 600 0.8rem/1.2 var(--police-texte); color: var(--ink);
-    background: rgba(7, 21, 33, 0.82); border: 1px solid rgba(46, 196, 182, 0.45); border-radius: 999px;
+    background: rgba(22, 24, 27, 0.86); border: 1px solid rgba(212, 217, 224, 0.45); border-radius: 999px;
     box-shadow: 0 4px 18px rgba(0, 0, 0, 0.35); opacity: 0; visibility: hidden; }
-  .p3d-etiquette b { font: 700 0.72rem/1 var(--police-mono); color: #04211e; background: var(--brand); border-radius: 999px; padding: 0.22rem 0.42rem; }
+  .p3d-etiquette b { font: 700 0.72rem/1 var(--police-mono); color: var(--on-brand); background: var(--brand); border-radius: 999px; padding: 0.22rem 0.42rem; }
   .p3d-etiquette.p3d-but { border-color: rgba(232, 185, 92, 0.7); font-weight: 700; }
   .p3d-etiquette.p3d-but b { background: var(--gold); }
   /* Repli (sans 3D) : escalier simple des 6 étapes */
@@ -61,6 +65,10 @@ const etapes = programme.modules.map((m, i) => ({ num: String(i + 1).padStart(2,
 </style>
 
 <script>
+  // Scène « 4DX » : rendu chrome réaliste (reflets d'environnement), caméra embarquée qui suit la comète,
+  // impacts (secousse + éclair) à chaque étape, onde de choc à l'arrivée, puis caméra pilotée par
+  // le défilement, la souris et l'inclinaison du téléphone. Aucune boucle : on ne dessine que pendant
+  // l'animation d'arrivée (une fois) ou quand la personne fait défiler / bouge la souris / incline l'écran.
   const figure = document.querySelector(".parcours3d") as HTMLElement | null;
   const webglPossible = (() => {
     try { const c = document.createElement("canvas"); return Boolean(c.getContext("webgl2") || c.getContext("webgl")); } catch { return false; }
@@ -70,7 +78,6 @@ const etapes = programme.modules.map((m, i) => ({ num: String(i + 1).padStart(2,
   }
 
   if (figure && webglPossible) {
-    // Chargement de la 3D seulement quand la scène est (presque) visible.
     const obs = new IntersectionObserver((entrees) => {
       if (entrees.some((e) => e.isIntersecting)) { obs.disconnect(); demarrer(figure).catch(() => { figure.dataset.etat = "repli"; }); }
     }, { rootMargin: "200px" });
@@ -78,122 +85,224 @@ const etapes = programme.modules.map((m, i) => ({ num: String(i + 1).padStart(2,
   }
 
   async function demarrer(fig: HTMLElement) {
-    const THREE = await import("three");
+    const THREE: any = await import("three");
+    const { RoomEnvironment }: any = await import("three/examples/jsm/environments/RoomEnvironment.js");
     const canvas = fig.querySelector(".p3d-canvas") as HTMLCanvasElement;
     const scene3d = fig.querySelector(".p3d-scene") as HTMLElement;
     const etiquettes = [...fig.querySelectorAll<HTMLElement>(".p3d-etiquette")];
     const bouton = fig.querySelector(".p3d-rejouer") as HTMLButtonElement;
-    const reduit = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    // Mode léger si le navigateur dessine la 3D sans carte graphique (rendu « logiciel ») : image finale fixe,
+    // sans reflets coûteux, pour que la page reste fluide sur les ordinateurs lents.
+    const logiciel = (() => {
+      // ?rendu3d=complet force la version animée (utilisé par les tests automatiques, sans carte graphique)
+      if (new URLSearchParams(location.search).get("rendu3d") === "complet") return false;
+      try {
+        const gl = document.createElement("canvas").getContext("webgl") as WebGLRenderingContext | null;
+        const ext = gl?.getExtension("WEBGL_debug_renderer_info");
+        const nom = ext ? String(gl!.getParameter(ext.UNMASKED_RENDERER_WEBGL)) : "";
+        return /swiftshader|llvmpipe|software|basic render/i.test(nom);
+      } catch { return false; }
+    })();
+    const reduit = logiciel || window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    fig.dataset.rendu = logiciel ? "leger" : "complet";
 
     fig.dataset.etat = "3d";
-    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: "low-power" });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: "high-performance" });
+    renderer.setPixelRatio(logiciel ? 1 : Math.min(window.devicePixelRatio || 1, 1.75));
     renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.15;
 
     const scene = new THREE.Scene();
-    scene.fog = new THREE.Fog(0x071521, 9, 20);
-    const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 60);
-
-    const TURQUOISE = 0x2ec4b6, CYAN = 0x22d3ee, OR = 0xe8b95c;
-    scene.add(new THREE.AmbientLight(0x9fdcff, 0.55));
-    const lumHaut = new THREE.PointLight(OR, 30, 14); lumHaut.position.set(0, 6.2, 0); scene.add(lumHaut);
-    const lumBas = new THREE.PointLight(TURQUOISE, 26, 14); lumBas.position.set(2.5, 1.2, 3); scene.add(lumBas);
-
-    // Sol : grille fine qui s'efface au loin
-    const grille = new THREE.GridHelper(22, 44, 0x1f8f86, 0x123047);
-    (grille.material as THREE.Material).transparent = true; (grille.material as THREE.Material).opacity = 0.35;
-    grille.position.y = -0.6; scene.add(grille);
-
-    // Champ d'étoiles (fixe)
-    const nb = 380, pos = new Float32Array(nb * 3);
-    for (let i = 0; i < nb; i++) {
-      const r = 7 + Math.random() * 9, a = Math.random() * Math.PI * 2;
-      pos[i * 3] = Math.cos(a) * r; pos[i * 3 + 1] = -0.5 + Math.random() * 10; pos[i * 3 + 2] = Math.sin(a) * r;
+    // Environnement lumineux simulé : c'est lui qui donne les vrais reflets du chrome.
+    if (!logiciel) {
+      const pmrem = new THREE.PMREMGenerator(renderer);
+      scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+      pmrem.dispose();
     }
-    const geoEtoiles = new THREE.BufferGeometry(); geoEtoiles.setAttribute("position", new THREE.BufferAttribute(pos, 3));
-    scene.add(new THREE.Points(geoEtoiles, new THREE.PointsMaterial({ color: 0x9fe8de, size: 0.04, transparent: true, opacity: 0.7 })));
+    scene.fog = new THREE.Fog(0x16181b, 10, 24);
+    const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 80);
 
-    // Axe central lumineux
-    const axe = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 6.6, 12), new THREE.MeshBasicMaterial({ color: TURQUOISE, transparent: true, opacity: 0.35 }));
-    axe.position.y = 2.7; scene.add(axe);
+    const BLANC = 0xffffff, ARGENT = 0xd4d9e0, ACIER = 0x8a929c;
+    // Matériau chrome : réaliste (reflets) sur une vraie carte graphique, simplifié en mode léger.
+    const metal = (o: any) => {
+      if (!logiciel) return new THREE.MeshStandardMaterial(o);
+      const { metalness, roughness, ...reste } = o;
+      return new THREE.MeshLambertMaterial(reste);
+    };
+    scene.add(new THREE.AmbientLight(0xffffff, 0.25));
+    const lumHaut = new THREE.PointLight(0xfff4e0, 40, 16); scene.add(lumHaut);
+    const lumCote = new THREE.DirectionalLight(0xffffff, 1.6); lumCote.position.set(5, 8, 6); scene.add(lumCote);
+    const lumComete = new THREE.PointLight(BLANC, 0, 5); scene.add(lumComete);
 
-    // Six plateformes hexagonales en spirale (les modules)
+    // Halo lumineux réutilisable (sprite additif) : remplace un effet de « bloom » coûteux.
+    const tex = (() => {
+      const c = document.createElement("canvas"); c.width = c.height = 128;
+      const g = c.getContext("2d")!; const d = g.createRadialGradient(64, 64, 0, 64, 64, 64);
+      d.addColorStop(0, "rgba(255,255,255,1)"); d.addColorStop(0.25, "rgba(235,240,246,0.55)"); d.addColorStop(1, "rgba(255,255,255,0)");
+      g.fillStyle = d; g.fillRect(0, 0, 128, 128);
+      const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
+    })();
+    const halo = (taille: number, opacite = 0) => {
+      const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, color: BLANC, transparent: true, opacity: opacite, blending: THREE.AdditiveBlending, depthWrite: false }));
+      s.scale.set(taille, taille, 1); scene.add(s); return s;
+    };
+
+    // Sol en métal sombre (reflète l'environnement) + grille fine
+    // Le sol s'efface vers les bords (texture de transparence en dégradé) : pas de bordure visible.
+    const fondu = (() => {
+      const c = document.createElement("canvas"); c.width = c.height = 256;
+      const g = c.getContext("2d")!; const d = g.createRadialGradient(128, 128, 0, 128, 128, 128);
+      d.addColorStop(0, "#fff"); d.addColorStop(0.45, "#888"); d.addColorStop(1, "#000");
+      g.fillStyle = d; g.fillRect(0, 0, 256, 256); return new THREE.CanvasTexture(c);
+    })();
+    const sol = new THREE.Mesh(new THREE.CircleGeometry(9, 64), metal({ color: 0x15171a, metalness: 0.9, roughness: 0.32, transparent: true, alphaMap: fondu, depthWrite: false }));
+    sol.rotation.x = -Math.PI / 2; sol.position.y = -0.62; scene.add(sol);
+    const grille = new THREE.GridHelper(28, 56, 0x6f7681, 0x2c3036);
+    grille.material.transparent = true; grille.material.opacity = 0.18; grille.position.y = -0.6; scene.add(grille);
+
+    // Poussières en suspension (ne bougent que pendant l'animation d'arrivée)
+    const NB = 420, pos = new Float32Array(NB * 3), base = new Float32Array(NB * 3);
+    for (let i = 0; i < NB; i++) {
+      const r = 1.5 + Math.random() * 11, a = Math.random() * Math.PI * 2;
+      base[i * 3] = Math.cos(a) * r; base[i * 3 + 1] = -0.5 + Math.random() * 10; base[i * 3 + 2] = Math.sin(a) * r;
+    }
+    pos.set(base);
+    const geoPoussiere = new THREE.BufferGeometry(); geoPoussiere.setAttribute("position", new THREE.BufferAttribute(pos, 3));
+    scene.add(new THREE.Points(geoPoussiere, new THREE.PointsMaterial({ color: 0xe6e9ed, size: 0.035, transparent: true, opacity: 0.55, depthWrite: false })));
+
+    // Axe central en acier
+    const axe = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 6.8, 24), metal({ color: ARGENT, metalness: 1, roughness: 0.2 }));
+    axe.position.y = 2.8; scene.add(axe);
+
+    // Six plateformes hexagonales en chrome poli
     const N = 6, RAYON = 2.15, PAS = 0.86;
-    const centres: InstanceType<typeof THREE.Vector3>[] = [];
-    const plateformes: { mat: InstanceType<typeof THREE.MeshStandardMaterial>; bord: InstanceType<typeof THREE.LineBasicMaterial> }[] = [];
+    const centres: any[] = [];
+    const plateformes: { mat: any; bord: any; eclat: any; maille: any }[] = [];
     for (let i = 0; i < N; i++) {
       const a = i * (Math.PI * 2 / N) * 0.9 + Math.PI * 0.15;
       const c = new THREE.Vector3(Math.cos(a) * RAYON, i * PAS, Math.sin(a) * RAYON);
       centres.push(c);
-      const geo = new THREE.CylinderGeometry(0.78, 0.78, 0.14, 6);
-      const mat = new THREE.MeshStandardMaterial({ color: 0x0f2638, emissive: TURQUOISE, emissiveIntensity: 0.05, metalness: 0.4, roughness: 0.35, transparent: true, opacity: 0.92 });
-      const plat = new THREE.Mesh(geo, mat); plat.position.copy(c); scene.add(plat);
-      const bord = new THREE.LineBasicMaterial({ color: CYAN, transparent: true, opacity: 0.25 });
+      const geo = new THREE.CylinderGeometry(0.8, 0.8, 0.16, 6);
+      const mat = metal({ color: 0xc9ced6, metalness: 1, roughness: 0.16, emissive: BLANC, emissiveIntensity: 0 });
+      const maille = new THREE.Mesh(geo, mat); maille.position.copy(c); scene.add(maille);
+      const bord = new THREE.LineBasicMaterial({ color: BLANC, transparent: true, opacity: 0.15 });
       const aretes = new THREE.LineSegments(new THREE.EdgesGeometry(geo), bord); aretes.position.copy(c); scene.add(aretes);
-      plateformes.push({ mat, bord });
+      const eclat = halo(2.4); eclat.position.copy(c).setY(c.y + 0.12);
+      plateformes.push({ mat, bord, eclat, maille });
     }
 
-    // Le but : un « noyau » doré au sommet (le SaaS lancé, avec ses abonnés)
-    const SOMMET = new THREE.Vector3(0, N * PAS + 0.55, 0);
-    const noyauMat = new THREE.MeshStandardMaterial({ color: 0x3a2a08, emissive: OR, emissiveIntensity: 0.15, metalness: 0.6, roughness: 0.25 });
-    const noyau = new THREE.Mesh(new THREE.IcosahedronGeometry(0.42, 1), noyauMat); noyau.position.copy(SOMMET); scene.add(noyau);
-    const cageMat = new THREE.MeshBasicMaterial({ color: OR, wireframe: true, transparent: true, opacity: 0.0 });
-    const cage = new THREE.Mesh(new THREE.IcosahedronGeometry(0.7, 1), cageMat); cage.position.copy(SOMMET); scene.add(cage);
-    const anneauMat = new THREE.MeshBasicMaterial({ color: OR, transparent: true, opacity: 0.0 });
-    const anneau = new THREE.Mesh(new THREE.TorusGeometry(1.05, 0.018, 8, 80), anneauMat);
+    // L'objectif au sommet : sphère chrome miroir, cage et anneau, halo puissant
+    const SOMMET = new THREE.Vector3(0, N * PAS + 0.6, 0);
+    const noyauMat = metal({ color: 0xf2f4f7, metalness: 1, roughness: 0.04, emissive: 0xfff6e6, emissiveIntensity: 0 });
+    const noyau = new THREE.Mesh(new THREE.SphereGeometry(0.45, 48, 48), noyauMat); noyau.position.copy(SOMMET); scene.add(noyau);
+    const cageMat = new THREE.MeshBasicMaterial({ color: BLANC, wireframe: true, transparent: true, opacity: 0 });
+    const cage = new THREE.Mesh(new THREE.IcosahedronGeometry(0.78, 1), cageMat); cage.position.copy(SOMMET); scene.add(cage);
+    const anneauMat = metal({ color: ARGENT, metalness: 1, roughness: 0.12, transparent: true, opacity: 0 });
+    const anneau = new THREE.Mesh(new THREE.TorusGeometry(1.1, 0.03, 16, 120), anneauMat);
     anneau.position.copy(SOMMET); anneau.rotation.x = Math.PI / 2.4; scene.add(anneau);
+    const haloSommet = halo(4.2); haloSommet.position.copy(SOMMET);
+    // Onde de choc (jouée une fois à l'arrivée)
+    const ondeMat = new THREE.MeshBasicMaterial({ color: BLANC, transparent: true, opacity: 0, side: THREE.DoubleSide, depthWrite: false });
+    const onde = new THREE.Mesh(new THREE.RingGeometry(0.95, 1.05, 96), ondeMat);
+    onde.position.copy(SOMMET); onde.rotation.x = -Math.PI / 2; scene.add(onde);
 
-    // Chemin lumineux : du sol jusqu'au sommet, en passant par chaque plateforme
-    const points = [new THREE.Vector3(centres[0].x * 1.5, -0.55, centres[0].z * 1.5), ...centres.map((c) => c.clone().setY(c.y + 0.12)), SOMMET.clone()];
+    // Chemin lumineux
+    const points = [new THREE.Vector3(centres[0].x * 1.6, -0.58, centres[0].z * 1.6), ...centres.map((c: any) => c.clone().setY(c.y + 0.14)), SOMMET.clone()];
     const courbe = new THREE.CatmullRomCurve3(points, false, "catmullrom", 0.4);
-    const geoChemin = new THREE.TubeGeometry(courbe, 260, 0.04, 8, false);
+    const geoChemin = new THREE.TubeGeometry(courbe, 300, 0.035, 10, false);
     const totalIndex = geoChemin.index ? geoChemin.index.count : 0;
-    const chemin = new THREE.Mesh(geoChemin, new THREE.MeshBasicMaterial({ color: CYAN }));
-    scene.add(chemin);
-    // Point de lumière qui avance sur le chemin pendant l'animation
-    const comete = new THREE.Mesh(new THREE.SphereGeometry(0.09, 16, 16), new THREE.MeshBasicMaterial({ color: 0xffffff }));
+    scene.add(new THREE.Mesh(geoChemin, new THREE.MeshBasicMaterial({ color: BLANC })));
+    const comete = new THREE.Mesh(new THREE.SphereGeometry(0.08, 20, 20), new THREE.MeshBasicMaterial({ color: BLANC }));
     scene.add(comete);
+    const haloComete = halo(1.1, 0.9);
 
-    // Caméra : tourne et monte pendant l'animation
+    // --- Caméra ---
     const cible = new THREE.Vector3(0, 2.2, 0);
     let recul = 1;
-    const souris = { x: 0, y: 0, vx: 0, vy: 0 };
+    const ctrl = { x: 0, y: 0, vx: 0, vy: 0, defil: 0, vdefil: 0 };   // souris/inclinaison et défilement (valeurs lissées « v »)
+    const tmpA = new THREE.Vector3(), tmpB = new THREE.Vector3(), regard = new THREE.Vector3();
+    function poseLarge(pos: any, vise: any) {
+      const d = ctrl.vdefil;
+      const angle = 0.15 + ctrl.vx * 0.3 + d * 0.7;
+      const hauteur = 4.6 - ctrl.vy * 0.9 + d * 2.6;
+      const dist = 9.4 * recul - d * 1.6;
+      pos.set(Math.cos(angle) * dist, hauteur, Math.sin(angle) * dist);
+      vise.set(cible.x, cible.y + 0.6 + d * 0.9, cible.z);
+    }
+    function poseEmbarquee(u: number, pos: any, vise: any) {
+      const pt = courbe.getPointAt(Math.min(1, Math.max(0, u)));
+      const rad = tmpA.set(pt.x, 0, pt.z); if (rad.lengthSq() < 0.01) rad.set(1, 0, 0); rad.normalize();
+      pos.copy(pt).addScaledVector(rad, 3.4 * recul).add(tmpB.set(0, 1.35, 0));
+      vise.copy(courbe.getPointAt(Math.min(1, u + 0.07)));
+    }
+    const lisse = (x: number) => { const t = Math.max(0, Math.min(1, x)); return t * t * (3 - 2 * t); };
+    const posL = new THREE.Vector3(), viseL = new THREE.Vector3(), posE = new THREE.Vector3(), viseE = new THREE.Vector3();
+    let secousse = 0;
     function placerCamera(p: number) {
-      const angle = -0.9 + p * 1.05 + souris.vx * 0.25;
-      const hauteur = 2.2 + p * 2.4 - souris.vy * 0.8;
-      const dist = (10.6 - p * 1.2) * recul;
-      camera.position.set(Math.cos(angle) * dist, hauteur, Math.sin(angle) * dist);
-      camera.lookAt(cible.x, cible.y + p * 0.6, cible.z);
+      poseLarge(posL, viseL);
+      if (p >= 1) { camera.position.copy(posL); regard.copy(viseL); }
+      else {
+        poseEmbarquee(Math.min(1, p / 0.82), posE, viseE);
+        const m = lisse((p - 0.7) / 0.3);   // passage de la caméra embarquée au plan large
+        camera.position.lerpVectors(posE, posL, m); regard.lerpVectors(viseE, viseL, m);
+      }
+      if (secousse > 0.001) camera.position.add(tmpA.set((Math.random() - 0.5) * secousse, (Math.random() - 0.5) * secousse, (Math.random() - 0.5) * secousse));
+      camera.lookAt(regard);
     }
 
-    const lisse = (x: number) => x * x * (3 - 2 * x);
-    // Étiquette visible ou cachée d'un coup (jamais à moitié transparente : contraste toujours suffisant).
+    // Étiquettes : visibles d'un coup (jamais à moitié transparentes, contraste toujours suffisant)
     const montrer = (el: HTMLElement, oui: boolean) => { el.style.opacity = oui ? "1" : "0"; el.style.visibility = oui ? "visible" : "hidden"; };
-    function appliquer(p: number) {
-      // p : avancement de 0 à 1
-      if (totalIndex) geoChemin.setDrawRange(0, Math.floor((totalIndex * Math.min(1, p * 1.08)) / 3) * 3);
-      const pt = courbe.getPointAt(Math.max(0, Math.min(1, p * 1.08)));
-      comete.position.copy(pt); comete.visible = p < 0.93;
+    const atteinte = new Array(N + 1).fill(false);
+    const eclairs = new Array(N + 1).fill(0);
+    let onde01 = 0;
+    function appliquer(p: number, dt: number) {
+      const avance = Math.min(1, p / 0.82);   // la comète arrive au sommet à 82 % de l'animation
+      if (totalIndex) geoChemin.setDrawRange(0, Math.floor((totalIndex * avance) / 3) * 3);
+      const pt = courbe.getPointAt(avance);
+      comete.position.copy(pt); haloComete.position.copy(pt); lumComete.position.copy(pt);
+      const enCourse = avance < 1;
+      comete.visible = enCourse; haloComete.visible = enCourse; lumComete.intensity = enCourse ? 6 : 0;
       plateformes.forEach((pl, i) => {
-        const allume = lisse(Math.max(0, Math.min(1, (p * 1.08 - (i + 0.5) / (N + 1)) * 6)));
-        pl.mat.emissiveIntensity = 0.05 + allume * 0.55;
-        pl.bord.opacity = 0.25 + allume * 0.75;
-        montrer(etiquettes[i], allume > 0.5);
+        const oui = avance >= (i + 1.15) / (N + 1.6);
+        if (oui && !atteinte[i]) { atteinte[i] = true; eclairs[i] = 1; if (!reduit && p < 1) secousse = 0.09; }
+        if (!oui) atteinte[i] = false;
+        eclairs[i] = Math.max(0, eclairs[i] - dt * 2.2);
+        pl.mat.emissiveIntensity = oui ? 0.06 + eclairs[i] * 0.5 : 0;
+        pl.bord.opacity = oui ? 0.85 : 0.15;
+        pl.eclat.material.opacity = oui ? 0.18 + eclairs[i] * 0.8 : 0;
+        // Pendant la course de la caméra, seule la dernière étape atteinte garde son étiquette (sinon elles s'empilent).
+        const derniere = !(avance >= (i + 2.15) / (N + 1.6));
+        montrer(etiquettes[i], oui && (p >= 0.9 || reduit || derniere));
       });
-      const fin = lisse(Math.max(0, Math.min(1, (p - 0.86) / 0.14)));
-      noyauMat.emissiveIntensity = 0.15 + fin * 1.4;
-      cageMat.opacity = fin * 0.55; anneauMat.opacity = fin * 0.8;
-      cage.rotation.y = p * 2.2; anneau.rotation.z = p * 1.6;
-      montrer(etiquettes[N], fin > 0.5);
+      const fini = avance >= 1;
+      if (fini && !atteinte[N]) { atteinte[N] = true; eclairs[N] = 1; onde01 = reduit ? 1 : 0; if (!reduit && p < 1) secousse = 0.16; }
+      if (!fini) { atteinte[N] = false; onde01 = 0; }
+      eclairs[N] = Math.max(0, eclairs[N] - dt * 1.4);
+      if (fini && onde01 < 1) onde01 = Math.min(1, onde01 + dt / 1.3);
+      noyauMat.emissiveIntensity = fini ? 0.25 + eclairs[N] * 2.2 : 0;
+      lumHaut.position.copy(SOMMET); lumHaut.intensity = fini ? 40 + eclairs[N] * 160 : 10;
+      cageMat.opacity = fini ? 0.5 : 0; anneauMat.opacity = fini ? 1 : 0;
+      haloSommet.material.opacity = fini ? 0.35 + eclairs[N] * 0.65 : 0;
+      cage.rotation.y = p * 2.4; anneau.rotation.z = p * 1.8;
+      const e = lisse(onde01);
+      onde.scale.setScalar(1 + e * 5.5); ondeMat.opacity = fini && onde01 < 1 ? (1 - e) * 0.7 : 0;
+      montrer(etiquettes[N], fini);
+      // Poussières : montent doucement pendant l'animation seulement
+      for (let i = 0; i < NB; i++) pos[i * 3 + 1] = -0.5 + ((base[i * 3 + 1] + 0.5 + p * 1.6) % 10);
+      geoPoussiere.attributes.position.needsUpdate = true;
+      secousse *= Math.pow(0.0005, dt);   // la secousse s'éteint en quelques dixièmes de seconde
       placerCamera(reduit ? 1 : p);
     }
 
     const projete = new THREE.Vector3();
     function placerEtiquettes() {
       const l = scene3d.clientWidth, h = scene3d.clientHeight;
-      [...centres, SOMMET].forEach((c, i) => {
-        projete.copy(c); projete.y += i === N ? 0.95 : 0.42; projete.project(camera);
+      [...centres, SOMMET].forEach((c: any, i: number) => {
+        projete.copy(c); projete.y += i === N ? 1.05 : 0.45; projete.project(camera);
+        const cache = projete.z > 1;
         etiquettes[i].style.transform = `translate(-50%, -50%) translate(${((projete.x + 1) / 2) * l}px, ${((1 - projete.y) / 2) * h}px)`;
+        if (cache) montrer(etiquettes[i], false);
       });
     }
 
@@ -208,43 +317,63 @@ const etapes = programme.modules.map((m, i) => ({ num: String(i + 1).padStart(2,
     }
 
     let progression = reduit ? 1 : 0;
-    function dessiner() { appliquer(progression); renderer.render(scene, camera); placerEtiquettes(); }
+    let enCours = false;
+    // La scène n'est dessinée que si elle est à l'écran (économie de batterie et page fluide quand on descend).
+    let visible = true;
+    new IntersectionObserver((e) => { visible = e.some((x) => x.isIntersecting); if (visible && !enCours) dessiner(); }).observe(scene3d);
+    function dessiner(dt = 0) { appliquer(progression, dt); if (!visible) return; renderer.render(scene, camera); placerEtiquettes(); }
 
-    // Animation unique
+    // Animation d'arrivée, jouée une fois
     let raf = 0;
+    const DUREE = 7600;
     function jouer() {
       if (reduit) { progression = 1; dessiner(); return; }
-      cancelAnimationFrame(raf);
-      bouton.hidden = true;
-      const debut = performance.now(), DUREE = 6000;
+      cancelAnimationFrame(raf); enCours = true; bouton.hidden = true;
+      atteinte.fill(false); eclairs.fill(0); onde01 = 0;
+      const debut = performance.now(); let avant = debut;
       const pas = (t: number) => {
+        const dt = Math.min(0.05, Math.max(0, (t - avant) / 1000)); avant = t;
         progression = Math.max(0, Math.min(1, (t - debut) / DUREE));
-        dessiner();
-        if (progression < 1) raf = requestAnimationFrame(pas);
-        else bouton.hidden = false;
+        dessiner(dt);
+        // après la fin, quelques images de plus pour laisser l'onde de choc et l'éclair s'éteindre
+        if (progression < 1 || onde01 < 1 || eclairs[N] > 0.01) raf = requestAnimationFrame(pas);
+        else { enCours = false; bouton.hidden = false; }
       };
       raf = requestAnimationFrame(pas);
     }
 
-    // Parallaxe à la souris (seulement quand la souris bouge, s'arrête dès qu'elle est immobile)
-    let rafSouris = 0;
-    function suivreSouris() {
-      souris.vx += (souris.x - souris.vx) * 0.12; souris.vy += (souris.y - souris.vy) * 0.12;
-      dessiner();
-      if (Math.abs(souris.x - souris.vx) + Math.abs(souris.y - souris.vy) > 0.002) rafSouris = requestAnimationFrame(suivreSouris);
-      else rafSouris = 0;
+    // « 4DX » : la caméra suit le défilement, la souris et l'inclinaison (images dessinées seulement quand ça bouge)
+    let rafCtrl = 0;
+    function suivre() {
+      ctrl.vx += (ctrl.x - ctrl.vx) * 0.12; ctrl.vy += (ctrl.y - ctrl.vy) * 0.12; ctrl.vdefil += (ctrl.defil - ctrl.vdefil) * 0.15;
+      if (!enCours) dessiner(0.016);
+      const reste = Math.abs(ctrl.x - ctrl.vx) + Math.abs(ctrl.y - ctrl.vy) + Math.abs(ctrl.defil - ctrl.vdefil);
+      rafCtrl = reste > 0.002 ? requestAnimationFrame(suivre) : 0;
     }
+    const relancer = () => { if (!rafCtrl) rafCtrl = requestAnimationFrame(suivre); };
     if (!reduit) {
       scene3d.closest(".heros")?.addEventListener("pointermove", (e) => {
         const ev = e as PointerEvent;
         if (ev.pointerType !== "mouse") return;
-        souris.x = (ev.clientX / window.innerWidth) * 2 - 1;
-        souris.y = (ev.clientY / window.innerHeight) * 2 - 1;
-        if (!rafSouris && progression >= 1) rafSouris = requestAnimationFrame(suivreSouris);
+        ctrl.x = (ev.clientX / window.innerWidth) * 2 - 1; ctrl.y = (ev.clientY / window.innerHeight) * 2 - 1; relancer();
       });
+      window.addEventListener("scroll", () => {
+        const r = fig.getBoundingClientRect();
+        ctrl.defil = Math.max(0, Math.min(1, -r.top / Math.max(1, r.height))); relancer();
+      }, { passive: true });
+      // Inclinaison du téléphone : seulement quand le navigateur la donne sans demande d'autorisation (pas sur iPhone)
+      const DOE = (window as any).DeviceOrientationEvent;
+      if (DOE && typeof DOE.requestPermission !== "function" && window.matchMedia("(pointer: coarse)").matches) {
+        window.addEventListener("deviceorientation", (e: any) => {
+          if (e.gamma == null || e.beta == null) return;
+          const x = Math.max(-1, Math.min(1, e.gamma / 30)), y = Math.max(-1, Math.min(1, (e.beta - 45) / 40));
+          if (Math.abs(x - ctrl.x) + Math.abs(y - ctrl.y) < 0.03) return;   // ignore les micro-tremblements
+          ctrl.x = x; ctrl.y = y; relancer();
+        });
+      }
     }
 
-    new ResizeObserver(() => { redimensionner(); dessiner(); }).observe(scene3d);
+    new ResizeObserver(() => { redimensionner(); if (!enCours) dessiner(); }).observe(scene3d);
     bouton.addEventListener("click", jouer);
     redimensionner();
     jouer();

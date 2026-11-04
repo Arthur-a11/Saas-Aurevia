@@ -13,7 +13,7 @@ body {
   font: 400 1.0625rem/1.6 var(--police-texte);
   /* Fond : dégradé bleu nuit, grille fine et une seule lueur turquoise discrète, sans animation. */
   background:
-    radial-gradient(1100px 520px at 85% -8%, rgba(46, 196, 182, 0.09), transparent 62%),
+    radial-gradient(1100px 520px at 85% -8%, rgba(212, 217, 224, 0.07), transparent 62%),
     linear-gradient(var(--grille) 1px, transparent 1px) 0 0 / 56px 56px,
     linear-gradient(90deg, var(--grille) 1px, transparent 1px) 0 0 / 56px 56px,
     var(--bg-grad);
@@ -48,7 +48,7 @@ main:focus { outline: none; }
 .lien-evitement:focus { top: 1rem; }
 
 /* ---------- En-tête et menu ---------- */
-.entete { position: sticky; top: 0; z-index: 10; background: rgba(7, 21, 33, 0.96); border-bottom: 1px solid var(--line); }
+.entete { position: sticky; top: 0; z-index: 10; background: rgba(22, 24, 27, 0.94); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }
 .entete .wrap { display: flex; align-items: center; justify-content: space-between; gap: 1rem; min-height: var(--header-h); }
 .logo { font: 800 1.35rem var(--police-titre); text-decoration: none; white-space: nowrap; }
 .menu-bouton { display: none; }
@@ -86,7 +86,7 @@ main:focus { outline: none; }
   min-height: 44px; padding: 0.8rem 1.5rem; border: 0; border-radius: 999px;
   background: var(--grad); color: var(--on-brand);
   font: 700 1rem var(--police-texte); text-decoration: none; cursor: pointer;
-  box-shadow: 0 6px 18px -10px rgba(46, 196, 182, 0.7);
+  box-shadow: 0 6px 18px -10px rgba(0, 0, 0, 0.6);
   transition: transform 0.15s, filter 0.15s, background-color 0.15s;
 }
 .btn:hover { filter: brightness(1.08); }
@@ -99,8 +99,8 @@ main:focus { outline: none; }
 
 /* ---------- Sections et cartes ---------- */
 section { padding: var(--espace-section) 0; }
-section.bande { background: rgba(11, 29, 46, 0.72); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
-section.finale { background: linear-gradient(180deg, rgba(46, 196, 182, 0.10), rgba(11, 29, 46, 0.6)); text-align: center; border-top: 1px solid var(--line); }
+section.bande { background: rgba(28, 31, 35, 0.72); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+section.finale { background: linear-gradient(180deg, rgba(212, 217, 224, 0.08), rgba(28, 31, 35, 0.6)); text-align: center; border-top: 1px solid var(--line); }
 section.finale h2::after { margin-left: auto; margin-right: auto; }
 section.finale .sous-titre { margin-left: auto; margin-right: auto; color: var(--ink); }
 section.finale .cta { justify-content: center; }

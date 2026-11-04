@@ -15,39 +15,40 @@
   color-scheme: dark;
   --ombre: 0 1px 0 rgba(255, 255, 255, 0.03) inset, 0 12px 32px -18px rgba(0, 0, 0, 0.6);
 
-  /* Identité « bleu nuit et turquoise » (novembre 2026). Contrastes calculés (WCAG) :
-     texte --ink sur --surface 13,4:1 ; --muted sur --surface 7,7:1 ; --brand sur --surface 7,2:1 ;
-     texte --on-brand sur bouton --brand 7,8:1 ; blanc sur --accent-texte 6,4:1 ; --on-brand sur --gold 10,3:1. */
-  --bg: #071521;           /* fond principal : bleu nuit profond */
-  --bg-2: #0b1d2e;         /* bandes alternées */
-  --bg-grad: linear-gradient(180deg, #071521 0%, #0a1b2b 55%, #071521 100%);
-  --surface: #0f2638;      /* cartes : un peu plus claires que le fond */
-  --surface-2: #143049;    /* survol, éléments en relief */
-  --surface-forte: #0f2638;
-  --surface-hud: #0c2132;
-  --ink: #f2eee6;          /* texte principal : blanc cassé */
-  --muted: #a9b9c6;        /* texte secondaire */
-  --line: rgba(148, 196, 214, 0.16);
-  --line-forte: rgba(148, 196, 214, 0.34);
-  --grille: rgba(148, 196, 214, 0.045);   /* grille du fond */
+  /* Identité « chrome et noir clair » (4 novembre 2026, demandée par Arthur). Contrastes calculés (WCAG) :
+     texte --ink sur --surface 13,5:1 ; --muted sur --surface 7,3:1 ; --brand sur --surface 10,7:1 ;
+     texte --on-brand sur bouton chrome (couleur la plus sombre du dégradé, #a9b0ba) 8,2:1 ;
+     blanc sur --accent-texte 8,1:1 ; --on-brand sur --gold 10,1:1. */
+  --bg: #16181b;           /* fond principal : noir clair (anthracite) */
+  --bg-2: #1c1f23;         /* bandes alternées */
+  --bg-grad: linear-gradient(180deg, #16181b 0%, #1d2024 55%, #16181b 100%);
+  --surface: #23262b;      /* cartes : gris chrome foncé */
+  --surface-2: #2c3036;    /* survol, éléments en relief */
+  --surface-forte: #23262b;
+  --surface-hud: #1f2226;
+  --ink: #f1f2f4;          /* texte principal : blanc argenté */
+  --muted: #aeb4bd;        /* texte secondaire : gris clair */
+  --line: rgba(205, 211, 219, 0.14);
+  --line-forte: rgba(205, 211, 219, 0.32);
+  --grille: rgba(205, 211, 219, 0.04);   /* grille du fond */
 
-  /* Marque */
-  --brand: #2ec4b6;        /* turquoise : actions principales, progression */
-  --brand-doux: rgba(46, 196, 182, 0.12);
-  --accent: #2ec4b6;
-  --accent-texte: #0b6b64; /* turquoise foncé : fond des badges à texte blanc */
-  --on-brand: #04211e;     /* texte sur turquoise */
-  --gold: #e6bc72;         /* couleur secondaire, avec modération : statuts « en préparation », livrables */
-  --lien: #7fe3d6;
-  --grad: linear-gradient(180deg, #34cdbf, #2ab7aa);   /* bouton principal : presque uni */
-  --titre-grad: linear-gradient(100deg, #f6f3ec 55%, #9fe6dc);
+  /* Marque : le chrome */
+  --brand: #d4d9e0;        /* argent chrome : actions principales, progression, repères */
+  --brand-doux: rgba(212, 217, 224, 0.1);
+  --accent: #d4d9e0;
+  --accent-texte: #4a5059; /* gris acier : fond des badges à texte blanc */
+  --on-brand: #15171a;     /* texte sur chrome */
+  --gold: #e6bc72;         /* gardé pour le sens seulement : statuts « en préparation », livrables */
+  --lien: #e3e7ec;
+  --grad: linear-gradient(180deg, #f5f7f9 0%, #d3d8df 45%, #a9b0ba 52%, #dce0e5 100%);   /* bouton principal : chrome poli */
+  --titre-grad: linear-gradient(100deg, #ffffff 25%, #9aa1ab 55%, #eceff2 85%);
   --halo-violet: transparent;
   --halo-cyan: transparent;
 
   /* Assistant */
-  --chat-bg: #08192a;
-  --chat-vert: #3ddc84;
-  --chat-muted: #8fa3c8;
+  --chat-bg: #1a1c20;
+  --chat-vert: #d4d9e0;
+  --chat-muted: #9aa1ab;
 
   /* Erreur / succès */
   --erreur: #ffb4ab;

@@ -232,7 +232,7 @@ const barres = Array.from({ length: 12 }, (_, i) => (i + 1) / 12);
             <desc id="graphe-desc">Revenu mensuel si les clients arrivent progressivement sur 12 mois, jusqu’au nombre choisi.</desc>
             <defs>
               <linearGradient id="degrade-barre" x1="0" y1="1" x2="0" y2="0">
-                <stop offset="0" stop-color="#1f8f86" /><stop offset="1" stop-color="#2ec4b6" />
+                <stop offset="0" stop-color="#6f7681" /><stop offset="1" stop-color="#e6e9ed" />
               </linearGradient>
             </defs>
             {barres.map((r, i) => <rect class="barre" x={i * 20 + 3} y={70 - 66 * r} width="14" height={66 * r} rx="3" />)}
