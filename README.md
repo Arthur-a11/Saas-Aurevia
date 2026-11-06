@@ -24,6 +24,7 @@ Le site est construit avec [Astro](https://astro.build) : chaque page a sa propr
 | `video/generer-video.py` | **Nouveau** script de vidéo de présentation (l'original n'a pas été retrouvé). |
 | `docs/verifications.md` | Ce qui a été vérifié, les sources, et ce qui reste à faire. |
 | `docs/deploiement-netlify.md` | Mise en ligne sur Netlify : tests effectués, stockage, étapes. |
+| `docs/paiement-et-acces.md` | Comptes, paiement Stripe, droits par formule, espace « Ma formation » : fonctionnement, sécurité, mise en mode test, ce qui manque avant les ventes. |
 | `scripts/preparer-apercu.mjs` | Copie de l'aperçu consultable sur claude.ai (`npm run apercu`). |
 
 ## Lancer le site sur son ordinateur

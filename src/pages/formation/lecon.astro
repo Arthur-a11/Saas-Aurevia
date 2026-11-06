@@ -1,0 +1,154 @@
+---
+// Une leçon de l'espace « Ma formation ». Le contenu est envoyé par le serveur seulement si le compte y a droit.
+import Base from "../../layouts/Base.astro";
+---
+<Base titre="Leçon" noindex description="Leçon de la formation AUREVIA SAAS.">
+  <section class="entete-page">
+    <div class="wrap">
+      <p class="retour"><a href="/formation/">← Retour à ma formation</a></p>
+      <p class="surtitre" id="lecon-module">Ma formation</p>
+      <h1 class="titre-degrade" id="lecon-titre">Leçon</h1>
+    </div>
+  </section>
+  <section class="section-serree">
+    <div class="wrap">
+      <div id="etat-lecon" class="message-formulaire info" role="status"><p>Chargement de la leçon…</p></div>
+      <div class="lecon-grille">
+        <nav id="nav-module" class="nav-module" aria-label="Éléments du module" hidden></nav>
+        <article id="lecon" class="carte lecon-contenu" hidden></article>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<script>
+  import { message } from "../../lib/formulaire";
+  import { api, el } from "../../lib/espace-client";
+
+  const id = new URLSearchParams(location.search).get("id") || "";
+  const etat = document.getElementById("etat-lecon") as HTMLElement;
+  const zone = document.getElementById("lecon") as HTMLElement;
+
+  const liste = (items: string[], ordonnee = false) => el(ordonnee ? "ol" : "ul", { class: "etapes-lecon" }, ...items.map((x) => el("li", {}, x)));
+
+  /** Affichage selon le type d'élément. Tout le texte passe par textContent (aucune injection HTML). */
+  function rendu(l: any): Node[] {
+    const c = l.contenu;
+    if (l.type === "lecon") {
+      const blocs: Node[] = [el("p", { class: "chapeau" }, c.intro), el("p", { class: "note" }, `Durée de lecture : environ ${c.duree}`)];
+      for (const s of c.sections) {
+        blocs.push(el("h2", {}, s.titre));
+        for (const p of s.paragraphes ?? []) blocs.push(el("p", {}, p));
+        if (s.liste) blocs.push(liste(s.liste));
+        if (s.exemple) blocs.push(el("p", { class: "exemple" }, s.exemple));
+      }
+      blocs.push(el("div", { class: "a-retenir" }, el("h2", {}, "À retenir"), liste(c.aRetenir)));
+      return blocs;
+    }
+    if (l.type === "exercice") {
+      return [
+        el("p", { class: "chapeau" }, c.consigne),
+        el("h2", {}, "Étapes"), liste(c.etapes, true),
+        el("p", { class: "resultat" }, el("span", { class: "pastille-livrable" }, "Livrable"), " ", c.livrable),
+        el("h2", {}, "Critères de réussite"), liste(c.criteres),
+        el("details", { class: "corrige" }, el("summary", {}, c.corrige.titre), ...c.corrige.paragraphes.map((p: string) => el("p", {}, p))),
+      ];
+    }
+    if (l.type === "fiche") return [el("h2", {}, c.titre), liste(c.points)];
+    if (l.type === "checklist") {
+      return [el("p", {}, "Cochez ce que vous avez fait. Ces cases servent de repère sur cet écran ; elles ne sont pas enregistrées."),
+        el("ul", { class: "checklist-module" }, ...c.items.map((x: string, i: number) => el("li", {}, el("input", { type: "checkbox", id: `item-${i}` }), el("label", { for: `item-${i}` }, x))))];
+    }
+    if (l.type === "modele") {
+      const blocs: Node[] = [el("p", { class: "chapeau" }, c.intro),
+        el("p", { class: "cta" }, el("a", { class: "btn", href: `/api/formation/fichier?id=${encodeURIComponent(l.id)}` }, "Télécharger le modèle (fichier texte)"))];
+      for (const s of c.sections) blocs.push(el("h2", {}, s.titre), liste(s.champs));
+      return blocs;
+    }
+    return [el("p", {}, "Contenu indisponible.")];
+  }
+
+  const TYPES: Record<string, string> = { lecon: "Leçon", exercice: "Exercice", fiche: "Fiche", modele: "Modèle", checklist: "Checklist", video: "Vidéo" };
+
+  /** Navigation dans le module : éléments, état de chacun, élément actuel. Données du serveur (titres, états). */
+  async function navigationModule(idActuel: string) {
+    const r = await api("/api/formation", undefined, 10_000);
+    const m = r.data?.modules?.find((x: any) => x.lecons.some((l: any) => l.id === idActuel));
+    if (!m) return;
+    const nav = document.getElementById("nav-module") as HTMLElement;
+    const ouvertes = m.lecons.filter((l: any) => l.acces === "ouvert");
+    const faites = ouvertes.filter((l: any) => l.fait).length;
+    const liste = el("ol", {}, ...m.lecons.map((l: any) => {
+      const ouverte = l.acces === "ouvert";
+      const etat = ouverte ? (l.fait ? "Terminé" : "Non commencé") : l.acces === "non-inclus" ? "Non inclus" : "En préparation";
+      const contenu = [el("span", { class: "nav-type" }, TYPES[l.type] ?? l.type), el("span", { class: "nav-nom" }, l.titre), el("span", { class: `etat ${l.fait ? "etat-ok" : ouverte ? "etat-neutre" : "etat-verrou"}` }, etat)];
+      return el("li", {}, ouverte
+        ? el("a", { href: `?id=${l.id}`, "aria-current": l.id === idActuel ? "page" : undefined }, ...contenu)
+        : el("span", { class: "nav-ferme" }, ...contenu));
+    }));
+    const titre = `Module ${m.numero} · ${faites}/${ouvertes.length} terminé(s)`;
+    nav.replaceChildren(
+      el("details", { class: "nav-module-mobile" }, el("summary", {}, `Dans ce module (${faites}/${ouvertes.length})`), liste.cloneNode(true)),
+      el("div", { class: "nav-module-bureau" }, el("p", { class: "sommaire-titre" }, titre), liste),
+    );
+    nav.hidden = false;
+  }
+
+  async function demarrer() {
+    const moi = await api("/api/compte/moi", undefined, 8_000);
+    if (!moi.data?.connecte) {
+      message(etat, "info", "Connectez-vous pour suivre cette leçon", [el("a", { class: "btn", href: `/compte/?suite=${encodeURIComponent(location.pathname + location.search)}` }, "Me connecter")]);
+      return;
+    }
+    const r = await api(`/api/formation/lecon?id=${encodeURIComponent(id)}`, undefined, 10_000);
+    if (r.statut === 401) {
+      message(etat, "info", "Connectez-vous pour suivre cette leçon", [el("a", { class: "btn", href: `/compte/?suite=${encodeURIComponent(location.pathname + location.search)}` }, "Me connecter")]);
+      return;
+    }
+    if (r.statut === 403) {
+      message(etat, "ko", "Leçon non incluse", ["Cette leçon n’est pas incluse dans votre formule (ou votre accès n’est pas encore ouvert).", el("a", { class: "btn", href: "/formation/" }, "Retour à ma formation")]);
+      return;
+    }
+    if (r.statut === 404) {
+      message(etat, "info", "Leçon pas encore disponible", ["Cette leçon est en préparation ou n’existe pas.", el("a", { class: "btn", href: "/formation/" }, "Retour à ma formation")]);
+      return;
+    }
+    if (r.statut !== 200 || !r.data?.ok) {
+      message(etat, "ko", "Leçon indisponible", ["Le serveur ne répond pas pour le moment. Réessayez dans quelques minutes."]);
+      return;
+    }
+    const l = r.data.lecon;
+    document.title = `${l.titre} | AUREVIA SAAS`;
+    (document.getElementById("lecon-module") as HTMLElement).textContent = `Module ${l.module.numero} · ${l.module.titre}`;
+    (document.getElementById("lecon-titre") as HTMLElement).textContent = l.titre;
+    etat.hidden = true;
+
+    const fait = el("button", { type: "button", class: "btn alt", "aria-pressed": String(Boolean(l.fait)) }, l.fait ? "Leçon terminée ✓" : "Marquer comme terminée");
+    const retour = el("p", { class: "note", role: "status" });
+    fait.addEventListener("click", async () => {
+      const nouveau = fait.getAttribute("aria-pressed") !== "true";
+      fait.disabled = true;
+      const p = await api("/api/formation/progression", { lecon: l.id, fait: nouveau });
+      fait.disabled = false;
+      if (p.data?.ok) {
+        fait.setAttribute("aria-pressed", String(p.data.fait));
+        fait.textContent = p.data.fait ? "Leçon terminée ✓" : "Marquer comme terminée";
+        retour.textContent = `Progression enregistrée : ${p.data.progression.faites} leçon(s) sur ${p.data.progression.total}.`;
+        navigationModule(l.id);
+      } else {
+        retour.textContent = "La progression n’a pas pu être enregistrée. Réessayez dans un instant.";
+      }
+    });
+    zone.replaceChildren(
+      l.statut === "brouillon" ? el("p", { class: "encadre attention bandeau-brouillon" }, el("strong", {}, "Brouillon : "), "ce contenu est rédigé mais pas encore relu ni validé. Il peut encore changer.") : "",
+      ...rendu(l),
+      el("div", { class: "lecon-actions" }, fait, retour),
+      el("nav", { class: "lecon-navigation", "aria-label": "Leçons voisines" },
+        l.precedente ? el("a", { class: "btn alt petit", href: `?id=${l.precedente}` }, "← Leçon précédente") : el("span"),
+        l.suivante ? el("a", { class: "btn petit", href: `?id=${l.suivante}` }, "Leçon suivante →") : el("a", { class: "btn petit", href: "/formation/" }, "Retour à ma formation")),
+    );
+    zone.hidden = false;
+    navigationModule(l.id);
+  }
+  demarrer();
+</script>

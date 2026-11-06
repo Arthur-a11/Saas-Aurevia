@@ -4,7 +4,6 @@
   "slogan": "Apprenez à créer un SaaS, de l’idée aux premiers clients.",
   "contactEmail": "lelouparthur1@gmail.com",
   "responsable": "Arthur Leloup",
-
   "entreprise": {
     "formeJuridique": null,
     "denomination": null,
@@ -17,54 +16,48 @@
   },
   "regimeTva": null,
   "_regimeTva_valeurs": "null = non confirmé | \"franchise\" = TVA non applicable, art. 293 B du CGI | \"ttc\" = prix toutes taxes comprises",
-  "hebergeur": { "nom": null, "adresse": null, "telephoneOuContact": null },
-  "mediateur": { "nom": null, "adressePostale": null, "siteInternet": null },
+  "hebergeur": {
+    "nom": null,
+    "adresse": null,
+    "telephoneOuContact": null
+  },
+  "mediateur": {
+    "nom": null,
+    "adressePostale": null,
+    "siteInternet": null
+  },
   "delaiAcces": null,
   "datesMiseAJourTextesLegaux": "1er novembre 2026",
-
   "paiement": {
     "actif": false,
     "_actif": "Laisser false tant que : statut d'entreprise, régime de TVA, médiateur, contenus et envoi d'e-mails de confirmation ne sont pas en place.",
-    "prestataire": "paypal-me",
+    "prestataire": "stripe",
     "lienPaypalMe": "https://paypal.me/LeloupArthur",
-    "_lienPaypalMe": "Lien communiqué par Arthur. Non vérifié : le réseau de l'environnement de travail bloque paypal.com. Un lien PayPal.me ne crée ni commande, ni facture, ni confirmation automatique."
+    "_lienPaypalMe": "Lien communiqué par Arthur. Non vérifié : le réseau de l'environnement de travail bloque paypal.com. Un lien PayPal.me ne crée ni commande, ni facture, ni confirmation automatique.",
+    "_prestataire": "Stripe Checkout (page de paiement hébergée par Stripe). Abonnement mensuel décidé par Arthur le 2 novembre 2026. Le lien PayPal.me n'est plus utilisé par le site."
   },
-
   "formules": [
     {
       "id": "essentiel",
       "nom": "Essentiel",
-      "prix": 14.90,
+      "prix": 14.9,
       "prixAffiche": "14,90 €",
-      "nature": "contenu-numerique",
-      "inclus": [
-        { "texte": "Les cours en vidéo", "statut": "en-preparation" },
-        { "texte": "Des fiches résumé", "statut": "en-preparation" }
-      ]
+      "nature": "contenu-numerique"
     },
     {
       "id": "complet",
       "nom": "Complet",
-      "prix": 24.90,
+      "prix": 24.9,
       "prixAffiche": "24,90 €",
       "nature": "contenu-numerique",
-      "recommandee": true,
-      "inclus": [
-        { "texte": "Tout l’Essentiel", "statut": "inclus" },
-        { "texte": "Des modèles à copier", "statut": "en-preparation" },
-        { "texte": "Une communauté pour s’entraider", "statut": "en-preparation" }
-      ]
+      "recommandee": true
     },
     {
       "id": "accompagne",
       "nom": "Accompagné",
-      "prix": 54.90,
+      "prix": 54.9,
       "prixAffiche": "54,90 €",
-      "nature": "contenu-numerique-et-service",
-      "inclus": [
-        { "texte": "Tout le Complet", "statut": "inclus" },
-        { "texte": "Mon avis personnel sur votre projet", "statut": "a-definir", "precision": "Forme, durée et délai à définir." }
-      ]
+      "nature": "contenu-numerique-et-service"
     }
   ]
 }

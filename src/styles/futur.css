@@ -1,5 +1,5 @@
-/* Couche « futuriste » : horizon néon, panneaux tableau de bord, bordures lumineuses, étiquettes techniques.
-   Règle : toute animation est coupée si la personne demande moins d'animations, et réduite sur mobile. */
+/* Composants d'identité : étiquettes, panneaux, cartes mises en avant. Identité « bleu nuit et turquoise » :
+   pas de halo permanent, pas d'animation en boucle ; les seules transitions sont coupées si l'on demande moins d'animations. */
 
 /* Étiquette technique au-dessus des titres */
 .surtitre {
@@ -7,62 +7,20 @@
   font: 700 0.78rem/1.2 var(--police-mono); letter-spacing: 0.14em; text-transform: uppercase;
   color: var(--brand); margin: 0 0 0.9rem;
 }
-.surtitre::before { content: ""; width: 0.5rem; height: 0.5rem; border-radius: 50%; background: var(--brand); box-shadow: 0 0 10px var(--brand); }
+.surtitre::before { content: ""; width: 1.1rem; height: 2px; border-radius: 2px; background: var(--brand); }
 .mono { font-family: var(--police-mono); }
 
-/* Bordure dégradée lumineuse */
-.neon {
-  border: 1px solid transparent !important;
-  background: linear-gradient(var(--surface-hud), var(--surface-hud)) padding-box, linear-gradient(135deg, rgba(139, 108, 255, 0.9), rgba(34, 211, 238, 0.65) 55%, rgba(139, 108, 255, 0.25)) border-box !important;
-  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.02), 0 20px 60px -20px var(--halo-violet), 0 0 50px -25px var(--halo-cyan);
-}
+/* Carte mise en avant : bordure turquoise fine, sans halo */
+.neon { border: 1px solid rgba(212, 217, 224, 0.4) !important; background: var(--surface-hud) !important; box-shadow: var(--ombre); }
 
-/* Bouton : reflet qui passe au survol */
-.btn { position: relative; overflow: hidden; isolation: isolate; }
-.btn:not(.alt)::after {
-  content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
-  background: linear-gradient(110deg, transparent 30%, rgba(255, 255, 255, 0.45) 50%, transparent 70%);
-  transform: translateX(-120%);
-}
-@media (prefers-reduced-motion: no-preference) {
-  .btn:not(.alt):hover::after { transform: translateX(120%); transition: transform 0.7s ease; }
-}
 .btn.grand { padding: 1rem 1.9rem; font-size: 1.05rem; }
 
 /* ---------- Héros ---------- */
 .heros { position: relative; overflow: hidden; border-bottom: 1px solid var(--line); }
 .heros .hero { position: relative; z-index: 1; }
-/* Horizon néon : grille en perspective qui défile vers l'avant */
-.horizon {
-  position: absolute; left: -25%; right: -25%; bottom: -2px; height: 26%; z-index: 0; pointer-events: none; overflow: hidden;
-  transform: perspective(420px) rotateX(62deg);
-  transform-origin: bottom;
-  -webkit-mask-image: linear-gradient(to top, #000 15%, transparent 95%);
-  mask-image: linear-gradient(to top, #000 15%, transparent 95%);
-  opacity: 0.75;
-}
-/* La grille est un calque qu'on fait glisser (transform) : pas de repeinture de la page à chaque image. */
-.horizon::before {
-  content: ""; position: absolute; left: 0; right: 0; top: -44px; bottom: 0;
-  background:
-    linear-gradient(to top, rgba(34, 211, 238, 0.22) 1px, transparent 1px) 0 0 / 100% 44px,
-    linear-gradient(to right, rgba(139, 108, 255, 0.28) 1px, transparent 1px) 0 0 / 60px 100%;
-  will-change: transform;
-}
-.heros::before { /* ligne d'horizon lumineuse */
-  content: ""; position: absolute; left: 0; right: 0; bottom: 26%; height: 2px; z-index: 0;
-  background: linear-gradient(90deg, transparent, var(--brand) 30%, #8b6cff 70%, transparent);
-  box-shadow: 0 0 24px 4px rgba(34, 211, 238, 0.35); opacity: 0.6;
-}
-@media (prefers-reduced-motion: no-preference) and (min-width: 821px) {
-  .horizon::before { animation: avancer 3.2s linear infinite; }
-}
-@keyframes avancer { from { transform: translateY(0); } to { transform: translateY(44px); } }
-@media (max-width: 820px) { .horizon { height: 14%; opacity: 0.45; } .heros::before { bottom: 14%; } }
-
 .chiffres-cles { list-style: none; display: grid; grid-template-columns: repeat(4, auto); justify-content: start; gap: 0.75rem 1.75rem; padding: 0; margin: 2rem 0 0; }
 .chiffres-cles li { display: grid; gap: 0.15rem; }
-.chiffres-cles strong { font: 700 1.55rem/1 var(--police-mono); color: #fff; letter-spacing: -0.02em; }
+.chiffres-cles strong { font: 700 1.55rem/1 var(--police-mono); color: var(--ink); letter-spacing: -0.02em; }
 .chiffres-cles span { color: var(--muted); font-size: 0.85rem; }
 @media (max-width: 820px) { .chiffres-cles { grid-template-columns: repeat(2, auto); } }
 
@@ -72,7 +30,7 @@
 .hud-tete h2 { font: 700 0.78rem/1.2 var(--police-mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--brand); margin: 0; }
 .hud-tete h2::after { display: none; }
 .hud-etat { font: 500 0.75rem var(--police-mono); color: var(--succes); display: inline-flex; align-items: center; gap: 0.4rem; }
-.hud-etat::before { content: ""; width: 0.45rem; height: 0.45rem; border-radius: 50%; background: var(--succes); box-shadow: 0 0 8px var(--succes); }
+.hud-etat::before { content: ""; width: 0.45rem; height: 0.45rem; border-radius: 50%; background: var(--succes); }
 .hud .kpi dd { font-family: var(--police-mono); letter-spacing: -0.03em; }
 .graphe { display: grid; gap: 0.35rem; }
 .graphe svg { width: 100%; height: auto; display: block; }
@@ -84,13 +42,14 @@
 .titre-section { max-width: 44rem; margin-bottom: 2rem; }
 .titre-section h2 { margin-bottom: 0.6rem; }
 .titre-section p { color: var(--muted); margin: 0; font-size: 1.08rem; }
+.titre-section .surtitre { color: var(--brand); font-size: 0.78rem; margin: 0 0 0.9rem; }
 .centre { text-align: center; margin-left: auto; margin-right: auto; }
 .centre h2::after { margin-left: auto; margin-right: auto; }
 
 .profils { display: grid; gap: 1rem; grid-template-columns: repeat(3, 1fr); }
 .profil { display: grid; gap: 0.6rem; align-content: start; }
-.profil .icone { width: 2.8rem; height: 2.8rem; border-radius: 12px; display: grid; place-items: center; background: linear-gradient(135deg, rgba(139, 108, 255, 0.35), rgba(34, 211, 238, 0.25)); border: 1px solid var(--line-forte); }
-.profil .icone svg { width: 1.4rem; height: 1.4rem; stroke: #fff; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.profil .icone { width: 2.8rem; height: 2.8rem; border-radius: 12px; display: grid; place-items: center; background: var(--brand-doux); border: 1px solid rgba(212, 217, 224, 0.3); }
+.profil .icone svg { width: 1.4rem; height: 1.4rem; stroke: var(--brand); fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .profil p { color: var(--muted); margin: 0; }
 @media (max-width: 820px) { .profils { grid-template-columns: 1fr; } }
 
@@ -106,14 +65,14 @@
 .labo-carte { padding: 1.6rem; border-radius: 22px; display: grid; gap: 0.75rem; min-height: 15rem; align-content: start; }
 .labo-carte .ou { font: 500 0.8rem var(--police-mono); color: var(--brand); letter-spacing: 0.06em; margin: 0; }
 .labo-carte .nom-idee { font: 800 clamp(1.7rem, 4vw, 2.3rem)/1.05 var(--police-titre); margin: 0; overflow-wrap: anywhere; }
-.labo-carte .desc { color: #d3d9f3; font-size: 1.1rem; margin: 0; }
+.labo-carte .desc { color: var(--ink); font-size: 1.1rem; margin: 0; }
 .labo-carte .avert { color: var(--muted); font-size: 0.88rem; margin: 0.25rem 0 0; }
 .labo-actions { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; margin-top: 1.25rem; }
 .labo-actions label { display: grid; gap: 0.3rem; font-weight: 600; font-size: 0.9rem; }
-.labo-actions select { font: inherit; padding: 0.7rem 0.9rem; border-radius: 10px; border: 1px solid var(--line-forte); background: rgba(255, 255, 255, 0.07); color: var(--ink); min-height: 44px; }
+.labo-actions select { font: inherit; padding: 0.7rem 0.9rem; border-radius: 10px; border: 1px solid var(--line-forte); background: var(--bg-2); color: var(--ink); min-height: 44px; }
 .labo-actions select option { color: #111; background: #fff; }
 @media (prefers-reduced-motion: no-preference) { .labo-carte.tire { animation: tirage 0.45s ease; } }
-@keyframes tirage { from { transform: translateY(8px) scale(0.98); filter: brightness(1.4); } to { transform: none; filter: none; } }
+@keyframes tirage { from { transform: translateY(6px); opacity: 0.6; } to { transform: none; opacity: 1; } }
 @media (max-width: 820px) { .labo { grid-template-columns: 1fr; } }
 
 /* Tableau comparatif des formules */
@@ -122,7 +81,7 @@
 .comparatif caption { text-align: left; padding: 1rem 1.25rem 0; font-weight: 700; font-family: var(--police-titre); font-size: 1.2rem; }
 .comparatif th, .comparatif td { padding: 0.85rem 1.25rem; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; }
 .comparatif thead th { font: 700 0.8rem var(--police-mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--brand); }
-.comparatif td { color: #d3d9f3; }
+.comparatif td { color: var(--ink); }
 .comparatif .oui { color: var(--succes); font-weight: 700; }
 .comparatif .non { color: var(--muted); }
 .comparatif .prep { display: block; font-size: 0.8rem; color: var(--gold); }
@@ -130,7 +89,7 @@
 
 /* Engagements (sans promesse de résultat) */
 .engagements { list-style: none; padding: 0; margin: 2rem 0 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
-.engagements li { display: grid; gap: 0.3rem; padding: 1.1rem 1.25rem; border-radius: var(--rayon-petit); border: 1px solid var(--line); background: rgba(9, 11, 40, 0.55); }
+.engagements li { display: grid; gap: 0.3rem; padding: 1.1rem 1.25rem; border-radius: var(--rayon-petit); border: 1px solid var(--line); background: var(--surface); }
 .engagements strong { font-family: var(--police-titre); font-size: 1.05rem; }
 .engagements span { color: var(--muted); font-size: 0.95rem; }
 @media (max-width: 820px) { .engagements { grid-template-columns: 1fr; } }
@@ -141,12 +100,10 @@
 @media (min-width: 821px) {
   .parcours li:not(:nth-child(3n))::after {
     content: ""; position: absolute; top: 2.15rem; right: -1rem; width: 1rem; height: 2px;
-    background: var(--grad); box-shadow: 0 0 10px var(--halo-cyan);
+    background: var(--line-forte);
   }
 }
 
-/* Programme : numéro de module */
-details.module summary .num-module { font: 700 0.8rem var(--police-mono); color: var(--gold); letter-spacing: 0.1em; margin-right: 0.75rem; }
 
 /* Carte tarif : prix en police technique */
 .tarif .montant { font-family: var(--police-mono); letter-spacing: -0.04em; }
@@ -163,5 +120,38 @@ section.finale .wrap { position: relative; z-index: 1; }
 .sommaire-programme a:hover { color: var(--lien); text-decoration: underline; }
 .sommaire-programme .mono { color: var(--gold); font-weight: 700; }
 .pastille-livrable { display: inline-block; font: 700 0.72rem var(--police-mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--on-brand); background: var(--gold); border-radius: 6px; padding: 0.1rem 0.45rem; margin-right: 0.4rem; vertical-align: 0.1em; }
-details.module { scroll-margin-top: calc(var(--header-h) + 1rem); }
 @media (max-width: 820px) { .sommaire-programme ol { grid-template-columns: 1fr; } }
+
+/* ================= Accueil futuriste (3 nov.) =================
+   Halos et reflets FIXES (aucune animation en boucle) ; la seule animation est la scène 3D, jouée une fois. */
+.heros { background:
+  radial-gradient(60rem 32rem at 78% 35%, rgba(212, 217, 224, 0.1), transparent 62%),
+  radial-gradient(40rem 26rem at 95% 90%, rgba(255, 255, 255, 0.035), transparent 65%),
+  radial-gradient(48rem 30rem at 0% 0%, rgba(255, 255, 255, 0.04), transparent 60%); }
+.heros .hero { grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); padding-top: clamp(2rem, 4vw, 3.5rem); padding-bottom: clamp(2rem, 4vw, 3.5rem); }
+@media (max-width: 900px) { .heros .hero { grid-template-columns: 1fr; } }
+.accent-titre { background: linear-gradient(100deg, #ffffff 8%, #a9b0ba 48%, #eef0f3 88%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+@supports not ((-webkit-background-clip: text) or (background-clip: text)) { .accent-titre { color: var(--brand); } }
+.hero .btn:not(.alt) { box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.45), 0 10px 34px rgba(212, 217, 224, 0.22); }
+
+/* Bande d'engagements sous le héros */
+.garanties-bande { border-bottom: 1px solid var(--line); background: linear-gradient(90deg, rgba(212, 217, 224, 0.06), rgba(255, 255, 255, 0.02) 50%, rgba(212, 217, 224, 0.06)); padding: 0; }
+.garanties { list-style: none; margin: 0 auto; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.75rem 1.5rem; padding-top: 1.1rem; padding-bottom: 1.1rem; }
+.garanties li { display: flex; align-items: center; gap: 0.6rem; font-weight: 600; font-size: 0.95rem; color: var(--ink); }
+.garanties span { flex: none; width: 2rem; height: 2rem; border-radius: 10px; display: grid; place-items: center; color: var(--brand); background: var(--brand-doux); border: 1px solid rgba(212, 217, 224, 0.3); font-size: 0.95rem; }
+@media (max-width: 900px) { .garanties { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 480px) { .garanties { grid-template-columns: 1fr; } }
+
+/* Cartes « verre » : reflet en haut et bordure lumineuse fine */
+.carte { background: linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0) 40%), var(--surface-forte);
+  border-color: rgba(205, 211, 219, 0.18); }
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .profil, .etapes-accueil > li, .tarif { transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease; }
+  .profil:hover, .etapes-accueil > li:hover, .tarif:hover { transform: translateY(-3px); border-color: rgba(230, 233, 237, 0.55); box-shadow: 0 14px 40px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.12); }
+}
+
+/* « Comment ça se passe » : étapes à gauche, aperçu de l'espace à droite */
+.deroulement-grille { display: grid; gap: clamp(1.5rem, 3vw, 2.5rem); grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; }
+.deroulement-grille .deroulement { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+@media (max-width: 900px) { .deroulement-grille { grid-template-columns: 1fr; } }
+@media (max-width: 560px) { .deroulement-grille .deroulement { grid-template-columns: 1fr; } }

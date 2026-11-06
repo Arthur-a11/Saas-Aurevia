@@ -1,0 +1,46 @@
+{
+  "_lisezmoi": "Conditions commerciales et juridiques À DÉCIDER par Arthur. Une valeur null = pas encore décidée : le serveur refuse alors toute vente RÉELLE (le mode test reste possible). Ne jamais remplir à la place d'Arthur.",
+  "versionConditions": "brouillon-2026-11-02",
+  "frequencePaiement": {
+    "valeur": "abonnement-mensuel",
+    "confirmeeParArthur": true,
+    "resiliation": "en-ligne-a-tout-moment",
+    "effetResiliation": "fin-de-periode-payee",
+    "_note": "Décidé par Arthur le 2 novembre 2026 : abonnement mensuel (14,90 / 24,90 / 54,90 € par mois), accès tant que l'abonnement est actif, résiliation en ligne à tout moment. Effet de la résiliation : à la fin du mois déjà payé (choix technique par défaut, à confirmer)."
+  },
+  "dureeAcces": {
+    "valeur": "abonnement",
+    "options": {
+      "abonnement": "Tant que l’abonnement est actif",
+      "a-vie": "Accès sans limite de durée (tant que le service existe)",
+      "12-mois": "Accès pendant 12 mois à compter de l’ouverture"
+    },
+    "_note": "Décidé par Arthur le 2 novembre 2026 : l'accès dure tant que l'abonnement est actif."
+  },
+  "ouvertureSansRenonciation": {
+    "valeur": "differee",
+    "delaiJours": 14,
+    "options": {
+      "immediate": "Accès immédiat même sans renonciation : le client garde son droit de rétractation pendant 14 jours (il peut se rétracter après avoir consulté les contenus)",
+      "differee": "Accès ouvert à la fin du délai de rétractation de 14 jours"
+    },
+    "validee": false,
+    "_note": "Arthur a choisi « différée » (14 jours) le 2 novembre 2026. Reste à valider par un juriste (validee=false), notamment avec l'abonnement : le premier mois est payé avant l'ouverture.",
+    "choisieParArthur": true
+  },
+  "accompagnement": {
+    "format": "un retour écrit sur le projet envoyé par le client",
+    "duree": "un retour par mois d’abonnement",
+    "delaiRealisation": "réponse sous 5 jours ouvrés après réception du projet",
+    "limites": null,
+    "partDuPrix": null,
+    "_note": "Décidé par Arthur le 2 novembre 2026 : retour écrit, une fois par mois d'abonnement, sous 5 jours ouvrés. Restent à décider par Arthur : les limites (ex. retour non utilisé reporté ou non, longueur du projet envoyé) et la part du prix correspondant au service. Ventes réelles d'Accompagné bloquées tant que ces deux points sont null."
+  },
+  "juridique": {
+    "reglesVerifieesSourcesOfficielles": false,
+    "cgvRelues": false,
+    "_note": "Légifrance et EUR-Lex n'étaient pas accessibles depuis l'environnement de travail : règles à vérifier par un juriste. Ventes réelles bloquées tant que ces deux valeurs sont false."
+  },
+  "contenusValides": false,
+  "_contenusValides": "Passe à true quand Arthur a relu la formation ET passé les éléments vendus en \"valide\" dans formation.json (le serveur vérifie aussi chaque élément)."
+}

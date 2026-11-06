@@ -1,0 +1,233 @@
+---
+// Espace « Ma formation ». Tout son contenu vient du serveur, qui vérifie le compte et les droits.
+// Après un paiement (?commande=…), la page attend la confirmation VÉRIFIÉE par le serveur :
+// le paramètre d'adresse seul ne débloque rien.
+import Base from "../../layouts/Base.astro";
+---
+<Base titre="Ma formation" noindex description="Votre espace de formation AUREVIA SAAS : modules, leçons, ressources et progression.">
+  <section class="entete-page">
+    <div class="wrap">
+      <p class="surtitre">Espace personnel</p>
+      <h1 class="titre-degrade">Ma formation</h1>
+    </div>
+  </section>
+  <section class="section-serree">
+    <div class="wrap">
+      <div id="etat-formation" class="message-formulaire info" role="status">
+        <p>Chargement de votre espace…</p>
+      </div>
+      <noscript><p class="encadre attention">Votre espace nécessite JavaScript, désactivé dans votre navigateur.</p></noscript>
+      <div id="espace" hidden></div>
+    </div>
+  </section>
+</Base>
+
+<script>
+  import { message } from "../../lib/formulaire";
+  import { api, el, attendre, dateFr } from "../../lib/espace-client";
+  import site from "../../data/site.json";
+
+  const etat = document.getElementById("etat-formation") as HTMLElement;
+  const espace = document.getElementById("espace") as HTMLElement;
+  const commande = new URLSearchParams(location.search).get("commande");
+  const lienCompte = () => el("a", { class: "btn", href: `/compte/?suite=${encodeURIComponent(location.pathname + location.search)}` }, "Me connecter");
+  const LIBELLES: Record<string, string> = { "en-preparation": "En préparation", "a-definir": "Modalités à définir", "non-inclus": "Non inclus dans votre formule" };
+  const TYPES: Record<string, string> = { lecon: "Leçon", exercice: "Exercice", fiche: "Fiche", modele: "Modèle", checklist: "Checklist", video: "Vidéo" };
+  const EMAILS: Record<string, string> = {
+    accepte: "L’e-mail de confirmation a été remis à notre service d’envoi (sa réception n’est pas garantie : pensez aux courriers indésirables).",
+    "non-configure": "Aucun e-mail de confirmation n’a été envoyé : l’envoi d’e-mails n’est pas encore en service. Gardez la référence de votre commande.",
+    echec: "L’e-mail de confirmation n’a pas pu être envoyé. Votre accès n’est pas concerné. Gardez la référence de votre commande.",
+  };
+
+  /** Attend la confirmation du paiement vérifiée par le serveur (notification Stripe ou vérification directe). */
+  async function verifierPaiement(ref: string) {
+    message(etat, "info", "Vérification du paiement en cours…", [el("span", { class: "indicateur-attente", "aria-hidden": "true" }), "Nous attendons la confirmation de Stripe. Cela prend en général quelques secondes. Votre formation ne s’ouvre qu’après cette confirmation."]);
+    etat.classList.add("ecran-paiement");
+    for (let i = 0; i < 20; i++) {
+      const r = await api(`/api/paiement/statut?commande=${encodeURIComponent(ref)}`, undefined, 10_000);
+      if (r.statut === 401) { message(etat, "ko", "Connectez-vous pour voir votre achat", [lienCompte()]); return false; }
+      if (r.statut === 404) { message(etat, "ko", "Commande introuvable", ["Cette commande n’existe pas ou n’appartient pas à votre compte. Aucun accès n’a été ouvert."]); return true; }
+      const s = r.data?.statut;
+      if (s === "payee") {
+        const ouvert = !r.data.accesLe || Date.parse(r.data.accesLe) <= Date.now();
+        message(etat, "ok", "Paiement confirmé", [
+          ouvert ? "Votre formation est ouverte. Bonne découverte !" : `Comme vous avez gardé votre droit de rétractation, votre accès s’ouvrira le ${dateFr(r.data.accesLe)}.`,
+          `Référence : ${ref}.`,
+          EMAILS[r.data.emailConfirmation] ?? "",
+        ].filter(Boolean));
+        return true;
+      }
+      if (["refuse", "annule"].includes(s)) {
+        message(etat, "ko", "Paiement refusé ou annulé", ["Aucun accès n’a été ouvert. Vous pouvez recommencer depuis la page Tarifs.", el("a", { class: "btn", href: "/tarifs/" }, "Voir les tarifs")]);
+        return true;
+      }
+      if (s === "anomalie") {
+        message(etat, "ko", "Vérification nécessaire", [`Le paiement reçu ne correspond pas à la commande ${ref}. Aucun accès n’a été ouvert : écrivez à ${site.contactEmail} en indiquant cette référence.`]);
+        return true;
+      }
+      await attendre(2_000);
+    }
+    const encore = el("button", { type: "button", class: "btn" }, "Vérifier à nouveau");
+    encore.addEventListener("click", () => location.reload());
+    message(etat, "info", "Confirmation pas encore reçue", [`La confirmation de Stripe n’est pas encore arrivée pour la commande ${ref}. Aucun accès n’est ouvert tant qu’elle n’est pas reçue. Si vous avez été débité(e), elle arrivera : revenez dans quelques minutes.`, encore]);
+    return true;
+  }
+
+  function badge(acces: string) {
+    return acces === "ouvert" ? null : el("span", { class: `etiquette ${acces === "non-inclus" ? "verrou" : "attente"}` }, LIBELLES[acces] ?? acces);
+  }
+
+  /** État d'un module pour la personne : non inclus, non commencé, en cours ou terminé. */
+  function etatModule(m: any) {
+    const ouvertes = m.lecons.filter((l: any) => l.acces === "ouvert");
+    if (!ouvertes.length) return m.lecons.every((l: any) => l.acces === "non-inclus") ? { texte: "Non inclus", classe: "etat-verrou" } : { texte: "En préparation", classe: "etat-attente" };
+    const faites = ouvertes.filter((l: any) => l.fait).length;
+    if (faites === 0) return { texte: "Non commencé", classe: "etat-neutre", faites, total: ouvertes.length };
+    if (faites === ouvertes.length) return { texte: "Terminé", classe: "etat-ok", faites, total: ouvertes.length };
+    return { texte: "En cours", classe: "etat-cours", faites, total: ouvertes.length };
+  }
+
+  function ligneElement(l: any) {
+    const ouverte = l.acces === "ouvert";
+    const etat = ouverte ? el("span", { class: `etat ${l.fait ? "etat-ok" : "etat-neutre"}` }, l.fait ? "Terminé ✓" : "Non commencé") : badge(l.acces);
+    const actions = el("span", { class: "lecon-actions-ligne" });
+    if (ouverte) {
+      actions.append(el("a", { class: "btn petit" + (l.fait ? " alt" : ""), href: `/formation/lecon/?id=${l.id}`, "aria-label": `${l.fait ? "Revoir" : "Commencer"} : ${l.titre}` }, l.fait ? "Revoir" : "Commencer"));
+      if (l.type === "modele") actions.append(el("a", { class: "btn petit alt telecharger", href: `/api/formation/fichier?id=${encodeURIComponent(l.id)}`, "aria-label": `Télécharger : ${l.titre}` }, "⬇ Télécharger"));
+    }
+    return el("li", { class: `lecon ${ouverte ? "ouverte" : "fermee"}`, "data-etat": ouverte ? (l.fait ? "termine" : "non-commence") : l.acces },
+      el("span", { class: `lecon-type type-${l.type}` }, TYPES[l.type] ?? l.type),
+      el("span", { class: "lecon-titre" }, l.titre, ouverte && l.statut === "brouillon" ? el("span", { class: "brouillon" }, " · brouillon") : ""),
+      etat, actions);
+  }
+
+  /**
+   * Résiliation de l'abonnement en ligne : un bouton, une confirmation, c'est fait.
+   * L'accès reste ouvert jusqu'à la fin du mois déjà payé (le serveur et Stripe en décident).
+   */
+  function zoneResiliation(f: any) {
+    const zone = el("div", { class: "resiliation" });
+    if (f.finPrevueLe) {
+      zone.append(el("span", { class: "etiquette attente" }, `Résilié : accès jusqu’au ${dateFr(f.finPrevueLe)}`));
+      return zone;
+    }
+    const ouvrir = el("button", { type: "button", class: "btn petit alt" }, "Résilier mon abonnement");
+    const confirmer = el("button", { type: "button", class: "btn petit" }, "Confirmer la résiliation");
+    const annuler = el("button", { type: "button", class: "btn petit alt" }, "Garder mon abonnement");
+    const texte = el("p", { class: "note", role: "status" });
+    const etape2 = el("div", { class: "resiliation-confirmation", hidden: true },
+      el("p", {}, "Votre abonnement s’arrêtera à la fin du mois déjà payé. Aucun nouveau prélèvement ne sera fait. Vous gardez l’accès jusqu’à cette date."), confirmer, annuler);
+    ouvrir.addEventListener("click", () => { etape2.hidden = false; ouvrir.hidden = true; confirmer.focus(); });
+    annuler.addEventListener("click", () => { etape2.hidden = true; ouvrir.hidden = false; ouvrir.focus(); });
+    confirmer.addEventListener("click", async () => {
+      confirmer.disabled = true;
+      const r = await api("/api/abonnement/resilier", { commande: f.commande });
+      confirmer.disabled = false;
+      if (r.data?.ok) {
+        zone.replaceChildren(el("span", { class: "etiquette attente" }, r.data.finPrevueLe ? `Résilié : accès jusqu’au ${dateFr(r.data.finPrevueLe)}` : "Résiliation enregistrée"));
+        zone.append(el("p", { class: "note", role: "status" }, "Résiliation enregistrée. Aucun nouveau prélèvement ne sera fait."));
+      } else {
+        texte.textContent = "La résiliation n’a pas pu être enregistrée. Rien n’a changé : réessayez dans quelques minutes ou écrivez-nous.";
+      }
+    });
+    zone.append(ouvrir, etape2, texte);
+    return zone;
+  }
+
+  function afficher(d: any) {
+    espace.replaceChildren();
+    const aDesDroits = d.modules.some((m: any) => m.lecons.some((l: any) => l.acces !== "non-inclus"));
+
+    // ---- Tableau de bord
+    const tableau = el("div", { class: "carte tableau-formation" }, el("h2", { class: "titre-carte" }, `Bonjour ${d.prenom}`));
+    if (d.formules.length) {
+      tableau.append(el("ul", { class: "formules-detenues" }, ...d.formules.map((f: any) => el("li", {},
+        el("strong", {}, `Formule ${f.nom}`), f.abonnement ? ` · abonnement mensuel depuis le ${dateFr(f.depuis)}` : ` · achetée le ${dateFr(f.depuis)}`,
+        f.termine ? el("span", { class: "etiquette verrou" }, `Accès terminé le ${dateFr(f.finLe)}`)
+          : f.ouvert ? "" : el("span", { class: "etiquette attente" }, `Accès le ${dateFr(f.accesLe)}`),
+        f.abonnement ? zoneResiliation(f) : ""))));
+      tableau.append(el("p", { class: "note" }, `Durée d’accès : ${d.dureeAcces ?? "à définir (pas encore décidée)"}.`));
+    } else {
+      tableau.append(el("p", {}, "Vous n’avez pas encore de formule. Choisissez-en une pour ouvrir vos modules."), el("p", {}, el("a", { class: "btn", href: "/tarifs/" }, "Voir les formules")));
+    }
+    if (d.progression.total > 0) {
+      const pct = Math.round((d.progression.faites / d.progression.total) * 100);
+      const prochaine = d.modules.flatMap((m: any) => m.lecons.map((l: any) => ({ ...l, module: m }))).find((l: any) => l.id === d.prochaine);
+      tableau.append(
+        el("div", { class: "tableau-chiffres" },
+          el("p", { class: "progression-texte", id: "progression-texte" }, `Progression : ${d.progression.faites} leçon(s) terminée(s) sur ${d.progression.total}`),
+          el("span", { class: "pourcentage", "aria-hidden": "true" }, `${pct} %`)),
+        el("div", { class: "barre-progression", role: "progressbar", "aria-labelledby": "progression-texte", "aria-valuemin": "0", "aria-valuemax": "100", "aria-valuenow": String(pct) }, el("span", { style: `width:${pct}%` })),
+        el("div", { class: "reprendre" },
+          prochaine ? el("p", { class: "note" }, `Prochaine étape : module ${prochaine.module.numero} · ${prochaine.titre}`) : "",
+          el("a", { class: "btn grand", href: `/formation/lecon/?id=${d.prochaine}` }, d.progression.faites === 0 ? "Commencer ma formation" : "Reprendre ma formation")),
+      );
+    }
+
+    // ---- Sommaire latéral (ordinateur) / compact (mobile)
+    const sommaire = el("nav", { class: "sommaire-espace", "aria-label": "Modules de la formation" },
+      el("p", { class: "sommaire-titre" }, "Modules"),
+      el("ol", {}, ...d.modules.map((m: any) => {
+        const e = etatModule(m);
+        return el("li", {}, el("a", { href: `#module-${m.numero}` },
+          el("span", { class: "sommaire-num" }, String(m.numero).padStart(2, "0")),
+          el("span", { class: "sommaire-nom" }, m.titre),
+          el("span", { class: `etat ${e.classe}` }, e.total ? `${e.texte} · ${e.faites}/${e.total}` : e.texte)));
+      })));
+    const sommaireMobile = el("details", { class: "sommaire-mobile" }, el("summary", {}, "Sommaire des modules"), sommaire.cloneNode(true));
+
+    // ---- Modules
+    const liste = el("ol", { class: "modules-espace" });
+    for (const m of d.modules) {
+      const e = etatModule(m);
+      liste.append(el("li", { class: "carte module-espace", id: `module-${m.numero}` },
+        el("div", { class: "module-tete" },
+          el("span", { class: "num-module" }, String(m.numero).padStart(2, "0")),
+          el("div", { class: "module-tete-texte" }, el("h3", {}, m.titre), el("span", { class: `etat ${e.classe}` }, e.texte))),
+        el("p", { class: "module-resume" }, m.resume),
+        m.objectifs.length ? el("details", { class: "objectifs" }, el("summary", {}, "Objectifs du module"), el("ul", {}, ...m.objectifs.map((o: string) => el("li", {}, o)))) : "",
+        el("ul", { class: "lecons" }, ...m.lecons.map(ligneElement))));
+    }
+
+    const principal = el("div", { class: "espace-principal" }, tableau, sommaireMobile,
+      el("h2", { class: "titre-section-espace" }, "Les modules"), liste,
+      el("h2", { class: "titre-section-espace" }, "Ressources"),
+      el("ul", { class: "ressources-espace" }, ...d.ressources.map((r: any) => el("li", { class: "carte" },
+        el("strong", {}, r.titre), badge(r.acces), r.precision && r.acces !== "non-inclus" ? el("p", { class: "note" }, r.precision) : null))));
+    if (aDesDroits) {
+      principal.append(el("p", { class: "note" }, "« Brouillon » : contenu rédigé, en cours de relecture, qui peut encore changer. « En préparation » : pas encore disponible, il apparaîtra ici quand il sera prêt."));
+    }
+    const sortir = el("button", { type: "button", class: "btn alt" }, "Me déconnecter");
+    sortir.addEventListener("click", async () => { await api("/api/compte/deconnexion", {}); location.assign("/compte/"); });
+    principal.append(el("p", { class: "cta pied-espace" }, sortir));
+    espace.append(el("div", { class: "espace-grille" }, el("aside", { class: "espace-aside" }, sommaire), principal));
+    espace.hidden = false;
+  }
+
+  async function demarrer() {
+    // D'abord : la personne est-elle connectée ? (réponse toujours 200, pas d'erreur dans la console)
+    const moi = await api("/api/compte/moi", undefined, 8_000);
+    if (moi.statut === 0 || moi.data?.stockage === false) {
+      message(etat, "ko", "Espace indisponible", ["L’espace de formation n’est pas encore en service sur ce site, ou le serveur ne répond pas."]);
+      return;
+    }
+    if (!moi.data?.connecte) {
+      message(etat, "info", "Connectez-vous pour accéder à votre formation", ["Votre formation est liée à votre compte.", lienCompte()]);
+      return;
+    }
+    let garderMessage = false;
+    if (commande) garderMessage = await verifierPaiement(commande);
+    const r = await api("/api/formation", undefined, 10_000);
+    if (r.statut === 401) {
+      message(etat, "info", "Connectez-vous pour accéder à votre formation", ["Votre formation est liée à votre compte.", lienCompte()]);
+      return;
+    }
+    if (r.statut !== 200 || !r.data?.ok) {
+      message(etat, "ko", "Espace indisponible", ["Le serveur ne répond pas pour le moment. Vos achats et votre progression sont conservés : réessayez dans quelques minutes."]);
+      return;
+    }
+    if (!garderMessage) etat.hidden = true;
+    afficher(r.data);
+  }
+  demarrer();
+</script>

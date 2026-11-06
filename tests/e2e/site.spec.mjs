@@ -5,7 +5,7 @@ import { readFileSync } from "node:fs";
 
 const donnees = JSON.parse(readFileSync(new URL("../../src/data/marches.json", import.meta.url), "utf8"));
 const PAGES = [
-  ["/", "Construisez l’entreprise qui encaisse chaque mois."],
+  ["/", "Créez votre logiciel par abonnement, de l’idée aux premiers clients."],
   ["/programme/", "La formation : tout pour créer un bon SaaS"],
   ["/idees/", "15 marchés, 300 niches, 1 500 idées de SaaS"],
   ["/tarifs/", "Choisissez votre formule"],
@@ -17,6 +17,11 @@ const PAGES = [
   ["/cgv/", "Conditions générales de vente"],
   ["/confidentialite/", "Politique de confidentialité"],
   ["/retractation/", "Droit de rétractation"],
+  ["/compte/", "Accéder à ma formation"],
+  ["/formation/", "Ma formation"],
+  ["/formation/lecon/", "Leçon"],
+  ["/compte/mot-de-passe-oublie/", "Mot de passe oublié"],
+  ["/compte/nouveau-mot-de-passe/", "Nouveau mot de passe"],
   ...donnees.marches.map((m) => [`/idees/${m.id}/`, m.nom]),
 ];
 
@@ -245,25 +250,125 @@ test.describe("explorateur d’idées", () => {
 });
 
 test.describe("programme", () => {
-  test("sommaire : un lien ouvre le bon module ; « Tout ouvrir » puis « Tout fermer »", async ({ page }) => {
+  test("six modules en blocs distincts : numéro, titre, description, contenu et livrable", async ({ page }) => {
     await page.goto("/programme/");
-    await expect(page.locator("details.module")).toHaveCount(6);
-    await page.getByRole("navigation", { name: "Sommaire du programme" }).getByRole("link", { name: /04 Fixer le prix/ }).click();
-    await expect(page).toHaveURL(/#module-4$/);
-    await expect(page.locator("#module-4")).toHaveAttribute("open", "");
-    const bouton = page.getByRole("button", { name: "Tout ouvrir" });
-    await bouton.click();
-    for (let i = 1; i <= 6; i++) await expect(page.locator(`#module-${i}`)).toHaveAttribute("open", "");
-    await expect(page.getByRole("button", { name: "Tout fermer" })).toBeVisible();
-    await page.getByRole("button", { name: "Tout fermer" }).click();
-    await expect(page.locator("details.module[open]")).toHaveCount(0);
+    const blocs = page.locator(".module-bloc");
+    await expect(blocs).toHaveCount(6);
+    for (let i = 1; i <= 6; i++) {
+      const b = page.locator(`#module-${i}`);
+      await expect(b.locator(".num-module")).toHaveText(String(i).padStart(2, "0"));
+      await expect(b.getByRole("heading", { level: 3 })).toBeVisible();
+      await expect(b.locator(".module-resume")).not.toBeEmpty();
+      expect(await b.locator(".module-points li").count()).toBeGreaterThanOrEqual(3);
+      await expect(b.locator(".resultat")).toContainText("Livrable");
+    }
   });
 
-  test("lien direct vers un module : il s’ouvre à l’arrivée", async ({ page }) => {
-    await page.goto("/programme/#module-5");
-    await expect(page.locator("#module-5")).toHaveAttribute("open", "");
-    await expect(page.locator("#module-5 .resultat")).toContainText("Livrable");
+  test("gratuit et payant clairement séparés ; aucun texte payant dans la page publique", async ({ page }) => {
+    await page.goto("/programme/");
+    const bloc = page.locator(".grille-gratuit-payant");
+    await expect(bloc).toContainText("Gratuit, sur cette page");
+    await expect(bloc).toContainText("19 leçons détaillées");
+    await expect(bloc).toContainText("Rédigé, en relecture");
+    await expect(bloc.getByText(/Les cours en vidéo/)).toContainText("En préparation");
+    await expect(page.getByText("Léa a travaillé dans un cabinet")).toHaveCount(0);
   });
+
+  test("sommaire : un lien mène au bon module, visible sous l’en-tête", async ({ page }) => {
+    await page.goto("/programme/");
+    await page.getByRole("navigation", { name: "Sommaire du programme" }).getByRole("link", { name: /04 Fixer le prix/ }).click();
+    await expect(page).toHaveURL(/#module-4$/);
+    await expect(page.locator("#module-4")).toBeInViewport();
+    const haut = await page.locator("#module-4").evaluate((e) => e.getBoundingClientRect().top);
+    const entete = await page.locator(".entete").evaluate((e) => e.getBoundingClientRect().bottom);
+    expect(haut).toBeGreaterThanOrEqual(entete - 1);
+  });
+
+  test("ordinateur : un module par rangée, pleine largeur (plus de 1 080 px), deux colonnes à l’intérieur", async ({ page }, info) => {
+    test.skip(info.project.name !== "ordinateur", "une colonne sur mobile");
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/programme/");
+    const largeur = await page.locator("#liste-modules").evaluate((e) => e.getBoundingClientRect().width);
+    expect(largeur).toBeGreaterThan(1080);
+    expect(largeur).toBeLessThanOrEqual(1280);
+    const colonnes = await page.locator("#module-1 .module-colonnes > div").evaluateAll((d) => d.map((x) => Math.round(x.getBoundingClientRect().top)));
+    expect(colonnes[0]).toBe(colonnes[1]);
+    // Chaque module affiche objectif, nombre de leçons et ressources avec leur état.
+    await expect(page.locator("#module-1 .module-resume")).toContainText("Objectif :");
+    await expect(page.locator("#module-1")).toContainText("Sujets abordés (4 leçons)");
+    await expect(page.locator("#module-1 .ressources-puces")).toContainText("En préparation");
+  });
+});
+
+test.describe("refonte : identité et accueil", () => {
+  test("accueil : à qui, quoi, comment, ressources réelles, prochaine action ; aucun texte payant", async ({ page }) => {
+    await page.goto("/");
+    for (const id of ["pour-qui", "apprendre", "deroulement", "ressources", "extrait-titre", "finale"]) await expect(page.locator(`#${id}`)).toBeVisible();
+    await expect(page.locator(".etapes-accueil > li")).toHaveCount(6);
+    await expect(page.locator("#ressources").locator("xpath=ancestor::section")).toContainText("En préparation");
+    await expect(page.locator(".apercu-espace figcaption")).toContainText("sans le contenu des leçons");
+    await expect(page.getByRole("link", { name: "Je m’inscris gratuitement" })).toBeVisible();
+    await expect(page.getByText("Léa a travaillé dans un cabinet")).toHaveCount(0);
+    for (const interdit of [/\d+ (élèves|clients satisfaits)/i, /plus que \d+ places/i, /(revenu|succès|résultat)s? garantie?s?/i]) await expect(page.locator("main")).not.toContainText(interdit);
+  });
+
+  test("palette chrome et noir clair appliquée (fond, bouton principal, texte)", async ({ page }) => {
+    await page.goto("/");
+    const c = await page.evaluate(() => {
+      const b = getComputedStyle(document.body);
+      const btn = getComputedStyle(document.querySelector(".hero .btn:not(.alt)"));
+      return { fond: b.backgroundColor, texte: b.color, bouton: btn.color };
+    });
+    expect(c.fond).toBe("rgb(22, 24, 27)");
+    expect(c.texte).toBe("rgb(241, 242, 244)");
+    expect(c.bouton).toBe("rgb(21, 23, 26)");
+  });
+
+  test("accueil 3D : parcours en 6 étapes lisible sans la 3D, scène affichée sans erreur, animation jouée une seule fois", async ({ page }) => {
+    test.setTimeout(60000);   // version complète forcée : sans carte graphique, chaque image est lente
+    const erreurs = [];
+    page.on("pageerror", (e) => erreurs.push(e.message));
+    await page.goto("/?rendu3d=complet");
+    await expect(page.locator(".parcours3d")).toHaveAttribute("data-rendu", "complet", { timeout: 15000 });
+    const fig = page.locator(".parcours3d");
+    // Liste accessible toujours présente (repli sans WebGL, et texte pour les lecteurs d'écran)
+    await expect(fig.locator(".p3d-repli li")).toHaveCount(7);
+    await expect(fig.locator(".p3d-repli")).toContainText("Trouver une bonne idée");
+    await expect(fig.locator(".p3d-scene")).toHaveAttribute("aria-hidden", "true");
+    await expect(fig).toHaveAttribute("data-etat", "3d", { timeout: 15000 });
+    // Fin de l'animation unique : bouton « Rejouer » proposé, toutes les étapes visibles
+    await expect(fig.getByRole("button", { name: "Rejouer l’animation" })).toBeVisible({ timeout: 40000 });
+    expect(await fig.locator(".p3d-etiquette").evaluateAll((els) => els.every((e) => e.style.opacity === "1"))).toBe(true);
+    expect(erreurs).toEqual([]);
+  });
+
+  test("accueil 3D : sans carte graphique (rendu logiciel) → mode léger, image finale fixe et lisible", async ({ page }) => {
+    await page.goto("/");
+    const fig = page.locator(".parcours3d");
+    await expect(fig).toHaveAttribute("data-etat", "3d", { timeout: 15000 });
+    // Le navigateur de test n'a pas de carte graphique : il doit être détecté comme rendu logiciel.
+    await expect(fig).toHaveAttribute("data-rendu", "leger");
+    await expect.poll(() => fig.locator(".p3d-etiquette").evaluateAll((els) => els.every((e) => e.style.opacity === "1")), { timeout: 5000 }).toBe(true);
+    await expect(fig.getByRole("button", { name: "Rejouer l’animation" })).toBeHidden();
+  });
+
+  test("accueil 3D : « réduire les animations » → état final immédiat, sans bouton Rejouer", async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.goto("/");
+    const fig = page.locator(".parcours3d");
+    await expect(fig).toHaveAttribute("data-etat", "3d", { timeout: 15000 });
+    await expect.poll(() => fig.locator(".p3d-etiquette").evaluateAll((els) => els.every((e) => e.style.opacity === "1")), { timeout: 5000 }).toBe(true);
+    await expect(fig.getByRole("button", { name: "Rejouer l’animation" })).toBeHidden();
+  });
+
+  for (const url of ["/", "/programme/", "/tarifs/"]) {
+    test(`${url} : aucune animation en boucle ni halo animé`, async ({ page }) => {
+      await page.goto(url);
+      await page.waitForTimeout(500);
+      const enBoucle = await page.evaluate(() => document.getAnimations().filter((a) => a.effect?.getTiming().iterations === Infinity).length);
+      expect(enBoucle).toBe(0);
+    });
+  }
 });
 
 test.describe("accueil : éléments de vente", () => {
@@ -296,7 +401,7 @@ test.describe("accueil : éléments de vente", () => {
     await page.goto("/tarifs/");
     const table = page.getByRole("table", { name: "Comparer les formules" });
     await expect(table).toBeVisible();
-    await expect(table.getByRole("row")).toHaveCount(6);
+    await expect(table.getByRole("row")).toHaveCount(9);   // en-tête + 8 droits (formation.json)
     await expect(table.getByText("En préparation").first()).toBeVisible();
     await expect(table.getByText("Modalités à définir")).toBeVisible();
   });
@@ -410,13 +515,23 @@ test.describe("formulaires", () => {
     await expect(zone).toContainText("Aucun accusé de réception n’a pu être envoyé");
   });
 
-  test("commande : fermée, renvoie vers l’inscription", async ({ page, request }) => {
+  test("commande : fermée sans paiement configuré, renvoie vers l’inscription", async ({ page, request }) => {
     await page.goto("/commande/?formule=complet");
     await expect(page.getByText("Les commandes en ligne ne sont pas encore ouvertes.")).toBeVisible();
-    await expect(page.locator("#form-commande")).toHaveCount(0);
-    const r = await request.post("/api/commande", { data: {} });
-    expect(r.status()).toBe(403);
+    await expect(page.getByRole("link", { name: "M’inscrire sans payer" })).toHaveAttribute("href", "/inscription/?formule=complet");
+    await expect(page.locator("#form-commande")).toBeHidden();
+    const r = await request.post("/api/paiement/session", { data: { formule: "complet", cgv: true } });
+    expect(r.status()).toBe(503);
+    expect((await r.json()).code).toBe("paiement_non_configure");
   });
+});
+
+test("mot de passe oublié sans service d’e-mail : parcours bloqué et expliqué, aucun faux envoi", async ({ page, request }) => {
+  await page.goto("/compte/mot-de-passe-oublie/");
+  await expect(page.getByText("L’envoi d’e-mails n’est pas encore en service sur ce site")).toBeVisible();
+  await expect(page.locator("#form-oubli")).toBeHidden();
+  const r = await request.post("/api/compte/mot-de-passe-oublie", { data: { email: "a@exemple.fr" } });
+  expect(r.status()).toBe(503);
 });
 
 test.describe("assistant", () => {
@@ -440,7 +555,7 @@ test.describe("assistant", () => {
     await page.getByRole("button", { name: /Posez votre question/ }).click();
     await expect(page.locator("#chat-ouvrir")).toBeHidden();
     const fond = await page.locator("#chat-panneau").evaluate((p) => getComputedStyle(p).backgroundColor);
-    expect(fond).toBe("rgb(11, 13, 24)");
+    expect(fond).toBe("rgb(26, 28, 32)");   // --chat-bg, opaque (identité chrome et noir clair)
   });
 
   test("le badge « Powered by Netlify » du site en ligne ne recouvre pas le bouton de l’assistant", async ({ page }) => {
@@ -504,7 +619,7 @@ test.describe("clavier et mobile", () => {
       await expect(menu).toHaveAttribute("aria-expanded", "true");
     }
     const nav = page.getByRole("navigation", { name: "Navigation principale" });
-    for (const nom of ["Le programme", "Marchés et idées", "Tarifs", "Questions", "Contact"]) {
+    for (const nom of ["Le programme", "Marchés et idées", "Tarifs", "Questions", "Contact", "Ma formation"]) {
       await expect(nav.getByRole("link", { name: nom })).toBeVisible();
     }
     await expect(nav.getByRole("link", { name: "Questions" })).toHaveAttribute("aria-current", "page");
@@ -536,7 +651,7 @@ test.describe("clavier et mobile", () => {
 });
 
 test.describe("accessibilité automatique (axe)", () => {
-  for (const url of ["/", "/programme/", "/idees/", "/idees/sante/", "/tarifs/", "/questions/", "/contact/", "/inscription/", "/retractation/", "/cgv/"]) {
+  for (const url of ["/", "/programme/", "/idees/", "/idees/sante/", "/tarifs/", "/questions/", "/contact/", "/inscription/", "/retractation/", "/cgv/", "/compte/", "/formation/"]) {
     test(`${url} sans violation WCAG A/AA détectée`, async ({ page }) => {
       await page.goto(url);
       await page.emulateMedia({ reducedMotion: "reduce" });

@@ -1,0 +1,177 @@
+{
+  "id": "m5",
+  "titre": "Trouver ses premiers utilisateurs",
+  "objectifs": [
+    "Constituer une liste de 50 contacts qualifiés.",
+    "Écrire un message de prise de contact court, personnel et respectueux des règles.",
+    "Mener une démonstration centrée sur le problème du client.",
+    "Rédiger une page d’accueil claire avec une promesse, une preuve honnête et un prix."
+  ],
+  "lecons": [
+    {
+      "id": "m5-l1",
+      "titre": "Votre liste des 50 premiers contacts",
+      "duree": "12 min",
+      "intro": "Les premiers clients viennent presque toujours de contacts directs. Une liste écrite transforme « je devrais prospecter » en actions concrètes.",
+      "sections": [
+        {
+          "titre": "Où trouver les noms",
+          "liste": [
+            "Les personnes interviewées au module 1 et celles qu’elles vous ont recommandées.",
+            "Les testeurs du module 3.",
+            "Les groupes, associations et annuaires professionnels de votre public.",
+            "Les salons et événements du métier.",
+            "Votre propre réseau : anciens collègues, clients d’un ancien emploi."
+          ]
+        },
+        {
+          "titre": "Qualifier chaque contact",
+          "paragraphes": [
+            "Pour chaque nom, notez : appartient-il au public précis ? A-t-il le problème (si vous le savez) ? Qui décide ? Par quel canal le joindre ? Classez ensuite en trois groupes : chaud (déjà en contact), tiède (recommandé), froid (inconnu)."
+          ]
+        },
+        {
+          "titre": "Les règles de la prospection",
+          "paragraphes": [
+            "La prospection par e-mail auprès de professionnels est encadrée : le message doit concerner leur activité professionnelle, indiquer qui vous êtes et permettre de refuser facilement les messages suivants. Pour les particuliers, les règles sont plus strictes. Vérifiez les règles actuelles sur le site de la CNIL avant d’envoyer."
+          ]
+        }
+      ],
+      "aRetenir": [
+        "50 noms écrits, classés chaud, tiède, froid.",
+        "Commencez par les personnes déjà rencontrées.",
+        "Respectez les règles de prospection (CNIL)."
+      ]
+    },
+    {
+      "id": "m5-l2",
+      "titre": "Le message de contact et la démonstration",
+      "duree": "15 min",
+      "intro": "Un bon premier message est court, parle du problème de la personne et demande une petite action. La démonstration qui suit montre le premier résultat utile, pas toutes les fonctions.",
+      "sections": [
+        {
+          "titre": "Un message en quatre phrases",
+          "liste": [
+            "Pourquoi vous la contactez, elle (lien commun, recommandation, métier).",
+            "Le problème, avec les mots entendus en entretien.",
+            "Ce que votre outil change, en une phrase.",
+            "Une demande simple : 20 minutes de démonstration, deux créneaux proposés."
+          ],
+          "exemple": "Exemple fictif : « Bonjour Madame Roux, Paul Martin du cabinet Durand m’a conseillé de vous écrire. Plusieurs cabinets m’ont dit passer des heures chaque mois à relancer leurs clients pour les justificatifs. J’ai conçu un outil qui envoie ces relances automatiquement et rassemble les pièces reçues. Auriez-vous 20 minutes mardi à 10 h ou jeudi à 14 h pour que je vous le montre ? »"
+        },
+        {
+          "titre": "Conduire la démonstration",
+          "liste": [
+            "Commencez par une question : « Comment gérez-vous les relances aujourd’hui ? »",
+            "Montrez uniquement le parcours vers le premier résultat utile, sur un cas proche du sien.",
+            "Demandez : « Qu’est-ce qui vous empêcherait de l’utiliser dès le mois prochain ? »",
+            "Proposez une étape suivante précise : essai, mise en place accompagnée, rendez-vous de suivi."
+          ]
+        },
+        {
+          "titre": "Relancer sans harceler",
+          "paragraphes": [
+            "Une relance après une semaine, une seconde après deux semaines, puis vous arrêtez. Notez chaque échange dans votre tableau de suivi."
+          ]
+        }
+      ],
+      "aRetenir": [
+        "Quatre phrases : pourquoi elle, le problème, le changement, la demande.",
+        "Démontrez le premier résultat utile, pas tout le produit.",
+        "Toujours une étape suivante précise."
+      ]
+    },
+    {
+      "id": "m5-l3",
+      "titre": "Une page d’accueil honnête qui convainc",
+      "duree": "12 min",
+      "intro": "Votre page d’accueil doit permettre à un visiteur de comprendre en quelques secondes pour qui est le produit, ce qu’il change et comment l’essayer.",
+      "sections": [
+        {
+          "titre": "Les éléments indispensables",
+          "liste": [
+            "Un titre qui reprend la promesse du module 2.",
+            "Trois bénéfices concrets, avec les mots de vos clients.",
+            "Une preuve honnête : capture d’écran réelle, démonstration vidéo, citation d’un testeur avec son accord écrit.",
+            "Le prix et ce qui est inclus.",
+            "Un seul bouton principal : essayer ou réserver une démonstration."
+          ]
+        },
+        {
+          "titre": "Ce qu’il ne faut pas faire",
+          "paragraphes": [
+            "N’inventez ni témoignages, ni nombre de clients, ni logos d’entreprises qui ne vous ont rien acheté. N’annoncez pas de résultats chiffrés que vous ne pouvez pas prouver. Ces pratiques peuvent constituer des pratiques commerciales trompeuses et détruisent la confiance."
+          ]
+        },
+        {
+          "titre": "Un tarif de lancement transparent",
+          "paragraphes": [
+            "Vous pouvez proposer un tarif réduit aux premiers clients en échange de leurs retours. Indiquez clairement sa durée et le prix appliqué ensuite. N’utilisez pas de fausse urgence (« plus que 2 places ») si elle n’est pas réelle."
+          ]
+        }
+      ],
+      "aRetenir": [
+        "Promesse, bénéfices, preuve honnête, prix, un bouton.",
+        "Aucun témoignage ni chiffre inventé.",
+        "Tarif de lancement : durée et prix suivant annoncés."
+      ]
+    }
+  ],
+  "exercice": {
+    "titre": "Exercice : 50 contacts, 10 démonstrations",
+    "consigne": "Constituez votre liste de 50 contacts, envoyez vos messages et visez 10 démonstrations.",
+    "etapes": [
+      "Remplissez le tableau de suivi avec 50 contacts qualifiés.",
+      "Écrivez votre message en quatre phrases et faites-le relire par une personne du public.",
+      "Envoyez 10 messages par jour ouvré, en commençant par les contacts chauds.",
+      "Menez les démonstrations et notez les objections.",
+      "Rédigez ou améliorez votre page d’accueil avec les mots entendus."
+    ],
+    "livrable": "Un tableau de suivi de 50 contacts, le compte rendu des démonstrations et votre page d’accueil.",
+    "criteres": [
+      "50 contacts appartenant au public précis.",
+      "Message de 4 à 6 phrases avec une demande claire.",
+      "Chaque démonstration se termine par une étape suivante datée.",
+      "Objections notées et classées.",
+      "Page d’accueil sans élément invérifiable (témoignage, chiffre, logo)."
+    ],
+    "corrige": {
+      "titre": "Exemple de bilan (fictif)",
+      "paragraphes": [
+        "50 contacts : 12 chauds, 15 tièdes recommandés, 23 froids issus d’un annuaire professionnel. 38 messages envoyés, 11 réponses, 7 démonstrations.",
+        "Objections principales : sécurité des documents (4), temps de mise en place (3), prix (1). Réponse apportée : page dédiée à la sécurité, mise en place accompagnée.",
+        "Étapes suivantes : 4 essais en cours, 2 relances prévues, 1 refus (outil déjà prévu par leur logiciel comptable)."
+      ]
+    }
+  },
+  "fiche": {
+    "titre": "Fiche récapitulative : premiers utilisateurs",
+    "points": [
+      "Liste de 50 contacts qualifiés : chauds, tièdes, froids.",
+      "Prospection : respecter les règles (CNIL), se présenter, permettre de refuser.",
+      "Message en quatre phrases : pourquoi elle, le problème, le changement, la demande.",
+      "Démonstration centrée sur le premier résultat utile, avec une étape suivante datée.",
+      "Deux relances maximum.",
+      "Page d’accueil : promesse, bénéfices, preuve honnête, prix, un bouton.",
+      "Jamais de témoignage, chiffre ou urgence inventés."
+    ]
+  },
+  "modele": {
+    "titre": "Modèle : tableau de suivi des contacts et message type",
+    "intro": "Une ligne par contact. Mettez à jour le tableau après chaque échange.",
+    "sections": [
+      { "titre": "Colonnes du tableau", "champs": ["Nom et structure :", "Rôle (utilise / décide) :", "Groupe (chaud / tiède / froid) :", "Canal (e-mail, téléphone, réseau) :", "Date du premier message :", "Relances (dates) :", "Démonstration (date) :", "Objections :", "Étape suivante et date :"] },
+      { "titre": "Message type (à personnaliser)", "champs": ["Phrase 1, pourquoi vous :", "Phrase 2, le problème avec leurs mots :", "Phrase 3, ce que l’outil change :", "Phrase 4, la demande et deux créneaux :"] },
+      { "titre": "Page d’accueil", "champs": ["Titre (promesse) :", "Bénéfice 1 :", "Bénéfice 2 :", "Bénéfice 3 :", "Preuve honnête disponible :", "Prix et inclus :", "Bouton principal :"] }
+    ]
+  },
+  "checklist": [
+    "J’ai 50 contacts qualifiés dans mon tableau.",
+    "J’ai vérifié les règles de prospection applicables.",
+    "Mon message tient en quatre à six phrases.",
+    "J’ai mené au moins 5 démonstrations.",
+    "Chaque démonstration a une étape suivante datée.",
+    "Ma page d’accueil ne contient aucun élément invérifiable.",
+    "Mon éventuel tarif de lancement indique sa durée et le prix suivant."
+  ]
+}

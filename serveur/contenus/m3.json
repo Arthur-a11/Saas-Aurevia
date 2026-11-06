@@ -1,0 +1,183 @@
+{
+  "id": "m3",
+  "titre": "Construire la première version",
+  "objectifs": [
+    "Choisir des outils adaptés à son budget, à ses compétences et à son MVP.",
+    "Mettre en place les briques indispensables : comptes, données, e-mails, paiement.",
+    "Appliquer les bases de la sécurité et de la protection des données.",
+    "Organiser un test avec 5 utilisateurs et traiter les retours."
+  ],
+  "lecons": [
+    {
+      "id": "m3-l1",
+      "titre": "Choisir ses outils : sans code, avec code, ou les deux",
+      "duree": "15 min",
+      "intro": "Il n’existe pas de meilleur outil dans l’absolu. Le bon choix dépend de votre MVP, de votre budget, du temps disponible et de ce que vous êtes prêt à apprendre.",
+      "sections": [
+        {
+          "titre": "Les grandes familles",
+          "liste": [
+            "Outils sans code (par exemple Bubble, Softr, Glide, ou une base de données type Airtable avec une interface) : rapides pour démarrer, abonnements mensuels, limites sur la personnalisation et parfois sur le volume.",
+            "Code assisté par l’IA : plus de liberté et des coûts d’hébergement souvent plus bas, mais il faut comprendre ce que l’on publie, tester et maintenir.",
+            "Mixte : une interface sans code et quelques automatisations (Make, Zapier, n8n) ou petites fonctions codées pour le reste."
+          ]
+        },
+        {
+          "titre": "Cinq questions pour décider",
+          "liste": [
+            "Mon MVP tient-il dans les limites de l’outil (nombre d’utilisateurs, de lignes, d’automatisations) ?",
+            "Combien coûtera l’outil avec 10, puis 100 clients ?",
+            "Puis-je exporter mes données si je change d’outil ?",
+            "Où sont hébergées les données (important pour le RGPD) ?",
+            "Ai-je le temps d’apprendre cet outil dans les 4 prochaines semaines ?"
+          ]
+        },
+        {
+          "titre": "Éviter la dépendance totale",
+          "paragraphes": [
+            "Notez dès le départ comment exporter vos données et vos clients. Un outil qui change ses prix ou ferme ne doit pas vous faire perdre votre activité. Les noms d’outils cités ici sont des exemples : vérifiez leurs prix et conditions actuels avant de choisir."
+          ]
+        }
+      ],
+      "aRetenir": [
+        "Le bon outil est celui qui permet de livrer votre MVP vite et de garder vos données.",
+        "Calculez le coût à 10 et à 100 clients.",
+        "Vérifiez l’export des données et le lieu d’hébergement."
+      ]
+    },
+    {
+      "id": "m3-l2",
+      "titre": "Les briques indispensables et la sécurité de base",
+      "duree": "15 min",
+      "intro": "Presque tous les SaaS ont besoin des mêmes briques. Les connaître évite d’en oublier une et de devoir tout reprendre après le lancement.",
+      "sections": [
+        {
+          "titre": "Les briques",
+          "liste": [
+            "Comptes utilisateurs : inscription, connexion, mot de passe oublié.",
+            "Données : ce que chaque client enregistre, séparé des autres clients.",
+            "E-mails automatiques : bienvenue, réinitialisation du mot de passe, notifications.",
+            "Paiement : un prestataire qui confirme les paiements à votre serveur (pas un simple lien de paiement).",
+            "Pages légales : mentions légales, conditions, confidentialité, à faire relire."
+          ]
+        },
+        {
+          "titre": "La sécurité de base",
+          "liste": [
+            "Connexion chiffrée (HTTPS) partout.",
+            "Mots de passe jamais stockés en clair ; laissez l’outil ou une bibliothèque reconnue s’en charger.",
+            "Un client ne doit jamais voir les données d’un autre client : testez-le avec deux comptes.",
+            "Les clés secrètes (paiement, e-mail, IA) restent côté serveur, jamais dans le navigateur ni dans un dépôt de code public.",
+            "Sauvegardes régulières, et un essai de restauration au moins une fois."
+          ]
+        },
+        {
+          "titre": "Les données personnelles",
+          "paragraphes": [
+            "Ne collectez que ce qui sert. Indiquez dans votre politique de confidentialité ce que vous collectez, pourquoi, combien de temps et qui y a accès. Si vos clients enregistrent des données sur leurs propres clients, vous êtes souvent leur sous-traitant au sens du RGPD : renseignez-vous sur le site de la CNIL et faites valider vos documents."
+          ]
+        }
+      ],
+      "aRetenir": [
+        "Comptes, données, e-mails, paiement, pages légales : vérifiez chaque brique.",
+        "Testez qu’un client ne voit jamais les données d’un autre.",
+        "Clés secrètes côté serveur, sauvegardes testées."
+      ]
+    },
+    {
+      "id": "m3-l3",
+      "titre": "Tester avec 5 utilisateurs et corriger",
+      "duree": "12 min",
+      "intro": "La première version n’est pas faite pour le grand public : elle est faite pour 5 testeurs du public choisi, qui l’utilisent sur leurs vraies tâches.",
+      "sections": [
+        {
+          "titre": "Préparer le test",
+          "liste": [
+            "Choisissez 5 testeurs parmi les personnes interviewées au module 1.",
+            "Fixez une durée (par exemple deux semaines) et un objectif (atteindre le premier résultat utile).",
+            "Prévoyez un canal simple pour les retours : un e-mail, un formulaire, un appel par semaine."
+          ]
+        },
+        {
+          "titre": "Trier les retours",
+          "paragraphes": [
+            "Classez chaque retour : bug bloquant (à corriger tout de suite), incompréhension (texte ou écran à revoir), nouvelle demande (à filtrer par la promesse). Mesurez une seule chose avant tout : combien de testeurs atteignent le premier résultat utile."
+          ],
+          "exemple": "Exemple fictif : sur 5 cabinets testeurs, 3 envoient des relances la première semaine, 2 ne terminent pas la configuration. En appelant ces deux cabinets, Léa apprend que l’import de la liste des clients est trop compliqué : elle propose de le faire elle-même pour les nouveaux testeurs."
+        },
+        {
+          "titre": "Mettre en ligne proprement",
+          "liste": [
+            "Un nom de domaine à vous et des adresses e-mail sur ce domaine.",
+            "Un environnement de test séparé de la version utilisée par les clients, si votre outil le permet.",
+            "Une page « statut » ou un message clair en cas de panne."
+          ]
+        }
+      ],
+      "aRetenir": [
+        "5 testeurs réels, une durée et un objectif clairs.",
+        "Mesurez d’abord combien atteignent le premier résultat utile.",
+        "Appelez ceux qui abandonnent : ce sont eux qui vous apprennent le plus."
+      ]
+    }
+  ],
+  "exercice": {
+    "titre": "Exercice : votre plan de construction et votre test à 5",
+    "consigne": "Choisissez vos outils, vérifiez les briques indispensables, puis organisez un test de deux semaines avec 5 utilisateurs.",
+    "etapes": [
+      "Comparez deux options d’outils avec les cinq questions de la leçon 1.",
+      "Calculez le coût mensuel de votre choix pour 10 puis 100 clients.",
+      "Cochez chaque brique indispensable et chaque point de sécurité.",
+      "Créez deux comptes de test et vérifiez qu’aucun ne voit les données de l’autre.",
+      "Lancez le test avec 5 testeurs et tenez le tableau des retours."
+    ],
+    "livrable": "Un plan de construction (outils, coûts, briques) et un tableau de retours de test.",
+    "criteres": [
+      "Deux options comparées avec des critères écrits.",
+      "Coût estimé à 10 et à 100 clients.",
+      "Test de séparation des données entre deux comptes réalisé.",
+      "Au moins 5 testeurs du public choisi.",
+      "Retours classés : bloquant, incompréhension, nouvelle demande."
+    ],
+    "corrige": {
+      "titre": "Exemple de plan (fictif)",
+      "paragraphes": [
+        "Options comparées : outil sans code avec base de données intégrée, ou code assisté par l’IA hébergé chez un prestataire européen. Choix : sans code pour la première version, car Léa doit livrer en 4 semaines ; export des données vérifié.",
+        "Briques : comptes et mot de passe oublié fournis par l’outil ; e-mails par un service transactionnel ; paiement par un prestataire avec confirmation au serveur ; pages légales en brouillon à faire relire.",
+        "Test : 5 cabinets pendant 2 semaines ; 3 atteignent le premier résultat utile ; principal blocage : l’import des clients."
+      ]
+    }
+  },
+  "fiche": {
+    "titre": "Fiche récapitulative : construire la première version",
+    "points": [
+      "Choisir l’outil qui livre le MVP vite et permet d’exporter ses données.",
+      "Calculer le coût à 10 et à 100 clients.",
+      "Briques : comptes, données séparées, e-mails, paiement confirmé au serveur, pages légales.",
+      "Sécurité : HTTPS, mots de passe protégés, clés côté serveur, sauvegardes testées.",
+      "RGPD : collecter le minimum, documenter, vérifier son rôle (responsable ou sous-traitant).",
+      "Test à 5 utilisateurs réels avec une durée et un objectif.",
+      "Mesurer d’abord le premier résultat utile ; appeler ceux qui abandonnent."
+    ]
+  },
+  "modele": {
+    "titre": "Modèle : plan de construction et suivi des tests",
+    "intro": "Un document pour choisir vos outils et suivre votre première série de tests.",
+    "sections": [
+      { "titre": "Choix des outils", "champs": ["Option A (outils, coût à 10 clients, coût à 100 clients) :", "Option B (outils, coût à 10 clients, coût à 100 clients) :", "Export des données possible ? :", "Hébergement des données (pays) :", "Choix retenu et raison :"] },
+      { "titre": "Briques", "champs": ["Comptes et mot de passe oublié :", "Données séparées par client (test fait le …) :", "E-mails automatiques :", "Paiement avec confirmation au serveur :", "Pages légales (statut de relecture) :", "Sauvegarde et test de restauration :"] },
+      { "titre": "Test à 5 utilisateurs", "champs": ["Dates du test :", "Testeurs :", "Objectif (premier résultat utile) :", "Nombre ayant atteint l’objectif :"] },
+      { "titre": "Retours", "champs": ["Bugs bloquants :", "Incompréhensions :", "Nouvelles demandes (filtrées par la promesse) :"] }
+    ]
+  },
+  "checklist": [
+    "J’ai comparé au moins deux options d’outils.",
+    "Je connais mon coût mensuel à 10 et à 100 clients.",
+    "Je sais exporter mes données.",
+    "Les comptes, e-mails et paiements fonctionnent sur ma version de test.",
+    "Deux comptes de test ne voient pas les données l’un de l’autre.",
+    "Mes clés secrètes ne sont pas visibles dans le navigateur.",
+    "J’ai fait une sauvegarde et un essai de restauration.",
+    "5 testeurs ont utilisé le produit et leurs retours sont classés."
+  ]
+}

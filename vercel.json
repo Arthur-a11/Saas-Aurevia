@@ -1,0 +1,31 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "astro",
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "functions": {
+    "api/*.mjs": { "includeFiles": "src/data/*.json", "maxDuration": 10 }
+  },
+  "rewrites": [
+    { "source": "/api/compte/:p*", "destination": "/api/espace?p=compte/:p*" },
+    { "source": "/api/paiement/:p*", "destination": "/api/espace?p=paiement/:p*" },
+    { "source": "/api/formation", "destination": "/api/espace?p=formation" },
+    { "source": "/api/formation/:p*", "destination": "/api/espace?p=formation/:p*" },
+    { "source": "/api/abonnement/:p*", "destination": "/api/espace?p=abonnement/:p*" }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
+        { "key": "X-Frame-Options", "value": "DENY" },
+        { "key": "Permissions-Policy", "value": "camera=(), microphone=(), geolocation=()" }
+      ]
+    },
+    {
+      "source": "/fonts/(.*)",
+      "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }]
+    }
+  ]
+}

@@ -13,38 +13,46 @@
 
 :root {
   color-scheme: dark;
+  --ombre: 0 1px 0 rgba(255, 255, 255, 0.03) inset, 0 12px 32px -18px rgba(0, 0, 0, 0.6);
 
-  /* Couleurs de base */
-  --bg: #090b28;
-  --bg-grad: linear-gradient(160deg, #0a0b2e, #16106a 50%, #08365a);
-  --surface: rgba(255, 255, 255, 0.06);
-  --surface-forte: rgba(18, 20, 64, 0.92);   /* cartes sur mobile, sans effet de flou */
-  --ink: #eef2ff;          /* texte principal */
-  --muted: #a9b4dd;        /* texte secondaire : 5,5:1 sur le fond le plus clair */
-  --line: rgba(150, 170, 255, 0.26);
-  --line-forte: rgba(150, 170, 255, 0.55);
+  /* Identité « chrome et noir clair » (4 novembre 2026, demandée par Arthur). Contrastes calculés (WCAG) :
+     texte --ink sur --surface 13,5:1 ; --muted sur --surface 7,3:1 ; --brand sur --surface 10,7:1 ;
+     texte --on-brand sur bouton chrome (couleur la plus sombre du dégradé, #a9b0ba) 8,2:1 ;
+     blanc sur --accent-texte 8,1:1 ; --on-brand sur --gold 10,1:1. */
+  --bg: #16181b;           /* fond principal : noir clair (anthracite) */
+  --bg-2: #1c1f23;         /* bandes alternées */
+  --bg-grad: linear-gradient(180deg, #16181b 0%, #1d2024 55%, #16181b 100%);
+  --surface: #23262b;      /* cartes : gris chrome foncé */
+  --surface-2: #2c3036;    /* survol, éléments en relief */
+  --surface-forte: #23262b;
+  --surface-hud: #1f2226;
+  --ink: #f1f2f4;          /* texte principal : blanc argenté */
+  --muted: #aeb4bd;        /* texte secondaire : gris clair */
+  --line: rgba(205, 211, 219, 0.14);
+  --line-forte: rgba(205, 211, 219, 0.32);
+  --grille: rgba(205, 211, 219, 0.04);   /* grille du fond */
 
-  /* Marque */
-  --brand: #22d3ee;        /* cyan */
-  --accent: #7c5cff;       /* violet (décor) */
-  --accent-texte: #6646e8; /* violet foncé : fond des badges à texte blanc (5,8:1) */
-  --on-brand: #06122b;     /* texte sombre sur dégradé violet → cyan */
-  --gold: #e8c46a;         /* chiffres */
-  --lien: #8eefff;
-  --grad: linear-gradient(90deg, #8b6cff, #22d3ee);
-  --titre-grad: linear-gradient(100deg, #fff 25%, #8eefff 60%, #b7a2ff);
-  --halo-violet: rgba(124, 92, 255, 0.45);
-  --halo-cyan: rgba(34, 211, 238, 0.4);
-  --surface-hud: rgba(10, 14, 52, 0.82);    /* panneaux « tableau de bord » */
+  /* Marque : le chrome */
+  --brand: #d4d9e0;        /* argent chrome : actions principales, progression, repères */
+  --brand-doux: rgba(212, 217, 224, 0.1);
+  --accent: #d4d9e0;
+  --accent-texte: #4a5059; /* gris acier : fond des badges à texte blanc */
+  --on-brand: #15171a;     /* texte sur chrome */
+  --gold: #e6bc72;         /* gardé pour le sens seulement : statuts « en préparation », livrables */
+  --lien: #e3e7ec;
+  --grad: linear-gradient(180deg, #f5f7f9 0%, #d3d8df 45%, #a9b0ba 52%, #dce0e5 100%);   /* bouton principal : chrome poli */
+  --titre-grad: linear-gradient(100deg, #ffffff 25%, #9aa1ab 55%, #eceff2 85%);
+  --halo-violet: transparent;
+  --halo-cyan: transparent;
 
-  /* Assistant (vert) */
-  --chat-bg: #0b0d18;
-  --chat-vert: #3ddc84;
-  --chat-muted: #8fa3c8;
+  /* Assistant */
+  --chat-bg: #1a1c20;
+  --chat-vert: #d4d9e0;
+  --chat-muted: #9aa1ab;
 
   /* Erreur / succès */
-  --erreur: #ffb4b4;
-  --succes: #9df0c4;
+  --erreur: #ffb4ab;
+  --succes: #8fe3b0;
 
   /* Typographie */
   --police-texte: "Public Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
@@ -52,7 +60,11 @@
   --police-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;  /* étiquettes, chiffres */
 
   /* Mise en page */
-  --largeur: 1080px;
+  --largeur: 1280px;      /* sections larges sur ordinateur ; les textes gardent leur propre largeur de lecture */
+  --lecture: 68ch;        /* largeur maximale d’un paragraphe de leçon */
+  --espace-section: clamp(3rem, 6vw, 5rem);
+  --espace-cartes: clamp(1rem, 2.2vw, 1.75rem);
+  --pad-carte: clamp(1.25rem, 2.4vw, 2rem);
   --gouttiere: 1rem;
   --header-h: 4.5rem;
   --rayon: 18px;

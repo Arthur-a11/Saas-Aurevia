@@ -1,0 +1,169 @@
+{
+  "id": "m4",
+  "titre": "Préparer son offre et fixer son prix",
+  "objectifs": [
+    "Estimer la valeur apportée à partir de la solution actuelle du client.",
+    "Construire une à trois formules simples, aux différences claires.",
+    "Calculer le coût par client et le prix minimum viable.",
+    "Choisir une façon de faire essayer le produit."
+  ],
+  "lecons": [
+    {
+      "id": "m4-l1",
+      "titre": "Un prix fondé sur la valeur, pas sur vos coûts",
+      "duree": "12 min",
+      "intro": "Vos coûts fixent le prix plancher. La valeur pour le client fixe ce qu’il est prêt à payer. Entre les deux se trouve votre prix.",
+      "sections": [
+        {
+          "titre": "Partir de la solution actuelle",
+          "paragraphes": [
+            "Le client compare toujours votre prix à ce qu’il fait aujourd’hui : un tableur gratuit, un logiciel à 30 € par mois, ou du temps de salarié. Reprenez vos notes d’entretien : temps perdu, outils payés, erreurs coûteuses.",
+            "Calcul simple : temps économisé par mois × coût horaire approximatif. Ce chiffre n’est pas votre prix : c’est un repère. Un client accepte rarement de payer plus d’une fraction de ce qu’il économise."
+          ],
+          "exemple": "Exemple de calcul fictif : un cabinet passe 4 heures par mois en relances. Avec un coût horaire de 35 €, cela représente environ 140 € par mois. Un prix de 29 à 49 € par mois reste nettement inférieur à la valeur estimée. Ces chiffres illustrent la méthode ; ils ne sont pas des données de marché."
+        },
+        {
+          "titre": "Abonnement ou paiement unique",
+          "paragraphes": [
+            "Un logiciel en ligne a des coûts qui continuent (hébergement, support, évolutions) : l’abonnement mensuel est donc le modèle le plus courant. Un tarif annuel avec réduction améliore la trésorerie. Un paiement unique convient plutôt à un produit qui ne demande pas de service continu."
+          ]
+        }
+      ],
+      "aRetenir": [
+        "Coûts = plancher ; valeur perçue = plafond.",
+        "Comparez à la solution actuelle du client.",
+        "L’abonnement correspond aux coûts continus d’un logiciel en ligne."
+      ]
+    },
+    {
+      "id": "m4-l2",
+      "titre": "Construire des formules claires",
+      "duree": "12 min",
+      "intro": "Trop de formules font hésiter. Deux ou trois formules, avec une différence facile à comprendre, aident le client à choisir.",
+      "sections": [
+        {
+          "titre": "Sur quoi faire varier les formules",
+          "liste": [
+            "Le volume : nombre d’utilisateurs, de clients gérés, de documents.",
+            "Les fonctions avancées : réservées aux clients qui en ont besoin.",
+            "Le service : assistance prioritaire, mise en place faite pour le client."
+          ]
+        },
+        {
+          "titre": "Écrire une formule honnête",
+          "liste": [
+            "Indiquer précisément ce qui est inclus et ce qui ne l’est pas.",
+            "Ne jamais annoncer une fonction qui n’existe pas encore comme disponible.",
+            "Afficher le prix avec la bonne mention fiscale, validée avec un comptable.",
+            "Préciser la durée d’engagement et comment résilier."
+          ]
+        },
+        {
+          "titre": "Faire essayer",
+          "paragraphes": [
+            "Trois options courantes : un essai gratuit limité dans le temps (14 ou 30 jours), une version gratuite limitée en volume, ou une démonstration accompagnée. Pour un public peu à l’aise avec les outils, la démonstration accompagnée permet souvent de mieux comprendre les blocages."
+          ]
+        }
+      ],
+      "aRetenir": [
+        "Deux ou trois formules, une différence évidente.",
+        "Inclus et non inclus écrits noir sur blanc.",
+        "Essai, version gratuite ou démonstration : choisissez selon votre public."
+      ]
+    },
+    {
+      "id": "m4-l3",
+      "titre": "Calculer ses coûts et son seuil",
+      "duree": "15 min",
+      "intro": "Connaître son coût par client évite de vendre à perte sans s’en rendre compte, surtout avec des outils facturés à l’usage.",
+      "sections": [
+        {
+          "titre": "Coûts fixes et coûts par client",
+          "liste": [
+            "Coûts fixes mensuels : outils, hébergement de base, nom de domaine, comptable, assurance.",
+            "Coûts par client : envoi d’e-mails, stockage, appels à une IA, frais de paiement (souvent un pourcentage plus un montant fixe par transaction).",
+            "Votre temps : support et mise en place, même si vous ne vous payez pas encore."
+          ]
+        },
+        {
+          "titre": "Le calcul du seuil",
+          "paragraphes": [
+            "Marge par client = prix mensuel − coût mensuel par client. Nombre de clients pour couvrir les coûts fixes = coûts fixes ÷ marge par client.",
+            "Faites le calcul avant de fixer votre prix. S’il faut un nombre de clients irréaliste pour couvrir vos coûts, changez le prix, le public ou les outils."
+          ],
+          "exemple": "Exemple de calcul fictif : coûts fixes de 180 € par mois ; prix de 39 € ; coût par client de 4 € ; marge de 35 €. Il faut 6 clients pour couvrir les coûts fixes (180 ÷ 35 ≈ 5,1, arrondi au-dessus). Ces montants servent seulement à illustrer le calcul."
+        },
+        {
+          "titre": "Facturation et TVA",
+          "paragraphes": [
+            "Le régime de TVA, les mentions obligatoires sur les factures et l’affichage des prix (TTC pour les particuliers) dépendent de votre statut. Faites-les valider par un comptable avant la première vente."
+          ]
+        }
+      ],
+      "aRetenir": [
+        "Marge par client = prix − coût par client.",
+        "Seuil = coûts fixes ÷ marge par client.",
+        "TVA et factures : validation par un comptable avant de vendre."
+      ]
+    }
+  ],
+  "exercice": {
+    "titre": "Exercice : votre page de tarifs et votre calcul de seuil",
+    "consigne": "Estimez la valeur, calculez vos coûts, puis rédigez une page de tarifs avec une à trois formules.",
+    "etapes": [
+      "À partir de vos entretiens, estimez le coût mensuel du problème pour un client type.",
+      "Listez vos coûts fixes et vos coûts par client.",
+      "Calculez la marge par client et le seuil de clients.",
+      "Rédigez une à trois formules avec inclus et non inclus.",
+      "Choisissez votre façon de faire essayer et justifiez-la.",
+      "Montrez la page à 3 personnes du public et notez leurs questions."
+    ],
+    "livrable": "Une page de tarifs rédigée et un calcul de seuil.",
+    "criteres": [
+      "Le prix est comparé à la solution actuelle du client.",
+      "Le seuil de clients est calculé et réaliste au regard de votre public.",
+      "Chaque formule précise inclus et non inclus.",
+      "Aucune fonction absente n’est présentée comme disponible.",
+      "La mention fiscale est indiquée comme « à valider » tant qu’un comptable ne l’a pas confirmée."
+    ],
+    "corrige": {
+      "titre": "Exemple (fictif)",
+      "paragraphes": [
+        "Valeur estimée : environ 140 € par mois de temps de relance. Prix retenu : 39 € par mois, 390 € par an.",
+        "Formules : Solo (1 utilisateur, 50 clients suivis) ; Cabinet (5 utilisateurs, clients illimités, modèles de relance personnalisés). Non inclus : connexion au logiciel comptable (prévue plus tard, annoncée comme telle).",
+        "Essai : démonstration accompagnée de 20 minutes puis 14 jours d’essai. Questions des testeurs : résiliation, sécurité des documents, export des données."
+      ]
+    }
+  },
+  "fiche": {
+    "titre": "Fiche récapitulative : offre et prix",
+    "points": [
+      "Coûts = plancher ; valeur pour le client = plafond.",
+      "Repère de valeur : temps économisé × coût horaire, ou outil remplacé.",
+      "Abonnement pour un logiciel aux coûts continus ; tarif annuel avec réduction possible.",
+      "Deux ou trois formules qui varient sur le volume, les fonctions avancées ou le service.",
+      "Inclus et non inclus écrits clairement ; rien d’absent présenté comme disponible.",
+      "Marge = prix − coût par client ; seuil = coûts fixes ÷ marge.",
+      "TVA, factures et affichage des prix : validation par un comptable."
+    ]
+  },
+  "modele": {
+    "titre": "Modèle : calcul de prix et grille de formules",
+    "intro": "Remplissez ce modèle pour fixer votre prix et décrire vos formules.",
+    "sections": [
+      { "titre": "Valeur", "champs": ["Solution actuelle du client et son coût :", "Temps perdu par mois :", "Coût horaire retenu :", "Valeur estimée par mois :"] },
+      { "titre": "Coûts", "champs": ["Coûts fixes mensuels (détail) :", "Coût par client et par mois (détail) :", "Frais de paiement par transaction :"] },
+      { "titre": "Calcul", "champs": ["Prix mensuel envisagé :", "Marge par client :", "Seuil de clients :", "Ce seuil est-il réaliste ? Pourquoi :"] },
+      { "titre": "Formules", "champs": ["Formule 1 (prix, inclus, non inclus) :", "Formule 2 (prix, inclus, non inclus) :", "Formule 3 (facultative) :", "Essai proposé :", "Mention fiscale (à valider) :"] }
+    ]
+  },
+  "checklist": [
+    "J’ai estimé la valeur à partir de la solution actuelle du client.",
+    "Je connais mes coûts fixes et mon coût par client.",
+    "J’ai calculé ma marge et mon seuil de clients.",
+    "Mes formules indiquent inclus et non inclus.",
+    "Aucune fonction absente n’est annoncée comme disponible.",
+    "J’ai choisi une façon de faire essayer.",
+    "J’ai prévu de faire valider TVA et factures par un comptable."
+  ]
+}

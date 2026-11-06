@@ -29,7 +29,7 @@ import { site } from "../lib/site.js";
         <li>l’hébergeur du site et de ses données : <AC champ="hebergeur.nom" label="hébergeur" /> ;</li>
         <li>le service d’envoi d’e-mails, s’il est activé : <AC valeur={null} label="prestataire d’envoi (par exemple Brevo)" /> ;</li>
         <li>le fournisseur du modèle d’IA de l’assistant, s’il est activé : Anthropic (États-Unis) ;</li>
-        <li>le prestataire de paiement, quand les commandes seront ouvertes : <AC valeur={site.paiement.actif ? "PayPal" : null} label="prestataire de paiement" /> ;</li>
+        <li>le prestataire de paiement, quand les commandes seront ouvertes : <AC valeur={site.paiement.actif ? "Stripe" : null} label="prestataire de paiement" /> ;</li>
         <li>la messagerie de l’exploitant (Google Gmail) pour les e-mails échangés.</li>
       </ul>
       <p>Transferts hors de l’Union européenne et garanties applicables : <AC valeur={null} label="à préciser pour chaque prestataire retenu" />.</p>

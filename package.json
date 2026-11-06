@@ -13,7 +13,8 @@
     "test:e2e": "playwright test",
     "test": "npm run donnees:verifier && npm run test:unitaires && npm run build && npm run test:e2e",
     "apercu": "npm run build && node scripts/preparer-apercu.mjs",
-    "sauvegarde": "bash scripts/creer-sauvegarde.sh"
+    "sauvegarde": "bash scripts/creer-sauvegarde.sh",
+    "formation:exporter": "node scripts/exporter-formation.mjs"
   },
   "author": "Arthur Leloup",
   "license": "UNLICENSED",
@@ -28,7 +29,8 @@
     "@fontsource/bricolage-grotesque": "^5.3.0",
     "@fontsource/jetbrains-mono": "^5.3.0",
     "@fontsource/public-sans": "^5.3.0",
-    "@netlify/blobs": "^11.1.7"
+    "@netlify/blobs": "^11.1.7",
+    "three": "0.169.0"
   },
   "private": true,
   "type": "module",

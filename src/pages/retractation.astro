@@ -76,7 +76,7 @@ const options = site.formules.map((f) => ({ valeur: f.id, label: `${f.nom} – $
         return;
       }
       const lignes = [`Référence : ${rep.reference}. Reçue le ${quand}.`];
-      if (rep.emailAccuse === "envoye") lignes.push("Un accusé de réception vient de vous être envoyé par e-mail.");
+      if (rep.emailAccuse === "accepte") lignes.push("Un accusé de réception a été remis à notre service d’envoi d’e-mails. Conservez aussi cette référence : la réception de l’e-mail n’est pas garantie (courriers indésirables).");
       else lignes.push("Aucun accusé de réception n’a pu être envoyé automatiquement par e-mail : conservez cette référence (par exemple avec une capture d’écran). L’organisateur vous répondra par e-mail.");
       message(zone, "ok", "Votre demande de rétractation est enregistrée.", lignes);
     },

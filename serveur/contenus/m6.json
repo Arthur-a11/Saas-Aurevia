@@ -1,0 +1,161 @@
+{
+  "id": "m6",
+  "titre": "Mesurer, améliorer, grandir",
+  "objectifs": [
+    "Suivre cinq indicateurs simples et savoir les calculer.",
+    "Organiser l’écoute des clients : support, entretiens, départs.",
+    "Prioriser les améliorations selon leur effet sur la rétention.",
+    "Savoir quoi automatiser ou déléguer, et quand."
+  ],
+  "lecons": [
+    {
+      "id": "m6-l1",
+      "titre": "Les chiffres qui comptent",
+      "duree": "15 min",
+      "intro": "Quelques chiffres bien suivis valent mieux qu’un tableau de bord rempli. Voici les cinq indicateurs à suivre chaque mois, avec leur calcul.",
+      "sections": [
+        {
+          "titre": "Cinq indicateurs",
+          "liste": [
+            "Revenu mensuel récurrent (MRR) : somme des abonnements mensuels actifs (un abonnement annuel compte pour son montant divisé par 12).",
+            "Taux d’activation : nouveaux inscrits qui atteignent le premier résultat utile ÷ nouveaux inscrits.",
+            "Taux de départ (churn) : clients partis dans le mois ÷ clients au début du mois.",
+            "Coût d’acquisition : dépenses pour obtenir des clients dans le mois ÷ nouveaux clients du mois.",
+            "Rentabilité par client : marge mensuelle par client comparée au coût d’acquisition."
+          ],
+          "exemple": "Exemple de calcul fictif : 40 clients au 1er du mois, 2 départs : churn = 2 ÷ 40 = 5 %. 20 inscrits, 12 atteignent le premier résultat utile : activation = 60 %. Ces chiffres illustrent le calcul ; ils ne sont pas des références à atteindre."
+        },
+        {
+          "titre": "Un tableau mensuel suffit",
+          "paragraphes": [
+            "Au début, un tableur rempli le premier lundi du mois suffit. Notez aussi un commentaire : ce qui a changé ce mois-ci (nouvelle fonction, prix, campagne). Sans contexte, les chiffres sont difficiles à interpréter.",
+            "Avec peu de clients, un pourcentage change beaucoup pour un seul départ : avec 10 clients, un départ fait 10 % de churn. Regardez alors les personnes derrière les chiffres : qui est parti, et pourquoi."
+          ]
+        }
+      ],
+      "aRetenir": [
+        "MRR, activation, churn, coût d’acquisition, rentabilité par client.",
+        "Un tableau mensuel avec un commentaire de contexte.",
+        "Avec peu de clients, regardez les personnes derrière les pourcentages."
+      ]
+    },
+    {
+      "id": "m6-l2",
+      "titre": "Écouter les clients",
+      "duree": "12 min",
+      "intro": "Les chiffres disent ce qui se passe ; les clients disent pourquoi. Organisez l’écoute plutôt que d’attendre les plaintes.",
+      "sections": [
+        {
+          "titre": "Trois sources de retours",
+          "liste": [
+            "Le support : classez chaque demande (bug, question, demande de fonction) et comptez-les chaque mois.",
+            "Les entretiens réguliers : 2 à 3 clients par mois, 20 minutes, avec les techniques du module 1.",
+            "Les départs : demandez systématiquement la raison, par une question courte et facultative."
+          ]
+        },
+        {
+          "titre": "Répondre vite et clairement",
+          "paragraphes": [
+            "Fixez un délai de réponse que vous pouvez tenir et affichez-le. Une réponse rapide qui dit « je regarde et je reviens vers vous jeudi » rassure davantage qu’une réponse parfaite trois jours plus tard."
+          ]
+        }
+      ],
+      "aRetenir": [
+        "Support classé, entretiens réguliers, raisons de départ.",
+        "Un délai de réponse affiché et tenu.",
+        "Les mots des clients nourrissent aussi votre page d’accueil."
+      ]
+    },
+    {
+      "id": "m6-l3",
+      "titre": "Prioriser, automatiser, se faire aider",
+      "duree": "12 min",
+      "intro": "Les demandes s’accumulent plus vite que votre temps. Une méthode simple de priorisation évite de tout commencer et de ne rien finir.",
+      "sections": [
+        {
+          "titre": "Retenir avant d’ajouter",
+          "paragraphes": [
+            "Améliorer ce qui fait rester les clients (activation, bugs, lenteurs) a souvent plus d’effet que d’ajouter des fonctions pour en attirer de nouveaux. Si votre churn est élevé, de nouveaux clients remplissent un seau percé."
+          ]
+        },
+        {
+          "titre": "Impact et effort",
+          "paragraphes": [
+            "Pour chaque amélioration, notez l’impact attendu (sur l’activation ou les départs) de 1 à 3 et l’effort de 1 à 3. Commencez par fort impact et faible effort. Revoyez la liste chaque mois."
+          ]
+        },
+        {
+          "titre": "Quand automatiser ou déléguer",
+          "liste": [
+            "Automatisez une tâche répétée chaque semaine qui suit toujours les mêmes étapes.",
+            "Déléguez ce qui n’est pas votre force et qui bloque la croissance (comptabilité, juridique, design).",
+            "Gardez pour vous le contact client tant que vous apprenez de chaque échange."
+          ]
+        }
+      ],
+      "aRetenir": [
+        "Retenir les clients avant d’en attirer davantage.",
+        "Impact × effort, revu chaque mois.",
+        "Automatiser le répétitif, déléguer ce qui bloque, garder le contact client."
+      ]
+    }
+  ],
+  "exercice": {
+    "titre": "Exercice : votre tableau de bord et votre plan sur 3 mois",
+    "consigne": "Construisez un tableau de bord mensuel, organisez l’écoute des clients et établissez un plan d’amélioration priorisé.",
+    "etapes": [
+      "Créez le tableau des cinq indicateurs et remplissez le mois en cours.",
+      "Classez les demandes de support du dernier mois.",
+      "Menez 2 entretiens clients.",
+      "Listez 10 améliorations possibles et notez impact et effort.",
+      "Choisissez les 3 premières et datez-les sur 3 mois."
+    ],
+    "livrable": "Un tableau de bord rempli et un plan d’amélioration de 3 actions datées.",
+    "criteres": [
+      "Les cinq indicateurs sont calculés avec la bonne formule.",
+      "Un commentaire de contexte accompagne le mois.",
+      "Les demandes de support sont classées.",
+      "Chaque amélioration a une note d’impact et d’effort.",
+      "Les 3 actions retenues visent d’abord l’activation ou la rétention."
+    ],
+    "corrige": {
+      "titre": "Exemple (fictif)",
+      "paragraphes": [
+        "Mois de mars : 40 clients au début, 2 départs (churn 5 %), 20 inscrits dont 12 activés (60 %). Contexte : nouvel écran d’import.",
+        "Support : 14 demandes, dont 6 sur l’import, 5 questions, 3 demandes de fonctions.",
+        "Plan : 1) simplifier l’import (impact 3, effort 2) en avril ; 2) e-mail d’aide au jour 2 pour les non-activés (impact 2, effort 1) en avril ; 3) export Excel (impact 1, effort 1) en mai."
+      ]
+    }
+  },
+  "fiche": {
+    "titre": "Fiche récapitulative : mesurer et améliorer",
+    "points": [
+      "MRR = somme des abonnements mensuels actifs.",
+      "Activation = activés ÷ inscrits ; churn = départs ÷ clients en début de mois.",
+      "Coût d’acquisition = dépenses ÷ nouveaux clients.",
+      "Rentabilité par client : marge mensuelle par client comparée au coût d’acquisition.",
+      "Tableau mensuel avec commentaire de contexte.",
+      "Écoute : support classé, 2 à 3 entretiens par mois, raisons de départ.",
+      "Priorité à la rétention ; méthode impact × effort.",
+      "Automatiser le répétitif, déléguer ce qui bloque, garder le contact client."
+    ]
+  },
+  "modele": {
+    "titre": "Modèle : tableau de bord mensuel et plan d’amélioration",
+    "intro": "Remplissez une colonne par mois et revoyez le plan à chaque mise à jour.",
+    "sections": [
+      { "titre": "Indicateurs du mois", "champs": ["Mois :", "Clients au début du mois :", "Nouveaux clients :", "Départs :", "MRR :", "Inscrits / activés (taux d’activation) :", "Churn :", "Dépenses d’acquisition / coût d’acquisition :", "Commentaire de contexte :"] },
+      { "titre": "Écoute", "champs": ["Demandes de support (bug / question / fonction) :", "Entretiens menés et enseignements :", "Raisons de départ :"] },
+      { "titre": "Plan d’amélioration", "champs": ["Amélioration 1 (impact, effort, date) :", "Amélioration 2 (impact, effort, date) :", "Amélioration 3 (impact, effort, date) :"] }
+    ]
+  },
+  "checklist": [
+    "Je calcule mes cinq indicateurs chaque mois.",
+    "Mon tableau contient un commentaire de contexte.",
+    "Je classe mes demandes de support.",
+    "Je mène 2 à 3 entretiens clients par mois.",
+    "Je demande la raison de chaque départ.",
+    "Ma liste d’améliorations est notée en impact et effort.",
+    "Mes 3 prochaines actions sont datées."
+  ]
+}

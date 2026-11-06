@@ -2,6 +2,19 @@
 import Base from "../layouts/Base.astro";
 import programme from "../data/programme.json";
 import { site } from "../lib/site.js";
+import formation from "../data/formation.json";
+import { LIBELLE_STATUT_OFFRE, statutDroit } from "../lib/offres.js";
+import { modulesParcours } from "../lib/parcours.js";
+import { PAIEMENT } from "../lib/offres.js";
+const compter = (type) => formation.modules.flatMap((m) => m.lecons).filter((l) => l.type === type).length;
+const payant = [
+  [`${compter("lecon")} leçons détaillées, avec des exemples`, "lecons"],
+  [`${compter("exercice")} exercices pratiques avec critères de réussite et exemple de corrigé (Complet et Accompagné)`, "exercices"],
+  [`${compter("checklist")} checklists de fin de module (Complet et Accompagné)`, "checklists"],
+  [`${compter("fiche")} fiches récapitulatives`, "fiches"],
+  [`${compter("modele")} modèles à remplir (formules Complet et Accompagné)`, "modeles"],
+  ["Les cours en vidéo", "videos"],
+];
 ---
 <Base titre="Le programme" courant="/programme/"
   description="Le programme AUREVIA SAAS en six modules : trouver une idée, définir le produit minimum, construire, fixer le prix, trouver ses premiers clients, mesurer et grandir.">
@@ -9,29 +22,78 @@ import { site } from "../lib/site.js";
     <div class="wrap">
       <p class="retour"><a href="/">← Retour à l’accueil</a></p>
       <p class="surtitre">Le programme</p>
-      <h1 class="titre-degrade">La formation : tout pour créer un bon SaaS</h1>
+      <h1>La formation&nbsp;: tout pour créer un bon SaaS</h1>
       <p class="chapeau">{programme.intro}</p>
     </div>
   </section>
 
   <section class="bande" aria-labelledby="modules">
     <div class="wrap">
-      <h2 id="modules">Le programme, module par module</h2>
+      <h2 id="modules">Le parcours, étape par étape</h2>
+      <p class="sous-titre">Du problème à vérifier jusqu’aux premiers utilisateurs. Aucune durée n’est imposée : vous avancez à votre rythme.</p>
       <nav aria-label="Sommaire du programme" class="sommaire-programme">
         <ol>
           {programme.modules.map((m, i) => <li><a href={`#module-${i + 1}`}><span class="mono">{String(i + 1).padStart(2, "0")}</span> {m.titre}</a></li>)}
         </ol>
-        <button type="button" class="btn alt petit sans-js-masque" id="tout-ouvrir" aria-controls="liste-modules">Tout ouvrir</button>
       </nav>
-      <div id="liste-modules">
-      {programme.modules.map((m, i) => (
-        <details class="module" id={`module-${i + 1}`} open={i === 0}>
-          <summary><span class="num-module" aria-hidden="true">{String(i + 1).padStart(2, "0")}</span>Module {i + 1} : {m.titre.charAt(0).toLowerCase() + m.titre.slice(1)}</summary>
-          <p>{m.resume}</p>
-          <ul>{m.points.map((pt) => <li>{pt}</li>)}</ul>
-          <p class="resultat"><span class="pastille-livrable">Livrable</span> {m.resultat.replace(/^À la fin : /, "")}</p>
-        </details>
+      <ol class="liste-modules parcours-modules" id="liste-modules">
+      {modulesParcours.map((m) => (
+        <li class="carte module-bloc" id={`module-${m.numero}`}>
+          <div class="module-tete">
+            <span class="num-module" aria-hidden="true">{String(m.numero).padStart(2, "0")}</span>
+            <div>
+              <p class="module-etape">Étape {m.numero} sur 6</p>
+              <h3 id={`titre-module-${m.numero}`}><span class="sr-only">Module {m.numero} : </span>{m.titre}</h3>
+            </div>
+          </div>
+          <p class="module-resume"><strong>Objectif :</strong> {m.objectif}</p>
+          <div class="module-colonnes">
+            <div>
+              <p class="module-sous-titre">À la fin, vous saurez</p>
+              <ul class="module-points">{m.saurezFaire.map((x) => <li>{x}</li>)}</ul>
+            </div>
+            <div>
+              <p class="module-sous-titre">Sujets abordés ({m.nbLecons} leçons)</p>
+              <ul class="module-sujets">{m.sujets.map((x) => <li>{x}</li>)}</ul>
+            </div>
+          </div>
+          <div class="module-ressources">
+            <p class="module-sous-titre">Ressources du module</p>
+            <ul class="ressources-puces">
+              <li><span class="etiquette-gratuit">Gratuit</span> Plan du module et livrable</li>
+              <li><span class="etiquette-brouillon">{LIBELLE_STATUT_OFFRE[m.exercice.statut]}</span> Exercice avec corrigé (Complet, Accompagné)</li>
+              <li><span class="etiquette-brouillon">{LIBELLE_STATUT_OFFRE[m.fiche.statut]}</span> Fiche récapitulative</li>
+              <li><span class="etiquette-brouillon">{LIBELLE_STATUT_OFFRE[m.modele.statut]}</span> Modèle à remplir (Complet, Accompagné)</li>
+              <li><span class="etiquette-brouillon">{LIBELLE_STATUT_OFFRE[m.checklist.statut]}</span> Checklist de fin de module (Complet, Accompagné)</li>
+              <li><span class="etiquette-prep">{LIBELLE_STATUT_OFFRE[m.video.statut]}</span> Vidéo</li>
+            </ul>
+          </div>
+          <details class="plan-gratuit">
+            <summary>Lire le plan gratuit du module</summary>
+            <ul class="module-points">{programme.modules[m.numero - 1].points.map((pt) => <li>{pt}</li>)}</ul>
+          </details>
+          <p class="resultat"><span class="pastille-livrable">Livrable</span> {m.livrable}</p>
+        </li>
       ))}
+      </ol>
+    </div>
+  </section>
+
+  <section aria-labelledby="gratuit-payant">
+    <div class="wrap">
+      <h2 id="gratuit-payant">Gratuit ici, détaillé dans la formation</h2>
+      <div class="grille-gratuit-payant">
+        <div class="carte">
+          <h3>Gratuit, sur cette page</h3>
+          <p>Le plan des six modules, ce que vous devez faire et le livrable de chaque étape. Vous pouvez l’utiliser librement.</p>
+        </div>
+        <div class="carte">
+          <h3>Dans la formation payante</h3>
+          <ul class="liste-payant">
+            {payant.map(([texte, droit]) => <li>{texte}{LIBELLE_STATUT_OFFRE[statutDroit(droit)] && <span class="statut"> · {LIBELLE_STATUT_OFFRE[statutDroit(droit)]}</span>}</li>)}
+          </ul>
+          <p class="note">« Rédigé, en relecture » : écrit, pas encore validé. « En préparation » : pas encore disponible.</p>
+        </div>
       </div>
     </div>
   </section>
@@ -46,25 +108,10 @@ import { site } from "../lib/site.js";
 
   <section class="finale" aria-labelledby="pret">
     <div class="wrap">
-      <h2 id="pret">Prêt à suivre la formation ?</h2>
-      <p class="sous-titre">À partir de {site.formules[0].prixAffiche}, en un seul paiement.</p>
+      <h2 id="pret">Prêt à suivre la formation&nbsp;?</h2>
+      <p class="sous-titre">À partir de {site.formules[0].prixAffiche}{PAIEMENT.suffixe}. {PAIEMENT.court}.</p>
       <div class="cta"><a class="btn" href="/inscription/">Je m’inscris</a></div>
     </div>
   </section>
 </Base>
 
-<script>
-  // Ouvre le module visé par un lien (#module-3) ; bouton « Tout ouvrir / Tout fermer ».
-  const modules = Array.from(document.querySelectorAll<HTMLDetailsElement>("details.module"));
-  const bouton = document.getElementById("tout-ouvrir") as HTMLButtonElement;
-  const ouvrirCible = () => {
-    const cible = location.hash ? document.getElementById(decodeURIComponent(location.hash.slice(1))) : null;
-    if (cible instanceof HTMLDetailsElement && cible.classList.contains("module")) { cible.open = true; cible.querySelector("summary")?.focus(); }
-  };
-  window.addEventListener("hashchange", ouvrirCible);
-  ouvrirCible();
-  const maj = () => { bouton.textContent = modules.every((d) => d.open) ? "Tout fermer" : "Tout ouvrir"; };
-  modules.forEach((d) => d.addEventListener("toggle", maj));
-  bouton.addEventListener("click", () => { const ouvrir = !modules.every((d) => d.open); modules.forEach((d) => (d.open = ouvrir)); maj(); });
-  maj();
-</script>

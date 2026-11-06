@@ -26,6 +26,7 @@ Formation en ligne pour apprendre à créer un SaaS, sans code. Propriétaire : 
 | `npm run test:unitaires` | Tests des fonctions serveur et de l'assistant de secours. |
 | `npm run test:e2e` | Tests Playwright (ordinateur et mobile, accessibilité axe). Nécessite `npm run build` avant. |
 | `npm test` | Tout. **Doit réussir avant chaque livraison.** |
+| `npm run formation:exporter` | Regénère `docs/formation/relecture.md` (toute la formation écrite, pour relecture). |
 | `python3 video/generer-video.py` | Nouvelle vidéo de présentation (pas l'originale). |
 
 ## Conventions techniques à respecter
@@ -34,6 +35,10 @@ Formation en ligne pour apprendre à créer un SaaS, sans code. Propriétaire : 
 - Les boutons dont le libellé visible est court gardent ce libellé au début de leur nom accessible (WCAG 2.5.3) : « Favori : NomIdée », « Copier l’idée NomIdée ». L'état passe par `aria-pressed`.
 - Les favoris restent dans `localStorage` (clé `aurevia:favoris:v1`), toujours lus et écrits dans un `try/catch`.
 - Toute requête réseau du navigateur a un délai maximal (`AbortSignal.timeout`) et un parcours de secours honnête.
+- Les accès à la formation sont décidés **uniquement par le serveur** (`serveur/espace.js`), d'après une confirmation Stripe vérifiée (signature ou lecture de la session). Jamais d'après une adresse, un paramètre ou le navigateur. Voir `docs/paiement-et-acces.md`.
+- Contenus payants : uniquement dans `serveur/contenus/` (jamais importés par une page). Statuts dans `src/data/formation.json` : seul Arthur passe un élément en `"valide"` ; les brouillons restent `"brouillon"`. Les scripts vidéo ne sont pas des vidéos.
+- Ventes réelles : bloquées côté serveur par `serveur/ouverture.js` tant qu'une condition manque (`src/data/conditions.json`, `site.json`). Ne jamais remplir ces valeurs à la place d'Arthur.
+- Paiement : achat unique (`mode: "payment"`). Aucun abonnement sans accord explicite d'Arthur. Tests uniquement avec des clés `sk_test_` ou le simulateur local (`scripts/stripe-simule.mjs`).
 - Les nombres affichés passent par `nombre()` (`src/lib/site.js`) : espace insécable classique, jamais l'espace fine (absente de certaines polices).
 
 ## Façon de travailler

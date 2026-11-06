@@ -3,27 +3,28 @@ import Base from "../layouts/Base.astro";
 import CarteTarif from "../components/CarteTarif.astro";
 import { site, mentionTaxes } from "../lib/site.js";
 const ouvert = site.paiement.actif;
-const [ess, comp, acc] = site.formules;
-const prep = (x) => x?.statut === "en-preparation";
-const ligne = (texte) => site.formules.map((f) => f.inclus.find((x) => x.texte === texte));
-// Lignes du comparatif, construites à partir des formules (aucun contenu ajouté).
-const lignes = [
-  { nom: "Les cours en vidéo", cellules: [ess, comp, acc].map(() => ({ oui: true, prep: prep(ligne("Les cours en vidéo")[0]) })) },
-  { nom: "Des fiches résumé", cellules: [ess, comp, acc].map(() => ({ oui: true, prep: prep(ligne("Des fiches résumé")[0]) })) },
-  { nom: "Des modèles à copier", cellules: [{ oui: false }, { oui: true, prep: true }, { oui: true, prep: true }] },
-  { nom: "Une communauté pour s’entraider", cellules: [{ oui: false }, { oui: true, prep: true }, { oui: true, prep: true }] },
-  { nom: "Mon avis personnel sur votre projet", cellules: [{ oui: false }, { oui: false }, { oui: true, adefinir: true }] },
-];
+import { comparatif, LIBELLE_STATUT_OFFRE, PAIEMENT, ABONNEMENT } from "../lib/offres.js";
+import conditions from "../data/conditions.json";
+import ACompleter from "../components/ACompleter.astro";
+// Lignes du comparatif : calculées depuis src/data/formation.json (source unique), statuts réels.
+const lignes = comparatif();
+// Différences RÉELLES entre formules : ce qu'une formule ajoute à la précédente et qui est rédigé.
+import { contenuOffre } from "../lib/offres.js";
+const existe = (x) => x.statut === "valide" || x.statut === "brouillon";
+const ajoutsDe = (id, avant) => { const a = new Set(contenuOffre(avant).map((x) => x.droit)); return contenuOffre(id).filter((x) => !a.has(x.droit)); };
+const diffComplet = ajoutsDe("complet", "essentiel");
+const diffAcc = ajoutsDe("accompagne", "complet");
+const duree = conditions.dureeAcces.valeur ? conditions.dureeAcces.options[conditions.dureeAcces.valeur] : null;
 ---
 <Base titre="Tarifs" courant="/tarifs/"
-  description="Les trois formules AUREVIA SAAS : Essentiel 14,90 €, Complet 24,90 €, Accompagné 54,90 €. Un seul paiement, sans abonnement.">
+  description="Les trois formules AUREVIA SAAS : Essentiel 14,90 €, Complet 24,90 €, Accompagné 54,90 € par mois, résiliables à tout moment.">
   <section class="entete-page">
     <div class="wrap">
       <p class="surtitre">Tarifs</p>
-      <h1 class="titre-degrade">Choisissez votre formule</h1>
-      <p class="chapeau">Un seul paiement. Pas d’abonnement.</p>
+      <h1>Choisissez votre formule</h1>
+      <p class="chapeau">{PAIEMENT.phrase}</p>
       {!ouvert && (
-        <div class="encadre">
+        <div class="encadre" id="avis-commandes">
           <p><strong>Les commandes en ligne ne sont pas encore ouvertes.</strong> Vous pouvez vous inscrire dès maintenant, sans paiement : je vous recontacte par e-mail pour la suite.</p>
           <p>Les éléments marqués « En préparation » ne sont pas encore disponibles.</p>
         </div>
@@ -35,6 +36,16 @@ const lignes = [
       <h2 id="formules" class="sr-only">Les formules</h2>
       <ul class="tarifs">{site.formules.map((f) => <CarteTarif f={f} />)}</ul>
 
+      <div class="encadre differences" id="differences">
+        <h2 class="titre-carte">Les différences réelles, aujourd’hui</h2>
+        <ul>
+          <li><strong>Les 6 modules sont communs aux trois formules</strong> (19 leçons et 6 fiches récapitulatives).</li>
+          <li><strong>Complet</strong> ajoute : {diffComplet.map((x) => `${x.texte.toLowerCase()} (${existe(x) ? "rédigé, en relecture" : x.statut === "a-definir" ? "à définir" : "n’existe pas encore"})`).join(" ; ")}.</li>
+          <li><strong>Accompagné</strong> ajoute : {diffAcc.map((x) => `${x.texte.toLowerCase()} (${existe(x) ? "rédigé, en relecture" : x.statut === "a-definir" ? `prévu : ${conditions.accompagnement.format}, ${conditions.accompagnement.duree}, ${conditions.accompagnement.delaiRealisation} ; limites encore à définir, pas encore ouvert` : "n’existe pas encore"})`).join(" ; ")}.</li>
+        </ul>
+        <p class="note">Elles restent à préciser avant toute ouverture des ventes.</p>
+      </div>
+
       <div class="comparatif-zone" tabindex="0" role="region" aria-label="Tableau comparatif des formules (défilement horizontal sur petit écran)">
         <table class="comparatif">
           <caption>Comparer les formules</caption>
@@ -44,12 +55,11 @@ const lignes = [
           <tbody>
             {lignes.map((l) => (
               <tr>
-                <th scope="row">{l.nom}</th>
-                {l.cellules.map((c) => (
+                <th scope="row">{l.texte}</th>
+                {l.formules.map((oui) => (
                   <td>
-                    {c.oui ? <span class="oui">Inclus</span> : <span class="non">Non inclus</span>}
-                    {c.prep && <span class="prep">En préparation</span>}
-                    {c.adefinir && <span class="prep">Modalités à définir</span>}
+                    {oui ? <span class="oui">Inclus</span> : <span class="non">Non inclus</span>}
+                    {oui && LIBELLE_STATUT_OFFRE[l.statut] && <span class="prep">{LIBELLE_STATUT_OFFRE[l.statut]}</span>}
                   </td>
                 ))}
               </tr>
@@ -57,10 +67,11 @@ const lignes = [
           </tbody>
         </table>
       </div>
-      <p class="note" style="margin-top:0.75rem">Prix : {mentionTaxes()}. Paiement unique pour chaque formule.</p>
+      <p class="note" style="margin-top:0.75rem">Prix : {mentionTaxes()}. {PAIEMENT.phrase} Durée d’accès : {duree ?? <ACompleter label="durée d’accès à décider (à vie ou 12 mois)" />}.</p>
+      <p class="note">« Rédigé, en relecture » : le contenu est écrit mais pas encore validé. « En préparation » : le contenu n’existe pas encore.</p>
 
       <ul class="engagements">
-        <li><strong>Un seul paiement</strong><span>Pas d’abonnement, pas de prélèvement caché.</span></li>
+        <li><strong>{ABONNEMENT ? "Résiliable à tout moment" : "Un seul paiement"}</strong><span>{ABONNEMENT ? "Résiliation en ligne depuis votre espace, en quelques clics. L’accès dure jusqu’à la fin du mois déjà payé." : "Pas d’abonnement, pas de prélèvement caché."}</span></li>
         <li><strong>14 jours pour changer d’avis</strong><span>Droit de rétractation pour les consommateurs, sauf renoncement exprès à l’accès immédiat. <a href="/retractation/">Détails</a></span></li>
         <li><strong>Transparence</strong><span>Ce qui n’est pas encore prêt est indiqué « En préparation ». Aucun résultat n’est garanti.</span></li>
       </ul>

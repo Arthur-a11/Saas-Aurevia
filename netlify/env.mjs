@@ -11,7 +11,7 @@ export function lireEnv() {
       Object.assign(env, o);
       sources.netlifyEnv = Boolean(o.SEL_EMPREINTE);
     } else if (n && typeof n.get === "function") {
-      for (const cle of ["SEL_EMPREINTE", "ASSISTANT_IA", "ANTHROPIC_API_KEY", "BREVO_API_KEY", "EMAIL_EXPEDITEUR", "EMAIL_ORGANISATEUR", "SITE_URL", "ORIGINES_AUTORISEES"]) {
+      for (const cle of ["SEL_EMPREINTE", "ASSISTANT_IA", "ANTHROPIC_API_KEY", "BREVO_API_KEY", "EMAIL_EXPEDITEUR", "EMAIL_ORGANISATEUR", "SITE_URL", "ORIGINES_AUTORISEES", "STRIPE_SECRET_KEY", "STRIPE_WEBHOOK_SECRET"]) {
         const v = n.get(cle);
         if (v) env[cle] = v;
       }

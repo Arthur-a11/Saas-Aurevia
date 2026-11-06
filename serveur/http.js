@@ -52,4 +52,20 @@ export function reference(prefixe, date = new Date()) {
   return `${prefixe}-${date.toISOString().slice(0, 10).replaceAll("-", "")}-${alea}`;
 }
 
+/**
+ * Adresse publique du site (SITE_URL) vérifiée : origine propre (https://nom.domaine), ou null si absente
+ * ou mal tapée (parenthèse, espace, chemin…). Une adresse invalide ne doit jamais casser les liens des e-mails.
+ */
+export function adresseSite(env = {}) {
+  const brut = typeof env.SITE_URL === "string" ? env.SITE_URL.trim() : "";
+  if (!brut) return null;
+  try {
+    const u = new URL(brut);
+    if (!["https:", "http:"].includes(u.protocol) || !/^[a-z0-9.-]+$/i.test(u.hostname) || !u.hostname.includes(".")) return null;
+    return u.origin;
+  } catch {
+    return null;
+  }
+}
+
 export const methodeNonAutorisee = () => json(405, { ok: false, code: "methode_non_autorisee" });

@@ -3,6 +3,7 @@
 import "../styles/tokens.css";
 import "../styles/global.css";
 import "../styles/futur.css";
+import "../styles/espace.css";
 import Entete from "../components/Entete.astro";
 import Pied from "../components/Pied.astro";
 import Assistant from "../components/Assistant.astro";
@@ -42,7 +43,7 @@ const statsDomaine = import.meta.env.PUBLIC_STATS_DOMAINE;
     {domaineConnu && <meta property="og:image:height" content="630" />}
     {domaineConnu && <meta property="og:image:alt" content="AUREVIA SAAS : construisez l’entreprise qui encaisse chaque mois. 6 modules, 1 500 idées de SaaS, 15 marchés." />}
     <meta name="twitter:card" content={domaineConnu ? "summary_large_image" : "summary"} />
-    <meta name="theme-color" content="#090b28" />
+    <meta name="theme-color" content="#16181b" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="preload" href="/fonts/public-sans-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="preload" href="/fonts/bricolage-grotesque-latin-800-normal.woff2" as="font" type="font/woff2" crossorigin />
