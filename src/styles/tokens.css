@@ -15,28 +15,28 @@
   color-scheme: dark;
   --ombre: 0 1px 0 rgba(255, 255, 255, 0.03) inset, 0 12px 32px -18px rgba(0, 0, 0, 0.6);
 
-  /* Identité « chrome et noir clair » (4 novembre 2026, demandée par Arthur). Contrastes calculés (WCAG) :
-     texte --ink sur --surface 13,5:1 ; --muted sur --surface 7,3:1 ; --brand sur --surface 10,7:1 ;
-     texte --on-brand sur bouton chrome (couleur la plus sombre du dégradé, #a9b0ba) 8,2:1 ;
-     blanc sur --accent-texte 8,1:1 ; --on-brand sur --gold 10,1:1. */
-  --bg: #16181b;           /* fond principal : noir clair (anthracite) */
-  --bg-2: #1c1f23;         /* bandes alternées */
-  --bg-grad: linear-gradient(180deg, #16181b 0%, #1d2024 55%, #16181b 100%);
-  --surface: #23262b;      /* cartes : gris chrome foncé */
-  --surface-2: #2c3036;    /* survol, éléments en relief */
-  --surface-forte: #23262b;
-  --surface-hud: #1f2226;
-  --ink: #f1f2f4;          /* texte principal : blanc argenté */
-  --muted: #aeb4bd;        /* texte secondaire : gris clair */
-  --line: rgba(205, 211, 219, 0.14);
-  --line-forte: rgba(205, 211, 219, 0.32);
-  --grille: rgba(205, 211, 219, 0.04);   /* grille du fond */
+  /* Identité « bleu-violet et chrome » (7 novembre 2026, demandée par Arthur) : fond bleu-violet profond,
+     éléments en chrome. Contrastes calculés (WCAG) : --ink sur --surface 15,4:1 ; --muted sur --surface 8,5:1 ;
+     --muted sur --surface-2 7,6:1 ; --brand sur --surface 12,1:1 ; blanc sur --accent-texte 7,9:1 ;
+     --gold sur --surface 9,6:1 ; texte --on-brand sur bouton chrome (#a9b0ba) 8,2:1. */
+  --bg: #0c0a24;           /* fond principal : bleu-violet très profond */
+  --bg-2: #120f33;         /* bandes alternées */
+  --bg-grad: linear-gradient(180deg, #0c0a24 0%, #151140 55%, #0c0a24 100%);
+  --surface: #19163f;      /* cartes : violet nuit */
+  --surface-2: #221e52;    /* survol, éléments en relief */
+  --surface-forte: #19163f;
+  --surface-hud: #151236;
+  --ink: #f3f2fa;          /* texte principal : blanc lavande */
+  --muted: #b7b3d9;        /* texte secondaire : lavande grisée */
+  --line: rgba(167, 155, 255, 0.16);
+  --line-forte: rgba(167, 155, 255, 0.34);
+  --grille: rgba(167, 155, 255, 0.05);   /* grille du fond */
 
   /* Marque : le chrome */
   --brand: #d4d9e0;        /* argent chrome : actions principales, progression, repères */
   --brand-doux: rgba(212, 217, 224, 0.1);
   --accent: #d4d9e0;
-  --accent-texte: #4a5059; /* gris acier : fond des badges à texte blanc */
+  --accent-texte: #4c4796; /* violet acier : fond des badges à texte blanc */
   --on-brand: #15171a;     /* texte sur chrome */
   --gold: #e6bc72;         /* gardé pour le sens seulement : statuts « en préparation », livrables */
   --lien: #e3e7ec;
@@ -46,9 +46,9 @@
   --halo-cyan: transparent;
 
   /* Assistant */
-  --chat-bg: #1a1c20;
+  --chat-bg: #120f30;
   --chat-vert: #d4d9e0;
-  --chat-muted: #9aa1ab;
+  --chat-muted: #a9a4d1;
 
   /* Erreur / succès */
   --erreur: #ffb4ab;

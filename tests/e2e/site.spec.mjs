@@ -312,15 +312,15 @@ test.describe("refonte : identité et accueil", () => {
     for (const interdit of [/\d+ (élèves|clients satisfaits)/i, /plus que \d+ places/i, /(revenu|succès|résultat)s? garantie?s?/i]) await expect(page.locator("main")).not.toContainText(interdit);
   });
 
-  test("palette chrome et noir clair appliquée (fond, bouton principal, texte)", async ({ page }) => {
+  test("palette bleu-violet et chrome appliquée (fond, bouton principal, texte)", async ({ page }) => {
     await page.goto("/");
     const c = await page.evaluate(() => {
       const b = getComputedStyle(document.body);
       const btn = getComputedStyle(document.querySelector(".hero .btn:not(.alt)"));
       return { fond: b.backgroundColor, texte: b.color, bouton: btn.color };
     });
-    expect(c.fond).toBe("rgb(22, 24, 27)");
-    expect(c.texte).toBe("rgb(241, 242, 244)");
+    expect(c.fond).toBe("rgb(12, 10, 36)");
+    expect(c.texte).toBe("rgb(243, 242, 250)");
     expect(c.bouton).toBe("rgb(21, 23, 26)");
   });
 
@@ -555,7 +555,7 @@ test.describe("assistant", () => {
     await page.getByRole("button", { name: /Posez votre question/ }).click();
     await expect(page.locator("#chat-ouvrir")).toBeHidden();
     const fond = await page.locator("#chat-panneau").evaluate((p) => getComputedStyle(p).backgroundColor);
-    expect(fond).toBe("rgb(26, 28, 32)");   // --chat-bg, opaque (identité chrome et noir clair)
+    expect(fond).toBe("rgb(18, 15, 48)");   // --chat-bg, opaque (identité bleu-violet)
   });
 
   test("le badge « Powered by Netlify » du site en ligne ne recouvre pas le bouton de l’assistant", async ({ page }) => {
